@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 间隔重复复习 REST API
@@ -29,28 +30,46 @@ public class ReviewController {
     }
 
     /**
-     * 记录复习结果
+     * 记录复习结果（SM-2 算法更新）
+     * quality: 1=忘了，3=模糊，4=记得，5=秒杀
      */
     @PostMapping("/record")
     public ApiResponse<SpacedRepetitionCard> recordReview(@RequestBody RecordRequest request) {
-        SpacedRepetitionCard card = reviewService.recordReview(request.getCardId(), request.getQuality());
+        SpacedRepetitionCard card = reviewService.recordReview(
+                request.getCardId(), request.getQuality());
         return ApiResponse.success(card);
     }
 
     /**
-     * 创建复习卡片
+     * 手动创建复习卡片
      */
-    @PostMapping("/card")
+    @PostMapping("/cards")
     public ApiResponse<SpacedRepetitionCard> createCard(@RequestBody CreateCardRequest request) {
         SpacedRepetitionCard card = reviewService.createCard(
                 request.getUserId(), request.getProblemId(), request.getCardType());
         return ApiResponse.success(card);
     }
 
+    /**
+     * 获取用户所有复习卡片
+     */
+    @GetMapping("/cards")
+    public ApiResponse<List<SpacedRepetitionCard>> allCards(@RequestParam String userId) {
+        return ApiResponse.success(reviewService.getAllCards(userId));
+    }
+
+    /**
+     * 获取今日学习统计（复习完成情况）
+     */
+    @GetMapping("/stats")
+    public ApiResponse<Map<String, Object>> stats(@RequestParam String userId) {
+        return ApiResponse.success(reviewService.getDailyStats(userId));
+    }
+
     @Data
     public static class RecordRequest {
         private String cardId;
-        /** 自评分 0-5 */
+        /** 自评分：1/3/4/5（对应忘了/模糊/记得/秒杀） */
         private int quality;
     }
 

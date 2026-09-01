@@ -41,5 +41,26 @@ public enum WsMessageType {
     PING,
 
     /** 心跳响应 */
-    PONG
+    PONG,
+
+    /** 系统消息（提醒、状态通知） */
+    SYSTEM_MESSAGE,
+
+    /** 费曼总结生成完成 */
+    FEYNMAN_SUMMARY,
+
+    /** 苏格拉底总结生成完成 */
+    SOCRATIC_SUMMARY,
+
+    /** 面试时间警告 */
+    INTERVIEW_TIME_WARNING,
+
+    /** 面试评分报告 */
+    INTERVIEW_REPORT,
+
+    /** 提示已提供 */
+    HINT_PROVIDED,
+
+    /** 会话暂停 */
+    SESSION_PAUSED
 }

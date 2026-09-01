@@ -128,6 +128,55 @@ public class SessionManager {
     }
 
     /**
+     * 重置会话（清空 Redis 上下文，重置为空，保留 sessionId 和元数据）
+     *
+     * @param sessionId 会话 ID
+     */
+    public void resetSession(String sessionId) {
+        // 清空 Redis 上下文
+        String key = CONTEXT_KEY_PREFIX + sessionId;
+        redisTemplate.opsForValue().set(key, "[]", CONTEXT_TTL_MINUTES, TimeUnit.MINUTES);
+        // 更新最后活跃时间
+        updateLastActiveAt(sessionId);
+        log.info("会话已重置: sessionId={}", sessionId);
+    }
+
+    /**
+     * 获取单个会话
+     *
+     * @param sessionId 会话 ID
+     * @return Optional 包装的会话
+     */
+    public java.util.Optional<InteractiveSession> getSession(String sessionId) {
+        return sessionRepo.findById(sessionId);
+    }
+
+    /**
+     * 获取用户指定类型的历史会话列表
+     *
+     * @param userId 用户 ID
+     * @param type   会话类型
+     * @return 会话列表，按创建时间倒序
+     */
+    public List<InteractiveSession> getUserSessions(String userId, SessionType type) {
+        return sessionRepo.findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.COMPLETED)
+                .stream()
+                .filter(s -> s.getType() == type)
+                .toList();
+    }
+
+    /**
+     * 标记会话为暂停状态（断线时调用）
+     */
+    public void pauseSession(String sessionId) {
+        sessionRepo.findById(sessionId).ifPresent(session -> {
+            session.setStatus(SessionStatus.PAUSED);
+            session.setLastActiveAt(System.currentTimeMillis());
+            sessionRepo.save(session);
+        });
+    }
+
+    /**
      * 断线重连
      * <p>
      * 检查 session 状态为 ACTIVE 或 PAUSED，从 Redis 或 MySQL 恢复上下文，
@@ -161,8 +210,6 @@ public class SessionManager {
         log.info("会话重连成功: sessionId={}", sessionId);
         return context;
     }
-
-    // ======================== Task 2.3: 会话过期清理定时任务 ========================
 
     /**
      * 每 5 分钟清理过期会话

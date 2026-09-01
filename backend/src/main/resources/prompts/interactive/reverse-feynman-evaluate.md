@@ -1,55 +1,47 @@
-# 反向费曼纠错评估 Prompt
+# 反向费曼 · 纠错评估
 
-## 角色
-你是一位严格但鼓励性的算法教练，负责评估学生对代码错误的识别和纠正能力。
+请评估学生对以下错误的纠正是否准确。
 
-## 任务
-评估学生提交的纠错答案，判断其是否正确识别并修复了代码中的错误。
-
-## 输入信息
-- 原始错误代码：{{buggyCode}}
+## 原文错误信息
+- 段落 ID：{{paragraphId}}
+- 原文错误表述：{{wrongStatement}}
+- 正确表述：{{correctStatement}}
 - 错误类型：{{errorType}}
-- 学生的回答：{{studentAnswer}}
-- 参考正确答案：{{correctCode}}
 
-## 评估维度
+## 学生的纠正
+{{studentAnswer}}
 
-### 1. 错误识别（40分）
-- 是否准确定位了错误所在行/位置
-- 是否正确描述了错误的本质原因
+---
 
-### 2. 修复正确性（40分）
-- 修复后的代码是否能正确运行
-- 是否完整解决了问题（非局部修补）
+## 评估任务
 
-### 3. 解释深度（20分）
-- 是否解释了为什么这是错误的
-- 是否提到了该错误在实际场景中的影响
+1. 判断学生是否找到了正确的错误点
+2. 判断学生给出的正确说法是否符合实际
+3. 给出鼓励性反馈
 
-## 输出格式
+---
 
-请输出以下 JSON 结构：
+## 输出 JSON 格式
 
 ```json
 {
-  "score": 85,
   "passed": true,
-  "identificationScore": 40,
-  "fixScore": 35,
-  "explanationScore": 10,
-  "feedback": "评价反馈文字",
-  "suggestions": ["改进建议1", "改进建议2"],
-  "knowledgeGap": "如果发现知识盲区，在此描述"
+  "identifiedCorrectly": true,
+  "correctionAccurate": true,
+  "feedback": "准确！原文说'...是错误的，正确的是...'",
+  "compliment": "很好的观察力！你注意到了这个细节。",
+  "explanation": "完整的正确解释（1-2段）"
 }
 ```
 
-## 评分规则
-- 总分 100 分，60 分及格（passed=true）
-- 如果学生完全没有识别到正确的错误位置，identificationScore 最多 10 分
-- 如果修复方式引入了新 bug，fixScore 打 0
-- 评估要客观严格，但 feedback 语气要鼓励式
-
-## 特殊情况处理
-- 学生给出了不同于参考答案但同样正确的修复方式 → 给满分
-- 学生识别了错误但修复不完整 → 按比例给分
-- 学生的回答完全跑题 → 总分不超过 15 分
+如果学生答案不对：
+```json
+{
+  "passed": false,
+  "identifiedCorrectly": false,
+  "correctionAccurate": false,
+  "feedback": "这个方向不太对，你找到的不是主要错误。",
+  "hint": "再仔细看看这段话的逻辑，特别关注[...]部分",
+  "explanation": ""
+}
+```

@@ -47,6 +47,43 @@ public class SpacedRepetitionService {
     }
 
     /**
+     * 更新卡片 metadata
+     */
+    public void updateCardMetadata(String cardId, String metadata) {
+        cardRepo.findById(cardId).ifPresent(card -> {
+            card.setMetadata(metadata);
+            cardRepo.save(card);
+        });
+    }
+
+    /**
+     * 获取用户所有卡片
+     */
+    public List<SpacedRepetitionCard> getAllCards(String userId) {
+        return cardRepo.findByUserId(userId);
+    }
+
+    /**
+     * 获取今日学习统计
+     */
+    public java.util.Map<String, Object> getDailyStats(String userId) {
+        List<SpacedRepetitionCard> all = cardRepo.findByUserId(userId);
+        long todayDue = all.stream()
+                .filter(c -> c.getNextReviewAt() != null
+                        && c.getNextReviewAt() <= System.currentTimeMillis())
+                .count();
+        long mastered = all.stream()
+                .filter(c -> c.getRepetitions() >= 3)
+                .count();
+        return java.util.Map.of(
+                "todayDue", todayDue,
+                "total", all.size(),
+                "mastered", mastered,
+                "masteryRate", all.isEmpty() ? 0.0 : (double) mastered / all.size() * 100
+        );
+    }
+
+    /**
      * 记录复习结果，执行 SM-2 计算
      *
      * @param cardId  卡片 ID

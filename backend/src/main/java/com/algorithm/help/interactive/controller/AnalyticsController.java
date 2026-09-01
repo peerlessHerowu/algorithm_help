@@ -32,4 +32,19 @@ public class AnalyticsController {
     public ApiResponse<Map<String, Double>> mastery(@RequestParam String userId) {
         return ApiResponse.success(analyticsService.getMasteryRadar(userId));
     }
+
+    @GetMapping("/forgetting-curve")
+    public ApiResponse<Map<String, Object>> forgettingCurve(@RequestParam String userId) {
+        return ApiResponse.success(analyticsService.getForgettingCurveData(userId));
+    }
+
+    @GetMapping("/daily-plan")
+    public ApiResponse<Map<String, Object>> dailyPlan(@RequestParam String userId) {
+        return ApiResponse.success(analyticsService.getDailyPlan(userId));
+    }
+
+    @GetMapping("/interview-trend")
+    public ApiResponse<Map<String, Object>> interviewTrend(@RequestParam String userId) {
+        return ApiResponse.success(analyticsService.getInterviewTrend(userId));
+    }
 }
