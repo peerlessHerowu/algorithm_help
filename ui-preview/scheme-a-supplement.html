@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案A 补充页面 — 缺失UI模块</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-root:hsl(0 0% 4%);--bg-primary:hsl(0 0% 7%);--bg-secondary:hsl(0 0% 10%);
+  --bg-tertiary:hsl(0 0% 13%);--bg-elevated:hsl(0 0% 15%);
+  --text-primary:hsl(0 0% 93%);--text-secondary:hsl(0 0% 63%);--text-tertiary:hsl(0 0% 44%);
+  --accent:hsl(220 70% 55%);--accent-hover:hsl(220 70% 62%);
+  --accent-subtle:hsl(220 70% 55%/0.12);--accent-glow:hsl(220 70% 55%/0.25);
+  --border-subtle:hsl(0 0% 100%/0.06);--border-default:hsl(0 0% 100%/0.1);
+  --border-strong:hsl(0 0% 100%/0.15);
+  --success:hsl(142 60% 45%);--warning:hsl(38 90% 55%);--error:hsl(0 70% 55%);
+  --easy:hsl(142 55% 48%);--medium:hsl(38 85% 55%);--hard:hsl(350 65% 55%);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+  --font-sans:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-sans);background:var(--bg-root);color:var(--text-primary);font-size:15px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<style>
+.section-divider{border:none;border-top:1px solid var(--border-default);margin:80px 0 0 0;}
+.page-section{max-width:1080px;margin:0 auto;padding:60px 24px 80px;}
+.section-title{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.section-heading{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:24px;}
+.card{background:var(--bg-primary);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-default);}
+.tag{padding:3px 8px;border-radius:4px;font-size:11px;background:var(--bg-secondary);color:var(--text-secondary);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<!-- ========== 目录导航 ========== -->
+<nav style="position:fixed;top:0;left:0;right:0;height:52px;background:hsl(0 0% 4%/0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 24px;z-index:1000;">
+  <div style="font-weight:700;font-size:15px;letter-spacing:-0.02em;margin-right:20px;color:var(--accent);">ADUE 补充</div>
+  <div style="display:flex;gap:2px;overflow-x:auto;flex:1;">
+    <a href="#notifications" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">通知系统</a>
+    <a href="#broadcast" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">全服飘屏</a>
+    <a href="#socratic" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">苏格拉底</a>
+    <a href="#debug" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">Debug训练</a>
+    <a href="#reverse-feynman" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">反向费曼</a>
+    <a href="#import" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">内容导入</a>
+    <a href="#pattern-quiz" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">模式识别</a>
+    <a href="#applications" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">应用映射</a>
+    <a href="#math" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">数学关联</a>
+    <a href="#export" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">离线导出</a>
+    <a href="#bookmarks" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);white-space:nowrap;">收藏/学习</a>
+  </div>
+</nav>
+
+<!-- ========================================== -->
+<!-- PAGE 1: 通知系统                            -->
+<!-- ========================================== -->
+<section id="notifications" class="page-section" style="padding-top:120px;">
+  <div class="section-title">通知系统</div>
+  <h2 class="section-heading">通知中心</h2>
+
+  <!-- 导航栏通知铃铛示意 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔔 导航栏通知入口</h4>
+    <div style="display:flex;align-items:center;gap:16px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+      <div style="position:relative;cursor:pointer;">
+        <span style="font-size:20px;">🔔</span>
+        <span style="position:absolute;top:-4px;right:-6px;width:16px;height:16px;background:var(--error);color:#fff;font-size:9px;font-weight:600;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+      </div>
+      <span style="font-size:12px;color:var(--text-tertiary);">← 铃铛图标 + 未读数徽章</span>
+    </div>
+  </div>
+
+  <!-- 通知下拉面板 -->
+  <div class="card" style="max-width:400px;margin-bottom:20px;border:1px solid var(--border-default);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border-subtle);">
+      <h4 style="font-size:14px;font-weight:600;">通知</h4>
+      <span style="font-size:12px;color:var(--accent);cursor:pointer;">全部已读</span>
+    </div>
+    <!-- 未读通知 -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;gap:10px;padding:10px;background:var(--accent-subtle);border-radius:var(--radius-md);cursor:pointer;">
+        <span style="font-size:16px;">✅</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">生成完成</div>
+          <div style="font-size:12px;color:var(--text-secondary);">「接雨水」L4 优化解析已生成完毕</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">5 分钟前</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px;"></div>
+      </div>
+      <div style="display:flex;gap:10px;padding:10px;background:var(--accent-subtle);border-radius:var(--radius-md);cursor:pointer;">
+        <span style="font-size:16px;">📅</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">复习提醒</div>
+          <div style="font-size:12px;color:var(--text-secondary);">今日有 5 道题需要复习，别忘了！</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">今天 09:00</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:4px;"></div>
+      </div>
+      <!-- 已读通知 -->
+      <div style="display:flex;gap:10px;padding:10px;border-radius:var(--radius-md);cursor:pointer;opacity:0.6;">
+        <span style="font-size:16px;">📢</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">系统公告</div>
+          <div style="font-size:12px;color:var(--text-secondary);">新增「并查集」模式完整解析</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">昨天 14:30</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;text-align:center;">
+      <span style="font-size:12px;color:var(--accent);cursor:pointer;">查看全部通知 →</span>
+    </div>
+  </div>
+
+  <!-- 实时 Toast 通知 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">💬 实时 Toast 通知样式</h4>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:hsl(142 60% 45%/0.1);border:1px solid hsl(142 60% 45%/0.2);border-radius:var(--radius-md);">
+        <span style="color:var(--success);">✓</span>
+        <span style="font-size:13px;color:var(--text-primary);">生成完成：「两数之和」L3 解析已就绪</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">✕</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:hsl(38 90% 55%/0.1);border:1px solid hsl(38 90% 55%/0.2);border-radius:var(--radius-md);">
+        <span style="color:var(--warning);">⚠</span>
+        <span style="font-size:13px;color:var(--text-primary);">请求过快，请稍后再试</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">✕</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:hsl(0 70% 55%/0.1);border:1px solid hsl(0 70% 55%/0.2);border-radius:var(--radius-md);">
+        <span style="color:var(--error);">✕</span>
+        <span style="font-size:13px;color:var(--text-primary);">网络连接已断开，请检查网络</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">✕</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 2: 全服飘屏/成就系统                    -->
+<!-- ========================================== -->
+<section id="broadcast" class="page-section">
+  <div class="section-title">全服飘屏 / 成就系统</div>
+  <h2 class="section-heading">飘屏与成就</h2>
+
+  <!-- 飘屏效果预览 -->
+  <div class="card" style="margin-bottom:20px;position:relative;overflow:hidden;min-height:120px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🎉 全服飘屏效果预览</h4>
+    <div style="position:relative;height:80px;background:var(--bg-secondary);border-radius:var(--radius-md);overflow:hidden;">
+      <!-- 飘屏消息条 -->
+      <div style="position:absolute;top:15px;white-space:nowrap;animation:marquee 8s linear infinite;">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,hsl(270 60% 50%/0.2),hsl(220 70% 55%/0.2));border:1px solid hsl(270 60% 50%/0.3);border-radius:9999px;font-size:13px;">
+          🏆 <span style="color:hsl(270 60% 70%);">@算法小王子</span> <span style="color:var(--text-secondary);">完成了滑动窗口全部12题！解锁成就「窗口大师」</span> 🎊
+        </span>
+      </div>
+      <div style="position:absolute;top:50px;white-space:nowrap;animation:marquee 10s linear infinite 2s;">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,hsl(38 90% 55%/0.15),hsl(350 65% 55%/0.15));border:1px solid hsl(38 90% 55%/0.3);border-radius:9999px;font-size:13px;">
+          🔥 <span style="color:var(--medium);">@CodeMaster</span> <span style="color:var(--text-secondary);">连续学习30天！解锁成就「钢铁意志」</span> 💪
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就徽章系统 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🏅 成就徽章</h4>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div style="text-align:center;padding:16px 8px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:32px;margin-bottom:6px;">🪟</div>
+        <div style="font-size:12px;font-weight:500;color:var(--success);">窗口大师</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">完成滑动窗口全部题</div>
+      </div>
+      <div style="text-align:center;padding:16px 8px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:32px;margin-bottom:6px;">🔥</div>
+        <div style="font-size:12px;font-weight:500;color:var(--medium);">钢铁意志</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">连续学习30天</div>
+      </div>
+      <div style="text-align:center;padding:16px 8px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:32px;margin-bottom:6px;">🧠</div>
+        <div style="font-size:12px;font-weight:500;color:var(--accent);">费曼学者</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">完成20次费曼讲解</div>
+      </div>
+      <div style="text-align:center;padding:16px 8px;background:var(--bg-secondary);border:1px dashed var(--border-default);border-radius:var(--radius-md);opacity:0.5;">
+        <div style="font-size:32px;margin-bottom:6px;">🔒</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-tertiary);">???</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">完成更多挑战解锁</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就解锁弹窗 -->
+  <div class="card" style="max-width:360px;border:1px solid hsl(270 60% 50%/0.4);box-shadow:0 8px 32px hsl(270 60% 50%/0.15);">
+    <div style="text-align:center;padding:12px 0;">
+      <div style="font-size:48px;margin-bottom:8px;">🏆</div>
+      <div style="font-size:18px;font-weight:700;color:hsl(270 60% 70%);margin-bottom:4px;">成就解锁！</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;">窗口大师</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">完成滑动窗口模式全部12道题目</div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button class="btn btn-primary" style="font-size:12px;">分享成就</button>
+        <button class="btn btn-ghost" style="font-size:12px;">知道了</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 3: 苏格拉底追问模式                     -->
+<!-- ========================================== -->
+<section id="socratic" class="page-section">
+  <div class="section-title">苏格拉底追问</div>
+  <h2 class="section-heading">引导式推导</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;">
+    <!-- 对话区 -->
+    <div class="card" style="display:flex;flex-direction:column;max-height:520px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border-subtle);">
+        <div><span style="font-size:14px;font-weight:600;">最长递增子序列</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">引导推导</span></div>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">⏹ 停止提示，让我想想</button>
+      </div>
+      <!-- 对话消息 -->
+      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(142 55% 48%/0.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">🧭</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            <div style="font-size:11px;color:var(--success);margin-bottom:6px;">💡 Hint 1 — 方向提示</div>
+            这道题要求找"最长递增子序列"。先不想代码，想想：如果你手动去找，你会怎么做？有什么规律？
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <div style="background:var(--accent-subtle);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-primary);line-height:1.6;max-width:80%;">
+            我觉得可以遍历每个元素，看它能接在哪些之前的元素后面？
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">你</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(142 55% 48%/0.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">🧭</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            <div style="font-size:11px;color:var(--medium);margin-bottom:6px;">📖 Hint 2 — 方法提示</div>
+            方向对了！"每个元素能接在之前哪些元素后面"——这意味着每个位置的答案依赖于之前位置的答案。这是什么类型的问题特征？
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <div style="background:var(--accent-subtle);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-primary);line-height:1.6;max-width:80%;">
+            动态规划！当前状态依赖于之前的子问题
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">你</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(142 55% 48%/0.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">🧭</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            <div style="font-size:11px;color:var(--hard);margin-bottom:6px;">🎯 Hint 3 — 状态定义</div>
+            很好！那 dp[i] 应该定义为什么含义？提示：它和"以 nums[i] 结尾"有关。
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" placeholder="输入你的推导..." style="flex:1;height:38px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        <button class="btn btn-primary" style="height:38px;">回答</button>
+      </div>
+    </div>
+
+    <!-- 右侧进度面板 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📊 提示进度</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">✓</div>
+            <span style="font-size:12px;color:var(--text-secondary);">Hint 1: 方向</span>
+          </div>
+          <div style="width:1px;height:12px;background:var(--border-default);margin-left:12px;"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">✓</div>
+            <span style="font-size:12px;color:var(--text-secondary);">Hint 2: 方法</span>
+          </div>
+          <div style="width:1px;height:12px;background:var(--border-default);margin-left:12px;"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">3</div>
+            <span style="font-size:12px;color:var(--accent);font-weight:500;">Hint 3: 状态定义</span>
+          </div>
+          <div style="width:1px;height:12px;background:var(--border-default);margin-left:12px;"></div>
+          <div style="display:flex;align-items:center;gap:8px;opacity:0.4;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;font-size:10px;">4</div>
+            <span style="font-size:12px;color:var(--text-tertiary);">Hint 4: 完整代码</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:8px;">🎯 你的推导得分</h4>
+        <div style="font-size:24px;font-weight:700;color:var(--accent);margin-bottom:4px;">75%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">在 Hint 3 时自行推导出方法</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P1-11: 完成后"你的思路 vs 标准解法"对比 -->
+  <div class="card" style="margin-top:20px;border:1px solid var(--success);">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;color:var(--success);">🎉 推导完成！思路对比</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:8px;">📝 你的推导路径</div>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:1.8;padding-left:16px;">
+          <li>发现"当前状态依赖于之前"→ 想到 DP</li>
+          <li>定义 dp[i] = 以 nums[i] 结尾的 LIS 长度</li>
+          <li>转移：dp[i] = max(dp[j]+1) for j&lt;i, nums[j]&lt;nums[i]</li>
+        </ol>
+      </div>
+      <div style="padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:12px;color:var(--success);font-weight:500;margin-bottom:8px;">✅ 标准思路</div>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:1.8;padding-left:16px;">
+          <li>识别子问题：以每个元素结尾的最长递增</li>
+          <li>dp[i] 定义 + O(n²) 转移</li>
+          <li>优化：patience sorting → O(n log n)</li>
+        </ol>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:hsl(220 70% 55%/0.06);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);">
+      💡 <strong style="color:var(--text-primary);">差异点</strong>：你独立推导出了 O(n²) 解法，标准思路中 O(n log n) 优化（二分+贪心）是进阶内容，可以在 L4 级别学习。
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 4: Debug 训练模式                      -->
+<!-- ========================================== -->
+<section id="debug" class="page-section">
+  <div class="section-title">Debug 训练</div>
+  <h2 class="section-heading">找出代码中的 Bug</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- 左侧：有 bug 代码 -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;font-weight:500;">🐛 找出 Bug — 二分搜索</span>
+        <span style="font-size:11px;color:var(--warning);">含 2 个 bug</span>
+      </div>
+      <pre style="padding:16px;font-family:var(--font-mono);font-size:13px;line-height:2;overflow-x:auto;background:var(--bg-primary);margin:0;"><code><span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">1</span>def binary_search(arr, target):
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">2</span>    left, right = 0, len(arr)
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">3</span>    while left <span style="color:var(--error);text-decoration:underline;cursor:pointer;">&lt;</span> right:
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">4</span>        mid = (left + right) / 2
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">5</span>        if arr[mid] == target:
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">6</span>            return mid
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">7</span>        elif arr[mid] < target:
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">8</span>            left = mid
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">9</span>        else:
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">10</span>            right = mid - 1
+<span style="color:var(--text-tertiary);display:inline-block;width:24px;text-align:right;margin-right:12px;">11</span>    return -1</code></pre>
+      <div style="padding:10px 14px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;">
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;">提交我的发现</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;">💡 给我提示</button>
+      </div>
+    </div>
+
+    <!-- 右侧：测试用例 + 提交区 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📋 测试用例</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-mono);font-size:12px;">
+          <div style="padding:6px 10px;background:var(--bg-secondary);border-radius:4px;">
+            <span style="color:var(--text-tertiary);">输入:</span> arr=[1,3,5,7,9], target=5 → <span style="color:var(--success);">期望: 2 ✓</span>
+          </div>
+          <div style="padding:6px 10px;background:hsl(0 70% 55%/0.08);border:1px solid hsl(0 70% 55%/0.2);border-radius:4px;">
+            <span style="color:var(--text-tertiary);">输入:</span> arr=[1,3,5,7,9], target=7 → <span style="color:var(--error);">期望: 3, 实际: 死循环 ✗</span>
+          </div>
+          <div style="padding:6px 10px;background:hsl(0 70% 55%/0.08);border:1px solid hsl(0 70% 55%/0.2);border-radius:4px;">
+            <span style="color:var(--text-tertiary);">输入:</span> arr=[2,4,6], target=4 → <span style="color:var(--error);">期望: 1, 实际: TypeError ✗</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bug 标注区 -->
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">🎯 标注 Bug 位置</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);">
+            <span style="font-size:12px;font-weight:500;color:var(--accent);">Bug 1:</span>
+            <span style="font-size:12px;color:var(--text-secondary);">第 4 行 — <code style="font-family:var(--font-mono);background:var(--bg-secondary);padding:2px 4px;border-radius:3px;">/</code> 应改为 <code style="font-family:var(--font-mono);background:var(--bg-secondary);padding:2px 4px;border-radius:3px;">//</code></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);">
+            <span style="font-size:12px;font-weight:500;color:var(--accent);">Bug 2:</span>
+            <span style="font-size:12px;color:var(--text-secondary);">第 8 行 — <code style="font-family:var(--font-mono);background:var(--bg-secondary);padding:2px 4px;border-radius:3px;">mid</code> 应改为 <code style="font-family:var(--font-mono);background:var(--bg-secondary);padding:2px 4px;border-radius:3px;">mid + 1</code></span>
+          </div>
+          <div style="padding:8px;background:var(--bg-secondary);border:1px dashed var(--border-default);border-radius:var(--radius-md);text-align:center;">
+            <span style="font-size:12px;color:var(--text-tertiary);">+ 点击代码行号标注更多 Bug</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Debug 统计 -->
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:8px;">📊 Debug 表现</h4>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="color:var(--text-secondary);">正确率</span><span style="color:var(--success);">78%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:var(--text-secondary);">薄弱类型</span><span style="color:var(--warning);">off-by-one</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 5: 反向费曼法                          -->
+<!-- ========================================== -->
+<section id="reverse-feynman" class="page-section">
+  <div class="section-title">反向费曼法</div>
+  <h2 class="section-heading">AI 故意讲错，你来纠正</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border-subtle);">
+        <span style="font-size:14px;font-weight:600;">合并两个有序链表</span>
+        <span style="padding:4px 10px;background:hsl(350 65% 55%/0.12);color:var(--hard);border-radius:9999px;font-size:11px;">含 1 处错误</span>
+      </div>
+      <!-- AI 的"讲解"（含错误） -->
+      <div style="padding:16px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:14px;line-height:1.8;font-size:13px;color:var(--text-secondary);">
+        <p style="margin-bottom:10px;">合并两个有序链表的思路是：创建一个虚拟头节点 dummy，用一个指针 curr 从 dummy 开始遍历。</p>
+        <p style="margin-bottom:10px;">每次比较两个链表头节点的值，<span style="background:hsl(0 70% 55%/0.15);border:1px solid hsl(0 70% 55%/0.25);border-radius:3px;padding:1px 4px;cursor:pointer;">将较大的那个</span> 接到 curr 后面，然后移动该链表的指针。</p>
+        <p>最后某个链表为空时，把另一个剩余部分直接接上。时间复杂度 O(m+n)，空间 O(1)。</p>
+      </div>
+      <!-- 用户纠错输入 -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">👆 点击你认为有错的部分，输入正确说法：</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" value="应该是将较小的那个接到 curr 后面" style="flex:1;height:36px;background:var(--bg-secondary);border:1px solid var(--accent);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+          <button class="btn btn-primary" style="height:36px;font-size:12px;">提交纠正</button>
+        </div>
+      </div>
+      <!-- 纠正结果 -->
+      <div style="padding:12px;background:hsl(142 60% 45%/0.08);border:1px solid hsl(142 60% 45%/0.2);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="color:var(--success);font-size:16px;">✓</span>
+          <span style="font-size:13px;font-weight:500;color:var(--success);">纠正正确！</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+          确实应该选择"较小的"节点接入结果链表，这样才能保证最终链表有序。AI 故意把"较小"说成了"较大"。你成功识别了这个错误！
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📊 纠错统计</h4>
+        <div style="font-size:28px;font-weight:700;color:var(--success);margin-bottom:4px;">85%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:10px;">纠错成功率</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">逻辑错误</span><span style="color:var(--success);">90%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">复杂度错误</span><span style="color:var(--medium);">70%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">边界错误</span><span style="color:var(--warning);">65%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:8px;">⚙️ 难度调节</h4>
+        <div style="display:flex;gap:4px;">
+          <span style="padding:4px 10px;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:11px;color:var(--text-tertiary);">简单</span>
+          <span style="padding:4px 10px;background:var(--accent-subtle);border-radius:var(--radius-sm);font-size:11px;color:var(--accent);font-weight:500;">中等</span>
+          <span style="padding:4px 10px;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:11px;color:var(--text-tertiary);">困难</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">根据你的表现自动调整</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 6: 内容导入                            -->
+<!-- ========================================== -->
+<section id="import" class="page-section">
+  <div class="section-title">内容导入</div>
+  <h2 class="section-heading">链接/图片/评论导入解析</h2>
+
+  <div style="max-width:720px;">
+    <!-- URL 输入 -->
+    <div class="card" style="margin-bottom:16px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🔗 粘贴题解链接</h4>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" value="https://leetcode.cn/problems/two-sum/solutions/1234567" style="flex:1;height:38px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        <button class="btn btn-primary" style="height:38px;">导入解析</button>
+      </div>
+      <!-- 导入进度 -->
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+          <span style="color:var(--success);">✓</span><span style="color:var(--text-secondary);">网页内容抓取完成</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+          <span style="color:var(--success);">✓</span><span style="color:var(--text-secondary);">提取到 3 张图片、2 条优质评论</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+          <div style="width:12px;height:12px;border:2px solid var(--border-default);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+          <span style="color:var(--accent);">AI 正在审查内容正确性...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导入结果预览 -->
+    <div class="card" style="margin-bottom:16px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📄 导入内容预览</h4>
+      <!-- 正文 -->
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">📝 正文内容</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">使用哈希表实现一次遍历解法：遍历数组，对每个元素计算 target - nums[i]，检查差值是否在哈希表中...</p>
+      </div>
+      <!-- 图片 -->
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">🖼️ 提取图片（3张）</div>
+        <div style="display:flex;gap:8px;">
+          <div style="width:80px;height:60px;background:var(--bg-tertiary);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-tertiary);">流程图</div>
+          <div style="width:80px;height:60px;background:var(--bg-tertiary);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-tertiary);">哈希表图</div>
+          <div style="width:80px;height:60px;background:var(--bg-tertiary);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-tertiary);">GIF动图</div>
+        </div>
+      </div>
+      <!-- 优质评论 -->
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">💬 优质评论（点赞>10）</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;padding:8px;background:var(--bg-tertiary);border-radius:6px;border-left:2px solid var(--accent);">
+          "补充一个易错点：先查后存，不然同一元素会和自己配对。" — 👍 42
+        </div>
+      </div>
+      <!-- AI 审查标注 -->
+      <div style="padding:12px;background:hsl(38 90% 55%/0.06);border:1px solid hsl(38 90% 55%/0.2);border-radius:var(--radius-md);">
+        <div style="font-size:12px;color:var(--warning);margin-bottom:6px;">⚠️ AI 审查发现 1 处问题</div>
+        <div style="font-size:12px;color:var(--text-secondary);">原文称"时间复杂度 O(n log n)"，实际哈希表解法应为 O(n)。已自动修正。</div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary">确认导入并精炼</button>
+      <button class="btn btn-ghost">取消</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 7: 模式识别训练                         -->
+<!-- ========================================== -->
+<section id="pattern-quiz" class="page-section">
+  <div class="section-title">模式识别训练</div>
+  <h2 class="section-heading">看题猜模式</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;">
+    <!-- 题目展示区 -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">第 5/10 题</span>
+        <span style="padding:4px 10px;background:var(--bg-secondary);border-radius:9999px;font-size:11px;color:var(--text-secondary);">⏱ 无限时</span>
+      </div>
+      <div style="padding:16px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:16px;">
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:10px;">给定一个字符串，找出其中最长的不含重复字符的子串长度。</h4>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+          <p>示例：输入 "abcabcbb" → 输出 3（"abc"）</p>
+          <p>约束：0 ≤ s.length ≤ 5 × 10⁴</p>
+        </div>
+      </div>
+      <!-- 模式选择 -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:500;margin-bottom:10px;">选择你认为该用的算法模式：</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div style="padding:10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--text-secondary);">双指针</div>
+          <div style="padding:10px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--accent);font-weight:500;">滑动窗口 ✓</div>
+          <div style="padding:10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--text-secondary);">动态规划</div>
+          <div style="padding:10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--text-secondary);">哈希表</div>
+          <div style="padding:10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--text-secondary);">回溯</div>
+          <div style="padding:10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:12px;color:var(--text-secondary);">贪心</div>
+        </div>
+      </div>
+      <!-- 答案揭晓 -->
+      <div style="padding:14px;background:hsl(142 60% 45%/0.08);border:1px solid hsl(142 60% 45%/0.2);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="color:var(--success);font-size:16px;">✓</span>
+          <span style="font-size:13px;font-weight:500;color:var(--success);">正确！是滑动窗口</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+          <strong>识别信号：</strong>"连续子串" + "最长/最短" + "不含重复" → 典型的滑动窗口场景。窗口内维护不重复字符的集合，右指针扩展，左指针收缩至满足条件。
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧统计 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📊 本轮表现</h4>
+        <div style="font-size:28px;font-weight:700;color:var(--success);margin-bottom:4px;">4/5</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">正确率 80%</div>
+        <div style="margin-top:10px;height:6px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;">
+          <div style="width:80%;height:100%;background:var(--success);border-radius:3px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">🎯 各模式正确率</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">滑动窗口</span><span style="color:var(--success);">95%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">双指针</span><span style="color:var(--success);">88%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">动态规划</span><span style="color:var(--medium);">62%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">回溯</span><span style="color:var(--error);">45%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">图论</span><span style="color:var(--error);">40%</span></div>
+        </div>
+      </div>
+      <div class="card" style="border:1px solid var(--warning);">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--warning);">⚠ 薄弱模式</h4>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">回溯和图论识别率较低</div>
+        <button class="btn btn-primary" style="font-size:11px;width:100%;justify-content:center;">开始定向训练</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 8: 实际应用映射                         -->
+<!-- ========================================== -->
+<section id="applications" class="page-section">
+  <div class="section-title">实际应用映射</div>
+  <h2 class="section-heading">算法在真实世界的应用</h2>
+
+  <!-- 四维 Tab 切换 -->
+  <div style="display:flex;gap:4px;margin-bottom:20px;padding:4px;background:var(--bg-secondary);border-radius:var(--radius-md);width:fit-content;">
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-subtle);cursor:pointer;">🏭 工业应用</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">🤖 AI 前沿</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">💼 工作映射</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">🌏 人生哲学</div>
+  </div>
+
+  <!-- 应用列表 -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px;">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:20px;">🗺️</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;">导航路径规划</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">Dijkstra / A* → Google Maps</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;">
+        地图导航的核心是图的最短路径问题。Google Maps 使用 Contraction Hierarchies 预处理 + 双向 Dijkstra 实现毫秒级路径查询。
+      </p>
+      <button class="btn btn-ghost" style="font-size:11px;">查看迷你案例 →</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:20px;">🔍</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;">搜索引擎自动补全</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">Trie → Google Search</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;">
+        当你在搜索框输入时，Trie 树能在微秒级返回所有前缀匹配的补全建议，支撑数十亿次/天的查询。
+      </p>
+      <button class="btn btn-ghost" style="font-size:11px;">查看迷你案例 →</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:20px;">📊</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;">推荐系统排序</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">堆/优先队列 → Netflix/抖音</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;">
+        从百万候选中取 Top-K 推荐结果，堆是最高效的数据结构——O(N log K) 而非 O(N log N) 全排序。
+      </p>
+      <button class="btn btn-ghost" style="font-size:11px;">查看迷你案例 →</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:20px;">🧬</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;">DNA 序列比对</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">DP / 编辑距离 → 生物信息学</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;">
+        基因序列对齐本质是编辑距离的变体（Smith-Waterman），DP 表填充过程和 LCS 问题完全一致。
+      </p>
+      <button class="btn btn-ghost" style="font-size:11px;">查看迷你案例 →</button>
+    </div>
+  </div>
+
+  <!-- 迷你案例展示 -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:10px 14px;background:var(--bg-tertiary);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:500;">🧪 迷你案例：简化版导航（Dijkstra）</span>
+      <div style="display:flex;gap:6px;">
+        <span style="padding:3px 8px;background:var(--accent-subtle);border-radius:4px;font-size:11px;color:var(--accent);">Python</span>
+        <span style="padding:3px 8px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-tertiary);">Java</span>
+      </div>
+    </div>
+    <pre style="padding:14px;font-family:var(--font-mono);font-size:12px;line-height:1.7;overflow-x:auto;background:var(--bg-primary);margin:0;max-height:200px;"><code style="color:var(--text-secondary);">import heapq
+
+def shortest_path(graph, start, end):
+    """简化版 Dijkstra — 城市导航核心"""
+    dist = {start: 0}
+    pq = [(0, start)]  # (距离, 节点)
+    prev = {}
+    
+    while pq:
+        d, u = heapq.heappop(pq)
+        if u == end:
+            return reconstruct(prev, end)
+        for v, w in graph[u]:  # 邻居和权重
+            if d + w < dist.get(v, float('inf')):
+                dist[v] = d + w
+                prev[v] = u
+                heapq.heappush(pq, (d + w, v))
+    return None  # 不可达</code></pre>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 9: 数学基础关联                         -->
+<!-- ========================================== -->
+<section id="math" class="page-section">
+  <div class="section-title">数学基础关联</div>
+  <h2 class="section-heading">算法背后的数学原理</h2>
+
+  <!-- 算法-数学关联卡片 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
+    <div class="card" style="cursor:pointer;">
+      <div style="font-size:24px;margin-bottom:8px;">📐</div>
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:4px;">递推关系</h4>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">动态规划的数学基础</p>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <span class="tag">DP</span><span class="tag">组合数学</span><span class="tag">线性递推</span>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="font-size:24px;margin-bottom:8px;">🔢</div>
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:4px;">主定理 Master Theorem</h4>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">分治算法复杂度分析</p>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <span class="tag">分治</span><span class="tag">递归树</span>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="font-size:24px;margin-bottom:8px;">🎲</div>
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:4px;">概率与期望</h4>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">随机算法与哈希分析</p>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <span class="tag">随机化</span><span class="tag">哈希碰撞</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分级数学解释示例 -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h4 style="font-size:15px;font-weight:600;">📐 递推关系 × 动态规划</h4>
+      <!-- 级别切换 -->
+      <div style="display:flex;gap:4px;padding:3px;background:var(--bg-secondary);border-radius:var(--radius-sm);">
+        <span style="padding:4px 8px;font-size:11px;color:var(--text-tertiary);">L1</span>
+        <span style="padding:4px 8px;font-size:11px;color:var(--text-tertiary);">L2</span>
+        <span style="padding:4px 8px;font-size:11px;color:var(--accent);background:var(--accent-subtle);border-radius:4px;font-weight:500;">L3</span>
+        <span style="padding:4px 8px;font-size:11px;color:var(--text-tertiary);">L4</span>
+        <span style="padding:4px 8px;font-size:11px;color:var(--text-tertiary);">L5</span>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+      <p style="margin-bottom:10px;"><strong style="color:var(--text-primary);">核心联系：</strong>DP 中的状态转移方程本质就是数学中的递推关系（recurrence relation）。</p>
+      <p style="margin-bottom:10px;">斐波那契数列 F(n) = F(n-1) + F(n-2) 是最简单的线性递推。而 dp[i] = max(dp[j] + 1) for j < i 则是非线性递推。</p>
+      <p><strong style="color:var(--text-primary);">可视化：</strong>递推关系 → 递归树展开 → 发现重叠子问题 → 用表格记忆化。</p>
+    </div>
+  </div>
+
+  <!-- 权威引用 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">📚 权威参考</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;">📖</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;">CLRS 第 15 章 §15.3 "Elements of DP"</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">《算法导论》第4版 p.379-392</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;">🎓</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;">MIT 6.006 Lecture 15: Dynamic Programming</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">Erik Demaine, 2020 Fall</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;">📜</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;">Bellman "Dynamic Programming" (1957)</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">Princeton University Press — 首次提出 DP 概念的原始著作</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 10: 离线导出                           -->
+<!-- ========================================== -->
+<section id="export" class="page-section">
+  <div class="section-title">离线导出</div>
+  <h2 class="section-heading">导出学习内容</h2>
+
+  <div style="max-width:600px;">
+    <div class="card" style="margin-bottom:16px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📦 选择导出格式</h4>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+        <div style="padding:16px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:var(--radius-md);cursor:pointer;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📄</div>
+          <div style="font-size:13px;font-weight:500;color:var(--accent);">PDF</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">精美排版笔记</div>
+        </div>
+        <div style="padding:16px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📝</div>
+          <div style="font-size:13px;font-weight:500;">Markdown</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">纯文本兼容</div>
+        </div>
+        <div style="padding:16px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📓</div>
+          <div style="font-size:13px;font-weight:500;">Notion</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">直接导入 Notion</div>
+        </div>
+        <div style="padding:16px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);cursor:pointer;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🃏</div>
+          <div style="font-size:13px;font-weight:500;">Anki 卡片</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">间隔重复 .apkg</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📋 选择导出范围</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);cursor:pointer;">
+          <input type="radio" checked> <span style="font-size:13px;color:var(--accent);">按模式导出：滑动窗口（12题）</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;">
+          <input type="radio"> <span style="font-size:13px;color:var(--text-secondary);">单题导出：两数之和</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;">
+          <input type="radio"> <span style="font-size:13px;color:var(--text-secondary);">我的收藏（8题）</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);cursor:pointer;">
+          <input type="radio"> <span style="font-size:13px;color:var(--text-secondary);">全量导出（已学习的全部题目）</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <input type="checkbox" checked> <span style="font-size:13px;color:var(--text-secondary);">仅导出上次导出后更新的内容（增量）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox"> <span style="font-size:13px;color:var(--text-secondary);">包含 Mermaid 图解（渲染为图片）</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="padding:12px 28px;font-size:14px;">开始导出</button>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 11: 收藏/学习记录/个人中心              -->
+<!-- ========================================== -->
+<section id="bookmarks" class="page-section">
+  <div class="section-title">个人中心</div>
+  <h2 class="section-heading">我的学习</h2>
+
+  <!-- 顶部统计 -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;">
+    <div class="card" style="text-align:center;padding:16px 8px;">
+      <div style="font-size:24px;font-weight:700;color:var(--accent);">47</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">已学题目</div>
+    </div>
+    <div class="card" style="text-align:center;padding:16px 8px;">
+      <div style="font-size:24px;font-weight:700;color:var(--success);">8</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">收藏题目</div>
+    </div>
+    <div class="card" style="text-align:center;padding:16px 8px;">
+      <div style="font-size:24px;font-weight:700;color:var(--medium);">12h</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">本周时长</div>
+    </div>
+    <div class="card" style="text-align:center;padding:16px 8px;">
+      <div style="font-size:24px;font-weight:700;color:var(--text-primary);">7</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">连续天数</div>
+    </div>
+    <div class="card" style="text-align:center;padding:16px 8px;">
+      <div style="font-size:24px;font-weight:700;color:hsl(270 60% 60%);">3</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">成就徽章</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- 难度分布 -->
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📊 难度分布</h4>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <!-- 模拟饼图 -->
+        <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(var(--easy) 0% 35%,var(--medium) 35% 75%,var(--hard) 75% 100%);position:relative;">
+          <div style="position:absolute;inset:20px;border-radius:50%;background:var(--bg-primary);"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--easy);"></div>Easy · 16题 (35%)</div>
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--medium);"></div>Medium · 22题 (47%)</div>
+          <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--hard);"></div>Hard · 9题 (18%)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式覆盖雷达图 -->
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🎯 模式覆盖度</h4>
+      <svg viewBox="0 0 200 200" width="160" height="160" style="display:block;margin:0 auto;">
+        <polygon points="100,20 172,55 172,145 100,180 28,145 28,55" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+        <polygon points="100,40 156,65 156,135 100,160 44,135 44,65" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+        <polygon points="100,35 168,60 155,142 100,170 40,128 38,58" fill="hsl(220 70% 55%/0.15)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="100" y="12" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="8">滑动窗口</text>
+        <text x="182" y="55" text-anchor="start" fill="hsl(0 0% 63%)" font-size="8">双指针</text>
+        <text x="182" y="150" text-anchor="start" fill="hsl(0 0% 63%)" font-size="8">DP</text>
+        <text x="100" y="196" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="8">图论</text>
+        <text x="12" y="150" text-anchor="end" fill="hsl(0 0% 63%)" font-size="8">树</text>
+        <text x="12" y="55" text-anchor="end" fill="hsl(0 0% 63%)" font-size="8">回溯</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 学习日历热力图 -->
+  <div class="card" style="margin-top:16px;margin-bottom:16px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📅 学习日历</h4>
+    <div style="display:flex;gap:3px;flex-wrap:wrap;">
+      <!-- 模拟30天热力图格子 -->
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--bg-tertiary);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.2);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.4);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--bg-tertiary);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.8);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.4);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--bg-tertiary);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--bg-tertiary);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.2);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.4);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.8);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.4);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.8);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:var(--accent);"></div>
+      <div style="width:14px;height:14px;border-radius:2px;background:hsl(220 70% 55%/0.4);border:1px dashed var(--accent);"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--text-tertiary);">
+      <span>少</span>
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--bg-tertiary);"></div>
+      <div style="width:10px;height:10px;border-radius:2px;background:hsl(220 70% 55%/0.3);"></div>
+      <div style="width:10px;height:10px;border-radius:2px;background:hsl(220 70% 55%/0.6);"></div>
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--accent);"></div>
+      <span>多</span>
+    </div>
+  </div>
+
+  <!-- 收藏列表 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">⭐ 我的收藏</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;color:var(--medium);">★</span>
+        <div style="flex:1;"><span style="font-size:13px;">无重复字符的最长子串</span></div>
+        <span style="padding:3px 8px;border-radius:9999px;font-size:11px;background:hsl(38 85% 55%/0.12);color:var(--medium);">Medium</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;color:var(--medium);">★</span>
+        <div style="flex:1;"><span style="font-size:13px;">接雨水</span></div>
+        <span style="padding:3px 8px;border-radius:9999px;font-size:11px;background:hsl(350 65% 55%/0.12);color:var(--hard);">Hard</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:14px;color:var(--medium);">★</span>
+        <div style="flex:1;"><span style="font-size:13px;">最长递增子序列</span></div>
+        <span style="padding:3px 8px;border-radius:9999px;font-size:11px;background:hsl(38 85% 55%/0.12);color:var(--medium);">Medium</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="max-width:1080px;margin:0 auto;padding:40px 24px 60px;border-top:1px solid var(--border-subtle);">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px;">ADUE · 算法深度理解引擎</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">方案A 补充 — 缺失UI模块 · 11个新增页面区域</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);">
+      通知 · 飘屏 · 苏格拉底 · Debug · 反向费曼 · 导入 · 模式识别 · 应用映射 · 数学 · 导出 · 个人中心
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

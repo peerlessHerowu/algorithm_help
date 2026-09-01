@@ -1,0 +1,195 @@
+# ============================================
+# 算法深度理解引擎 - Docker Compose 编排
+# ============================================
+# 使用方式：
+#   1. cp .env.example .env  （填写实际配置）
+#   2. docker-compose up -d  （启动所有服务）
+# ============================================
+
+services:
+  # ------------------------------------------
+  # MySQL 数据库
+  # ------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: algorithm-help-mysql
+    command:
+      - --default-authentication-plugin=caching_sha2_password
+      - --ngram-token-size=2
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: algorithm_help
+      MYSQL_USER: ${DB_USER:-admin}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # Redis 缓存
+  # ------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: algorithm-help-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # 后端服务 (Spring Boot)
+  # ------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: algorithm-help-backend
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/algorithm_help?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-admin}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - ./prompts:/app/prompts
+      - ./data/static:/app/data/static
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # 前端服务 (Next.js)
+  # ------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://backend:8080
+    container_name: algorithm-help-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8080
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # MinIO 对象存储
+  # ------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: algorithm-help-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # Python 爬虫服务
+  # ------------------------------------------
+  python-crawler-service:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    container_name: algorithm-help-crawler
+    ports:
+      - "${CRAWLER_PORT:-8200}:8200"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+asyncmy://${DB_USER:-admin}:${DB_PASSWORD}@mysql:3306/algorithm_help
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: unless-stopped
+
+  # ------------------------------------------
+  # 数据库备份服务
+  # ------------------------------------------
+  backup:
+    image: mysql:8.0
+    container_name: algorithm-help-backup
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: algorithm_help
+    volumes:
+      - ./backups:/backups
+      - ./docker/backup/backup.sh:/scripts/backup.sh
+    entrypoint: >
+      /bin/sh -c "
+        chmod +x /scripts/backup.sh &&
+        echo '0 3 * * * /scripts/backup.sh >> /var/log/backup.log 2>&1' > /etc/crontabs/root &&
+        crond -f
+      "
+    restart: unless-stopped
+
+# ------------------------------------------
+# 数据卷定义
+# ------------------------------------------
+volumes:
+  mysqldata:
+    driver: local
+  redisdata:
+    driver: local
+  miniodata:
+    driver: local

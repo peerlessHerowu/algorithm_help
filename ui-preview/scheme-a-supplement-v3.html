@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案A 补充 v3 — 复杂度训练·学习路径·每日计划·算法考古·论文桥梁·跨域映射·版本历史</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-root:hsl(0 0% 4%);--bg-primary:hsl(0 0% 7%);--bg-secondary:hsl(0 0% 10%);
+  --bg-tertiary:hsl(0 0% 13%);--bg-elevated:hsl(0 0% 15%);
+  --text-primary:hsl(0 0% 93%);--text-secondary:hsl(0 0% 63%);--text-tertiary:hsl(0 0% 44%);
+  --accent:hsl(220 70% 55%);--accent-subtle:hsl(220 70% 55%/0.12);
+  --border-subtle:hsl(0 0% 100%/0.06);--border-default:hsl(0 0% 100%/0.1);
+  --success:hsl(142 60% 45%);--warning:hsl(38 90% 55%);--error:hsl(0 70% 55%);
+  --easy:hsl(142 55% 48%);--medium:hsl(38 85% 55%);--hard:hsl(350 65% 55%);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+  --font-sans:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-sans);background:var(--bg-root);color:var(--text-primary);font-size:15px;line-height:1.6;}
+a{color:inherit;text-decoration:none;}
+.section-divider{border:none;border-top:1px solid var(--border-default);margin:80px 0 0 0;}
+.page-section{max-width:1080px;margin:0 auto;padding:60px 24px 80px;}
+.section-title{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.section-heading{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:24px;}
+.card{background:var(--bg-primary);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-default);}
+.tag{padding:3px 8px;border-radius:4px;font-size:11px;background:var(--bg-secondary);color:var(--text-secondary);}
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav style="position:fixed;top:0;left:0;right:0;height:52px;background:hsl(0 0% 4%/0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 24px;z-index:1000;">
+  <div style="font-weight:700;font-size:15px;color:var(--accent);margin-right:20px;">ADUE 补充v3</div>
+  <div style="display:flex;gap:2px;overflow-x:auto;flex:1;">
+    <a href="#complexity" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">复杂度训练</a>
+    <a href="#learning-path" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">学习路径</a>
+    <a href="#daily-plan" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">每日计划</a>
+    <a href="#archaeology" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">算法考古</a>
+    <a href="#paper-bridge" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">论文桥梁</a>
+    <a href="#cross-domain" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">跨域映射表</a>
+    <a href="#version-history" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">版本历史</a>
+  </div>
+</nav>
+
+
+<!-- ========================================== -->
+<!-- 1. 复杂度直觉训练                          -->
+<!-- ========================================== -->
+<section id="complexity" class="page-section" style="padding-top:120px;">
+  <div class="section-title">复杂度直觉训练</div>
+  <h2 class="section-heading">看范围猜算法 · 看代码估复杂度</h2>
+
+  <!-- 模式切换 Tab -->
+  <div style="display:flex;gap:4px;margin-bottom:20px;padding:4px;background:var(--bg-secondary);border-radius:var(--radius-md);width:fit-content;">
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-subtle);cursor:pointer;">📐 看范围猜算法</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">💻 看代码估复杂度</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;">
+    <!-- 训练主区域 -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <span style="font-size:13px;color:var(--text-tertiary);">第 3/10 题</span>
+        <span style="padding:4px 10px;background:var(--bg-secondary);border-radius:9999px;font-size:11px;color:var(--text-secondary);">⏱ 30s 计时中</span>
+      </div>
+      <!-- 题目展示 -->
+      <div style="padding:20px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:20px;text-align:center;">
+        <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px;">给定约束条件：</div>
+        <div style="font-size:28px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">n ≤ 10<sup>5</sup></div>
+        <div style="font-size:13px;color:var(--text-secondary);">时间限制 1 秒，请判断应该用什么复杂度的算法</div>
+      </div>
+      <!-- 选项 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;">
+        <div style="padding:12px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:13px;color:var(--text-secondary);">O(n²)<br><span style="font-size:10px;color:var(--text-tertiary);">10^10 超时</span></div>
+        <div style="padding:12px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:13px;color:var(--accent);font-weight:500;">O(n log n)<br><span style="font-size:10px;">≈10^6 ✓</span></div>
+        <div style="padding:12px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);text-align:center;cursor:pointer;font-size:13px;color:var(--text-secondary);">O(n)<br><span style="font-size:10px;color:var(--text-tertiary);">10^5 最优</span></div>
+      </div>
+      <!-- 答案揭晓 -->
+      <div style="padding:14px;background:hsl(142 60% 45%/0.08);border:1px solid hsl(142 60% 45%/0.2);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="color:var(--success);">✓</span>
+          <span style="font-size:13px;font-weight:500;color:var(--success);">正确！O(n log n) 或 O(n) 均可</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          <strong style="color:var(--text-primary);">推理过程：</strong>n=10^5 时，O(n log n) ≈ 10^5 × 17 ≈ 1.7×10^6 运算，远低于 10^8/s 的经验阈值。O(n²) = 10^10 明显超时。<br>
+          <strong style="color:var(--text-primary);">常见算法：</strong>排序、归并排序、堆操作、分治
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧统计 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📊 本轮表现</h4>
+        <div style="font-size:28px;font-weight:700;color:var(--success);margin-bottom:4px;">2/3</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">正确率 67%</div>
+      </div>
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">🎯 按复杂度类型</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">O(n)</span><span style="color:var(--success);">90%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">O(n log n)</span><span style="color:var(--success);">85%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">O(n²)</span><span style="color:var(--medium);">70%</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-secondary);">O(2^n)</span><span style="color:var(--error);">45%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:8px;">💡 速查表</h4>
+        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.8;">
+          n≤20 → O(2^n) 或 O(n!)<br>
+          n≤1000 → O(n²)<br>
+          n≤10^5 → O(n log n)<br>
+          n≤10^7 → O(n)<br>
+          n≤10^18 → O(log n)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 2. 学习路径可视化                          -->
+<!-- ========================================== -->
+<section id="learning-path" class="page-section">
+  <div class="section-title">学习路径</div>
+  <h2 class="section-heading">系统化学习计划</h2>
+
+  <!-- 路径列表卡片 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;">
+    <div class="card" style="cursor:pointer;border:1px solid var(--accent);">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <span style="font-size:20px;">📐</span>
+        <span style="padding:3px 8px;background:var(--accent-subtle);color:var(--accent);border-radius:9999px;font-size:10px;font-weight:500;">学习中</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">DP 从入门到精通</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">预计 40 小时 · 28 个节点</p>
+      <div style="height:4px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;margin-bottom:4px;">
+        <div style="width:45%;height:100%;background:var(--accent);border-radius:2px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);">进度 45% · 当前：背包问题</div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="font-size:20px;margin-bottom:10px;">🌳</div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">图论基础</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">预计 25 小时 · 18 个节点</p>
+      <div style="height:4px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;margin-bottom:4px;">
+        <div style="width:0%;height:100%;background:var(--accent);border-radius:2px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);">未开始</div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="font-size:20px;margin-bottom:10px;">👆👇</div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">双指针精通</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px;">预计 15 小时 · 12 个节点</p>
+      <div style="height:4px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;margin-bottom:4px;">
+        <div style="width:100%;height:100%;background:var(--success);border-radius:2px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--success);">✓ 已完成</div>
+    </div>
+  </div>
+
+  <!-- 路径详情展开：DP从入门到精通 -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h4 style="font-size:16px;font-weight:600;">📐 DP 从入门到精通 — 详细路径</h4>
+      <span style="font-size:12px;color:var(--accent);">进度 45% · 12/28 完成</span>
+    </div>
+    <!-- 进度条 -->
+    <div style="height:6px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;margin-bottom:24px;">
+      <div style="width:45%;height:100%;background:var(--accent);border-radius:3px;"></div>
+    </div>
+    <!-- 节点列表 -->
+    <div style="display:flex;flex-direction:column;gap:4px;padding-left:20px;border-left:2px solid var(--border-default);position:relative;">
+      <!-- 已完成节点 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;">
+        <div style="position:absolute;left:-27px;width:14px;height:14px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;">✓</div>
+        <span style="font-size:13px;color:var(--text-secondary);">爬楼梯 #70</span>
+        <span class="tag">Easy</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;">
+        <div style="position:absolute;left:-27px;width:14px;height:14px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;">✓</div>
+        <span style="font-size:13px;color:var(--text-secondary);">打家劫舍 #198</span>
+        <span class="tag">Medium</span>
+      </div>
+      <!-- 里程碑节点 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;position:relative;">
+        <div style="position:absolute;left:-29px;width:18px;height:18px;border-radius:50%;background:hsl(38 90% 55%/0.2);border:2px solid var(--medium);display:flex;align-items:center;justify-content:center;font-size:9px;">🏆</div>
+        <span style="font-size:13px;font-weight:600;color:var(--medium);">里程碑：线性 DP 掌握</span>
+      </div>
+      <!-- 当前节点 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;">
+        <div style="position:absolute;left:-27px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);"></div>
+        <span style="font-size:13px;font-weight:500;color:var(--accent);">零钱兑换 #322 ← 当前</span>
+        <span class="tag">Medium</span>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;margin-left:auto;">继续学习 →</button>
+      </div>
+      <!-- 锁定节点 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;opacity:0.5;">
+        <div style="position:absolute;left:-27px;width:14px;height:14px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-tertiary);">🔒</div>
+        <span style="font-size:13px;color:var(--text-tertiary);">最长递增子序列 #300</span>
+        <span class="tag">Medium</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;opacity:0.5;">
+        <div style="position:absolute;left:-27px;width:14px;height:14px;border-radius:50%;background:var(--bg-tertiary);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-tertiary);">🔒</div>
+        <span style="font-size:13px;color:var(--text-tertiary);">编辑距离 #72</span>
+        <span class="tag">Medium</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 3. 每日计划详细页                          -->
+<!-- ========================================== -->
+<section id="daily-plan" class="page-section">
+  <div class="section-title">每日计划</div>
+  <h2 class="section-heading">今日学习计划</h2>
+
+  <!-- 今日计划卡片 -->
+  <div class="card" style="margin-bottom:20px;border:1px solid var(--accent);background:hsl(220 70% 55%/0.03);">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:48px;height:48px;border-radius:var(--radius-md);background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:24px;">📅</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">2026年6月21日 · 周日</div>
+        <div style="font-size:12px;color:var(--text-secondary);">
+          🔄 模式回顾：<span style="color:var(--accent);">动态规划（薄弱模式）</span> ·
+          📝 新题推荐：<span style="color:var(--accent);">零钱兑换 #322</span> ·
+          🃏 待复习：<span style="color:var(--warning);">5 张卡片</span>
+        </div>
+      </div>
+      <button class="btn btn-primary">开始今日计划</button>
+    </div>
+  </div>
+
+  <!-- 统计卡片 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--accent);">7</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">连续学习天数</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--success);">85%</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">本周完成率</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--text-primary);">23</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">本月学习题数</div>
+    </div>
+  </div>
+
+  <!-- 历史日历（月视图） -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;">📆 历史计划日历</h4>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-tertiary);cursor:pointer;">← 上月</span>
+        <span style="font-size:13px;font-weight:500;">2026年6月</span>
+        <span style="font-size:12px;color:var(--text-tertiary);cursor:pointer;">下月 →</span>
+      </div>
+    </div>
+    <!-- 日历网格 -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;">
+      <!-- 周标题 -->
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">一</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">二</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">三</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">四</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">五</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">六</div>
+      <div style="font-size:11px;color:var(--text-tertiary);padding:4px;">日</div>
+      <!-- 日期格子 -->
+      <div style="padding:8px 4px;font-size:12px;color:var(--text-tertiary);">1</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">2 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">3 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">4 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--text-secondary);background:hsl(0 0% 100%/0.04);border-radius:6px;">5 ⚪</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">6 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--text-tertiary);">7</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">8 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">9 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--error);background:hsl(0 70% 55%/0.08);border-radius:6px;">10 ❌</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">11 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">12 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">13 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--text-tertiary);">14</div>
+      <!-- ... 更多日期 ... -->
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">15 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">16 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">17 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">18 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">19 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--success);background:hsl(142 60% 45%/0.1);border-radius:6px;">20 ✅</div>
+      <div style="padding:8px 4px;font-size:12px;color:var(--accent);background:var(--accent-subtle);border-radius:6px;font-weight:600;border:1px solid var(--accent);">21</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:16px;font-size:11px;color:var(--text-tertiary);">
+      <span>✅ 已完成</span><span>⚪ 部分完成</span><span>❌ 未完成</span><span style="color:var(--accent);">● 今天</span>
+    </div>
+  </div>
+
+  <!-- 点击日期后展示详情 -->
+  <div class="card" style="margin-top:16px;border:1px dashed var(--border-default);">
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-tertiary);">📋 6月10日 计划详情（点击日期后展示）</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="color:var(--error);">✗</span><span style="color:var(--text-secondary);">模式回顾：滑动窗口 — 未完成</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="color:var(--success);">✓</span><span style="color:var(--text-secondary);">新题：最小覆盖子串 #76 — 已完成</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="color:var(--error);">✗</span><span style="color:var(--text-secondary);">复习卡片 3/5 — 部分完成</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 4. 算法考古（发明故事）                     -->
+<!-- ========================================== -->
+<section id="archaeology" class="page-section">
+  <div class="section-title">算法考古</div>
+  <h2 class="section-heading">算法的发明故事</h2>
+
+  <!-- 故事列表（时间线形式） -->
+  <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:28px;">
+    <div class="card" style="display:flex;gap:16px;cursor:pointer;">
+      <div style="text-align:center;min-width:60px;">
+        <div style="font-size:20px;font-weight:700;color:var(--accent);">1956</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">阿姆斯特丹</div>
+      </div>
+      <div>
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">Dijkstra 最短路径算法</h4>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">Edsger Dijkstra 在一家咖啡馆里，仅用 20 分钟就设计出了这个改变世界的算法。当时没有纸笔，全凭脑中推演...</p>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="tag">图论</span><span class="tag">最短路径</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;gap:16px;cursor:pointer;">
+      <div style="text-align:center;min-width:60px;">
+        <div style="font-size:20px;font-weight:700;color:var(--medium);">1952</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">MIT</div>
+      </div>
+      <div>
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">Huffman 编码</h4>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">David Huffman 作为一个研究生，在期末考试和写论文之间做出选择。他选择了论文，并发明了最优前缀编码...</p>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="tag">贪心</span><span class="tag">信息论</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;gap:16px;cursor:pointer;">
+      <div style="text-align:center;min-width:60px;">
+        <div style="font-size:20px;font-weight:700;color:var(--success);">1962</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">英国</div>
+      </div>
+      <div>
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:4px;">Quicksort 快速排序</h4>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;">Tony Hoare 在莫斯科学习俄语期间，为了翻译俄英词典的排序问题而发明。一个语言学习者的意外贡献...</p>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <span class="tag">排序</span><span class="tag">分治</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 故事详情展开示例 -->
+  <div class="card" style="border:1px solid var(--accent);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h4 style="font-size:16px;font-weight:600;">☕ Dijkstra 的咖啡馆 20 分钟</h4>
+      <span style="font-size:12px;color:var(--text-tertiary);">阅读时间 3 分钟</span>
+    </div>
+    <!-- 时间线 -->
+    <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding:12px 0;">
+      <div style="min-width:100px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;border-top:3px solid var(--accent);">
+        <div style="font-size:11px;font-weight:600;color:var(--accent);">1956</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">构思算法</div>
+      </div>
+      <div style="min-width:100px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;border-top:3px solid var(--medium);">
+        <div style="font-size:11px;font-weight:600;color:var(--medium);">1959</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">正式发表</div>
+      </div>
+      <div style="min-width:100px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;border-top:3px solid var(--success);">
+        <div style="font-size:11px;font-weight:600;color:var(--success);">1968</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">广泛应用</div>
+      </div>
+      <div style="min-width:100px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;border-top:3px solid hsl(270 60% 60%);">
+        <div style="font-size:11px;font-weight:600;color:hsl(270 60% 60%);">今天</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">导航/路由核心</div>
+      </div>
+    </div>
+    <!-- 故事正文摘要 -->
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:14px;">
+      1956 年的一个上午，27 岁的 Edsger Dijkstra 坐在阿姆斯特丹的一家咖啡馆里。他正在思考如何为荷兰的新计算机 ARMAC 演示一个令人印象深刻的算法。他想到了"从鹿特丹到格罗宁根的最短路径"问题...
+    </p>
+    <!-- 底部引导 -->
+    <div style="display:flex;gap:10px;padding-top:12px;border-top:1px solid var(--border-subtle);">
+      <a href="#" class="btn btn-primary" style="font-size:12px;">学习 Dijkstra 算法 →</a>
+      <a href="#" class="btn btn-ghost" style="font-size:12px;">查看关联模式：图论最短路</a>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 5. 论文桥梁路径                            -->
+<!-- ========================================== -->
+<section id="paper-bridge" class="page-section">
+  <div class="section-title">论文桥梁</div>
+  <h2 class="section-heading">从 LeetCode 到 Paper</h2>
+
+  <!-- 领域筛选 -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="padding:6px 12px;background:var(--accent-subtle);color:var(--accent);border-radius:var(--radius-sm);font-size:12px;font-weight:500;">全部</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">🖼 计算机视觉</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">📝 NLP</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">🤖 机器人学</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">📊 推荐系统</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">🧬 生物信息</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">⚛️ 量子计算</span>
+  </div>
+
+  <!-- 桥梁列表 -->
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <span style="font-size:20px;">🖼</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;">BFS → 图神经网络 → GraphSAGE</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">Hamilton et al., 2017 · 推荐系统</div>
+      </div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <span style="font-size:20px;">📝</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;">DP(序列对齐) → Attention → Transformer</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">Vaswani et al., 2017 · NLP</div>
+      </div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <span style="font-size:20px;">🤖</span>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;">DP(Value Iteration) → DQN → AlphaGo</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">Mnih et al., 2015 · 强化学习</div>
+      </div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+  </div>
+
+  <!-- 桥梁详情展开 -->
+  <div class="card" style="border:1px solid var(--accent);">
+    <h4 style="font-size:15px;font-weight:600;margin-bottom:16px;">🔗 BFS → GraphSAGE 桥梁路径</h4>
+    <!-- 解读级别切换 -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:3px;background:var(--bg-secondary);border-radius:var(--radius-md);width:fit-content;">
+      <div style="padding:5px 12px;border-radius:5px;font-size:11px;font-weight:500;color:var(--accent);background:var(--accent-subtle);">L3 通俗版</div>
+      <div style="padding:5px 12px;border-radius:5px;font-size:11px;color:var(--text-secondary);">L4 详解版</div>
+      <div style="padding:5px 12px;border-radius:5px;font-size:11px;color:var(--text-secondary);">L5 精读版</div>
+    </div>
+    <!-- 步骤式路径 -->
+    <div style="display:flex;flex-direction:column;gap:4px;padding-left:16px;border-left:2px solid var(--accent);">
+      <div style="padding:10px 0;">
+        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:4px;">Step 1 · 基础算法</div>
+        <div style="font-size:13px;color:var(--text-secondary);">BFS 广度优先遍历 — 逐层探索节点的邻居</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-tertiary);padding-left:8px;">↓ 衔接：BFS 的"聚合邻居信息"思想是 GNN 的核心</div>
+      <div style="padding:10px 0;">
+        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:4px;">Step 2 · 变体</div>
+        <div style="font-size:13px;color:var(--text-secondary);">消息传递机制 — 节点从邻居收集信息并更新自身</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-tertiary);padding-left:8px;">↓ 衔接：可学习的聚合函数替代固定的 BFS 遍历</div>
+      <div style="padding:10px 0;">
+        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:4px;">Step 3 · 论文核心</div>
+        <div style="font-size:13px;color:var(--text-secondary);">GraphSAGE — 采样+聚合框架，大规模图上可扩展的节点嵌入学习</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-tertiary);padding-left:8px;">↓ 衔接：实际部署到推荐系统</div>
+      <div style="padding:10px 0;">
+        <div style="font-size:12px;color:var(--success);font-weight:500;margin-bottom:4px;">Step 4 · 应用</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Pinterest 推荐系统 — 30 亿节点图上实时推荐</div>
+      </div>
+    </div>
+    <!-- 动手实验 -->
+    <div style="margin-top:14px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:16px;">🧪</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;">动手实验</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">用 PyTorch Geometric 实现简化版 GraphSAGE（30行代码）</div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:11px;">打开 Notebook →</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 6. 跨域迁移映射表                          -->
+<!-- ========================================== -->
+<section id="cross-domain" class="page-section">
+  <div class="section-title">跨域迁移映射表</div>
+  <h2 class="section-heading">同一思想在不同领域的应用</h2>
+  <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;">展示在模式详情页底部，帮助用户理解算法的普适性</p>
+
+  <!-- 映射表（以动态规划为例） -->
+  <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden;">
+    <div style="padding:14px 20px;background:var(--bg-secondary);border-bottom:1px solid var(--border-subtle);">
+      <h4 style="font-size:14px;font-weight:600;">📐 动态规划 — 跨域映射表</h4>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:1px solid var(--border-default);">
+          <th style="text-align:left;padding:10px 14px;color:var(--text-tertiary);font-weight:500;min-width:120px;">LeetCode 场景</th>
+          <th style="text-align:left;padding:10px 14px;color:var(--text-tertiary);font-weight:500;min-width:140px;">工作中场景</th>
+          <th style="text-align:left;padding:10px 14px;color:var(--text-tertiary);font-weight:500;min-width:140px;">AI/ML 场景</th>
+          <th style="text-align:left;padding:10px 14px;color:var(--text-tertiary);font-weight:500;min-width:140px;">日常生活类比</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border-subtle);cursor:pointer;">
+            <td style="padding:10px 14px;color:var(--text-secondary);">最优子结构：大问题拆成子问题</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">复杂项目拆分为独立模块</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">特征工程：组合特征构建</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">制定年计划→月计划→周计划</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);cursor:pointer;">
+            <td style="padding:10px 14px;color:var(--text-secondary);">重叠子问题：避免重复计算</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">缓存层：Redis 避免重复查 DB</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">模型缓存：预计算嵌入向量</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">做笔记：避免重新理解同一概念</td>
+          </tr>
+          <tr style="cursor:pointer;">
+            <td style="padding:10px 14px;color:var(--text-secondary);">状态转移方程</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">项目状态机（审批流程）</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">马尔可夫决策过程(MDP)</td>
+            <td style="padding:10px 14px;color:var(--text-secondary);">习惯养成：从状态A到状态B</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 展开详情（点击某行后） -->
+  <div class="card" style="border:1px dashed var(--border-default);">
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-tertiary);">📖 展开详情（点击某行后显示）</h4>
+    <div style="padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;">重叠子问题 → 缓存层设计</div>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.7;margin-bottom:10px;">
+        DP 中的 memo 数组本质和 Redis 缓存是同一个思想："如果之前算过，就不再算了"。在工作中设计多级缓存（L1 内存 → L2 Redis → L3 数据库）时，你其实在做的就是"把已知子问题的答案存起来"。
+      </p>
+      <div style="padding:10px;background:var(--bg-root);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);">
+        # DP memo 版本<br>
+        memo = {}<br>
+        def fib(n): return memo.setdefault(n, fib(n-1)+fib(n-2))<br><br>
+        # 工作中的缓存版本<br>
+        def get_user(id): return cache.get(id) or db.query(id)
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 7. 版本历史查看                            -->
+<!-- ========================================== -->
+<section id="version-history" class="page-section">
+  <div class="section-title">版本历史</div>
+  <h2 class="section-heading">内容版本管理</h2>
+  <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px;">在题目详情页点击"v2 · 查看历史版本"后展示</p>
+
+  <!-- 版本列表 -->
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;">两数之和 · L3 解析 — 版本历史</h4>
+      <span style="font-size:12px;color:var(--text-tertiary);">共 3 个版本</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <!-- 当前版本 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;">v3</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--accent);">当前版本</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">2026-06-20 14:32 · 状态：PUBLISHED</div>
+        </div>
+        <span style="font-size:11px;color:var(--success);">● 最新</span>
+      </div>
+      <!-- 历史版本 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-secondary);font-weight:600;">v2</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">第 2 版</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">2026-06-15 09:18 · 状态：ARCHIVED</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">查看</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--warning);">回滚</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-secondary);font-weight:600;">v1</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">初始版本</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">2026-06-01 03:00 · 状态：ARCHIVED</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">查看</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--warning);">回滚</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 回滚确认弹窗 -->
+  <div class="card" style="max-width:400px;border:1px solid var(--warning);box-shadow:0 4px 20px hsl(38 90% 55%/0.1);">
+    <div style="text-align:center;padding:12px 0;">
+      <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">确认回滚到 v2？</h4>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">回滚后当前 v3 将被归档，v2 内容将成为最新版本。<br>此操作仅管理员可执行。</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button style="padding:8px 16px;background:var(--warning);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">确认回滚</button>
+        <button class="btn btn-ghost" style="font-size:12px;">取消</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="max-width:1080px;margin:0 auto;padding:40px 24px 60px;border-top:1px solid var(--border-subtle);">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px;">ADUE · 算法深度理解引擎</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">方案A 补充v3 — 复杂度训练 · 学习路径 · 每日计划 · 算法考古 · 论文桥梁 · 跨域映射 · 版本历史</div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="scheme-a.html" style="font-size:12px;color:var(--accent);">← 主页面</a>
+      <a href="scheme-a-supplement.html" style="font-size:12px;color:var(--accent);">补充v1</a>
+      <a href="scheme-a-supplement-v2.html" style="font-size:12px;color:var(--accent);">补充v2</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "command": "/Users/peerlesswu/IdeaProjects/osdev/algorithm_help/.claude/hooks/kodama-notify.sh",
+        "timeout": 1000
+      }
+    ],
+    "PostToolUse": [
+      {
+        "command": "/Users/peerlesswu/IdeaProjects/osdev/algorithm_help/.claude/hooks/kodama-notify.sh",
+        "timeout": 1000
+      }
+    ]
+  }
+}

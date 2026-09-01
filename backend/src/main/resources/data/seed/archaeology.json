@@ -1,0 +1,167 @@
+[
+  {
+    "id": "dijkstra-shortest-path",
+    "algorithmName": "Dijkstra 最短路径算法",
+    "inventorName": "Edsger W. Dijkstra",
+    "inventionYear": 1956,
+    "inventionPlace": "阿姆斯特丹",
+    "shortSummary": "1956年，26岁的Dijkstra在咖啡馆20分钟内设计出最短路径算法，改变了整个图论发展方向。",
+    "story": "1956年，26岁的Dijkstra在阿姆斯特丹一家咖啡馆里，用20分钟在餐巾纸上设计出了最短路径算法。他当时在为荷兰数学中心设计程序，需要展示ARMAC计算机的能力。",
+    "motivation": "为ARMAC计算机展示寻找荷兰两城市间最短路径的能力",
+    "impact": "成为网络路由、导航系统、社交网络分析等领域的基础算法，影响了整个图论算法的发展方向",
+    "timeline": [
+      {"year": 1956, "event": "在咖啡馆20分钟内设计出算法", "significance": "算法核心思想诞生"},
+      {"year": 1959, "event": "论文正式发表于Numerische Mathematik", "significance": "算法被学术界广泛认知"}
+    ],
+    "relatedPatternId": "pattern:dijkstra"
+  },
+  {
+    "id": "huffman-coding",
+    "algorithmName": "Huffman 编码",
+    "inventorName": "David A. Huffman",
+    "inventionYear": 1952,
+    "inventionPlace": "麻省理工学院",
+    "shortSummary": "MIT研究生Huffman在放弃期末作业前灵感突现，用贪心自底向上构建树，击败了导师的方案。",
+    "story": "1951年MIT研究生Huffman面临Robert Fano教授布置的期末作业：找到最优的二进制编码方式。他在即将放弃转为写综述论文时，灵感突现，从底向上构建树结构，证明了自己的方法优于Fano的方案。",
+    "motivation": "解决MIT信息论课程的期末作业——寻找最优前缀编码",
+    "impact": "成为数据压缩的基础，ZIP、JPEG、MP3等格式均基于此思想，奠定了信息论与编码理论的实践基础",
+    "timeline": [
+      {"year": 1951, "event": "作为MIT研究生开始研究最优编码问题", "significance": "问题起源"},
+      {"year": 1952, "event": "发表论文'A Method for the Construction of Minimum-Redundancy Codes'", "significance": "贪心构造法正式提出"}
+    ],
+    "relatedPatternId": "pattern:greedy"
+  },
+  {
+    "id": "rsa-encryption",
+    "algorithmName": "RSA 加密算法",
+    "inventorName": "Ron Rivest, Adi Shamir, Leonard Adleman",
+    "inventionYear": 1977,
+    "inventionPlace": "麻省理工学院",
+    "shortSummary": "1977年逾越节凌晨，Rivest彻夜未眠写出RSA初稿，奠定了现代互联网安全通信的基石。",
+    "story": "1977年逾越节假期，Rivest在读完一篇数论论文后彻夜未眠，到凌晨时写出了RSA算法的初稿。他将手稿交给Shamir和Adleman验证，Adleman尝试多次攻破均未成功，三人遂联合发表。",
+    "motivation": "实现Diffie-Hellman提出的公钥密码学理论框架，让非对称加密从理论走向实践",
+    "impact": "奠定了现代互联网安全通信的基础，HTTPS、数字签名、电子商务等均依赖RSA体系",
+    "timeline": [
+      {"year": 1976, "event": "Diffie-Hellman发表公钥密码概念论文", "significance": "理论基础出现"},
+      {"year": 1977, "event": "Rivest在逾越节凌晨写出RSA初稿", "significance": "算法诞生"},
+      {"year": 1978, "event": "论文正式发表于Communications of the ACM", "significance": "学术公开"}
+    ],
+    "relatedPatternId": "pattern:bit-manipulation"
+  },
+  {
+    "id": "pagerank-algorithm",
+    "algorithmName": "PageRank 算法",
+    "inventorName": "Larry Page, Sergey Brin",
+    "inventionYear": 1996,
+    "inventionPlace": "斯坦福大学",
+    "shortSummary": "斯坦福博士生Page将论文引用分析应用到网页排名，在宿舍拼凑硬盘搭建原型，催生了Google。",
+    "story": "1996年斯坦福博士生Larry Page在研究网页引用关系时，将学术论文引用分析的思想应用到网页排名。他和Brin在宿舍里用拼凑的硬盘搭建原型，PageRank由此诞生，最终催生了Google。",
+    "motivation": "解决早期搜索引擎无法有效衡量网页重要性的问题，用链接关系量化权威度",
+    "impact": "开创了基于图结构的网页排名范式，直接催生Google搜索帝国，启发了社交网络分析和推荐系统",
+    "timeline": [
+      {"year": 1996, "event": "Page开始BackRub项目研究网页链接结构", "significance": "核心思想萌芽"},
+      {"year": 1998, "event": "发表'The Anatomy of a Large-Scale Hypertextual Web Search Engine'", "significance": "PageRank正式公开"},
+      {"year": 1998, "event": "Google公司在车库中成立", "significance": "算法商业化"}
+    ],
+    "relatedPatternId": "pattern:bfs"
+  },
+  {
+    "id": "fft-algorithm",
+    "algorithmName": "快速傅里叶变换 (FFT)",
+    "inventorName": "James Cooley, John Tukey",
+    "inventionYear": 1965,
+    "inventionPlace": "IBM 研究院",
+    "shortSummary": "冷战监测核试验的需求推动FFT重新发现，将O(n²)降至O(n log n)，彻底改变信号处理领域。",
+    "story": "1965年Cooley和Tukey发表了FFT算法，将离散傅里叶变换从O(n²)降至O(n log n)。实际上高斯早在1805年就有类似想法，但手稿用拉丁文写成未被注意。冷战时期美国需要高效分析核试验地震数据，直接推动了FFT的重新发现。",
+    "motivation": "冷战期间需要高效分析地震波信号以监测苏联核试验",
+    "impact": "彻底改变了信号处理领域，MP3音频、JPEG图像、4G/5G通信、医学CT成像等均依赖FFT",
+    "timeline": [
+      {"year": 1805, "event": "高斯在手稿中描述类似算法（未发表）", "significance": "思想最早起源"},
+      {"year": 1965, "event": "Cooley-Tukey论文发表于Mathematics of Computation", "significance": "现代FFT正式诞生"}
+    ],
+    "relatedPatternId": "pattern:divide-conquer"
+  },
+  {
+    "id": "quicksort-algorithm",
+    "algorithmName": "快速排序 (Quicksort)",
+    "inventorName": "Tony Hoare",
+    "inventionYear": 1960,
+    "inventionPlace": "莫斯科国立大学",
+    "shortSummary": "1960年Hoare在莫斯科做机器翻译时嫌冒泡排序太慢，设计出分区递归方案，成为最快通用排序。",
+    "story": "1960年Hoare在莫斯科做机器翻译研究时，需要对俄语单词排序以便二分查找。他最初想用冒泡排序，但觉得太慢，于是设计出以pivot分区的递归方案。回英国后他才正式发表这一算法。",
+    "motivation": "在莫斯科进行机器翻译项目时需要高效排序俄语词典",
+    "impact": "成为实践中最快的通用排序算法之一，C标准库qsort、Java Arrays.sort等均基于此思想",
+    "timeline": [
+      {"year": 1960, "event": "Hoare在莫斯科设计出Quicksort", "significance": "算法核心思想诞生"},
+      {"year": 1961, "event": "论文发表于Communications of the ACM", "significance": "正式公开"},
+      {"year": 1962, "event": "Hoare发表Quicksort改进版（含随机化pivot）", "significance": "实用优化"}
+    ],
+    "relatedPatternId": "pattern:divide-conquer"
+  },
+  {
+    "id": "kmp-string-matching",
+    "algorithmName": "KMP 字符串匹配算法",
+    "inventorName": "Donald Knuth, James Morris, Vaughan Pratt",
+    "inventionYear": 1970,
+    "inventionPlace": "斯坦福大学 / 加州大学伯克利",
+    "shortSummary": "三位科学家从不同角度独立发现同一优化思想——利用已匹配信息避免回退，殊途同归。",
+    "story": "1970年三位计算机科学家独立发现了同一个字符串匹配优化思想：利用已匹配部分的信息避免回退。Knuth从自动机理论出发，Morris从实际编程需求出发，Pratt从数学证明出发，最终三人合作发表了统一论文。",
+    "motivation": "解决朴素字符串匹配在最坏情况下O(mn)的低效问题",
+    "impact": "奠定了字符串算法的理论基础，启发了后续BM、AC自动机等高效匹配算法",
+    "timeline": [
+      {"year": 1970, "event": "三人独立发现相同的优化思想", "significance": "殊途同归的发现"},
+      {"year": 1977, "event": "三人联合论文正式发表于SIAM Journal", "significance": "统一理论形式化"}
+    ],
+    "relatedPatternId": "pattern:two-pointers"
+  },
+  {
+    "id": "a-star-pathfinding",
+    "algorithmName": "A* 寻路算法",
+    "inventorName": "Peter Hart, Nils Nilsson, Bertram Raphael",
+    "inventionYear": 1968,
+    "inventionPlace": "斯坦福研究院 (SRI)",
+    "shortSummary": "为世界首个移动机器人Shakey规划路径，A*结合最优性保证与启发式效率，成为寻路标准。",
+    "story": "1968年SRI的三位研究员在为机器人Shakey寻找路径规划方案时，结合了Dijkstra的最短路径保证和贪心搜索的效率。通过引入启发式函数h(n)估计剩余距离，A*在保证最优性的同时大幅减少搜索空间。",
+    "motivation": "为世界上第一个通用移动机器人Shakey提供高效且最优的路径规划",
+    "impact": "成为游戏AI、机器人导航、地图路径规划的标准算法，几乎所有寻路场景都是A*或其变体",
+    "timeline": [
+      {"year": 1966, "event": "SRI开始Shakey机器人项目", "significance": "应用需求驱动"},
+      {"year": 1968, "event": "Hart、Nilsson、Raphael发表A*论文", "significance": "算法正式诞生"}
+    ],
+    "relatedPatternId": "pattern:dijkstra"
+  },
+  {
+    "id": "mapreduce-framework",
+    "algorithmName": "MapReduce 分布式计算框架",
+    "inventorName": "Jeffrey Dean, Sanjay Ghemawat",
+    "inventionYear": 2004,
+    "inventionPlace": "Google, 山景城",
+    "shortSummary": "Google两位工程师从函数式编程获得灵感，让普通程序员也能编写PB级分布式程序，开启大数据时代。",
+    "story": "2003年Google面临网页索引数据量爆炸的挑战，Dean和Ghemawat从函数式编程中的map和reduce操作获得灵感，设计出一个让普通工程师也能编写分布式程序的框架。他们将复杂的分布式容错逻辑封装进框架，用户只需定义map和reduce函数。",
+    "motivation": "让Google内部工程师无需分布式系统专业知识也能处理PB级数据",
+    "impact": "直接催生了Hadoop生态系统，开启了大数据时代，改变了整个互联网行业处理海量数据的方式",
+    "timeline": [
+      {"year": 2003, "event": "Google内部开始使用MapReduce处理索引构建", "significance": "内部验证"},
+      {"year": 2004, "event": "论文发表于OSDI会议", "significance": "向学术界和工业界公开"},
+      {"year": 2006, "event": "Apache Hadoop项目启动", "significance": "开源社区跟进"}
+    ],
+    "relatedPatternId": "pattern:divide-conquer"
+  },
+  {
+    "id": "bellman-ford-shortest-path",
+    "algorithmName": "Bellman-Ford 最短路径算法",
+    "inventorName": "Richard Bellman, Lester Ford Jr.",
+    "inventionYear": 1958,
+    "inventionPlace": "兰德公司 / 美国空军",
+    "shortSummary": "Bellman将动态规划应用于最短路径，能处理负权边，成为网络路由协议和金融套利检测的基石。",
+    "story": "1958年Bellman在兰德公司研究动态规划理论时，将最短路径问题建模为多阶段决策问题。同时Ford独立提出了类似算法。与Dijkstra不同，Bellman-Ford能处理负权边，通过V-1次松弛保证收敛。",
+    "motivation": "解决含负权边的网络中最短路径问题，Dijkstra算法无法处理此情况",
+    "impact": "成为网络路由协议(RIP)的基础算法，也是检测负权环的标准方法，在金融套利检测中有重要应用",
+    "timeline": [
+      {"year": 1956, "event": "Bellman提出动态规划理论框架", "significance": "理论基础"},
+      {"year": 1958, "event": "Bellman和Ford各自独立发表最短路径算法", "significance": "算法诞生"},
+      {"year": 1962, "event": "算法应用于ARPANET网络路由", "significance": "实际工程应用"}
+    ],
+    "relatedPatternId": "pattern:dp-basic"
+  }
+]

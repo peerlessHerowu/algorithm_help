@@ -1,0 +1,13 @@
+# 本地开发配置覆盖 - 此文件不应提交到 Git
+# 复制 settings.yaml 后修改此文件中的连接信息
+
+database:
+  url: "mysql+asyncmy://root:password@localhost:3306/algorithm_help"
+
+redis:
+  url: "redis://localhost:6379/0"
+
+minio:
+  endpoint: "localhost:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"

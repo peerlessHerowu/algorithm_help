@@ -1,0 +1,56 @@
+[project]
+name = "crawler-service"
+version = "0.1.0"
+description = "Python 数据采集微服务 - 从多个算法平台自动采集题目和题解数据"
+requires-python = ">=3.11"
+authors = [
+    { name = "algorithm-help team" }
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "httpx>=0.25.0",
+    "beautifulsoup4>=4.12.0",
+    "markdownify>=0.11.0",
+    "playwright>=1.40.0",
+    "sqlalchemy[asyncio]>=2.0.23",
+    "asyncmy>=0.2.9",
+    "redis>=5.0.0",
+    "minio>=7.2.0",
+    "apscheduler>=4.0.0a4",
+    "prometheus-client>=0.19.0",
+    "structlog>=23.2.0",
+    "pydantic-settings>=2.1.0",
+    "pydantic>=2.5.0",
+    "watchfiles>=0.21.0",
+    "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "hypothesis>=6.92.0",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]

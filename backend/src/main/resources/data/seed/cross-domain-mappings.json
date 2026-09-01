@@ -1,0 +1,82 @@
+[
+  {
+    "patternId": "pattern:dp-basic",
+    "leetcodeScene": "斐波那契数列/背包问题/最长子序列",
+    "workScene": "项目里程碑规划：每个阶段依赖前序阶段成果",
+    "aiScene": "强化学习的值函数迭代（Bellman 方程）",
+    "lifeScene": "人生每个选择都是状态转移，当前最优解依赖过去的积累",
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:backtracking",
+    "leetcodeScene": "N皇后/全排列/子集生成/数独求解",
+    "workScene": "方案试错：尝试一个方向，行不通就回退换路",
+    "aiScene": "神经架构搜索（NAS）中的搜索空间探索",
+    "lifeScene": "试错是人生常态，走不通就回头，但每次试错都是经验",
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:greedy",
+    "leetcodeScene": "活动选择/区间调度/Huffman编码",
+    "workScene": "优先级排序：先做 ROI 最高的任务",
+    "aiScene": "贪心解码策略（beam search 的极端情况）",
+    "lifeScene": "活在当下，每一步都选当前最好的，有时反而是最优解",
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:bfs",
+    "leetcodeScene": "最短路径/层序遍历/多源BFS",
+    "workScene": "影响力扩散：从核心团队逐层推广新流程",
+    "aiScene": "知识图谱中的关系推理（多跳查询）",
+    "lifeScene": "人脉像涟漪一样扩散，先影响身边的人再辐射更远",
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:divide-conquer",
+    "leetcodeScene": "归并排序/快速幂/最近点对",
+    "workScene": "大项目拆解：分模块开发再集成联调",
+    "aiScene": "MapReduce 分布式计算框架的核心思想",
+    "lifeScene": "大目标拆成小目标各个击破，最终合并成完整成就",
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:sliding-window",
+    "leetcodeScene": "最长无重复子串/最小覆盖子串/定长窗口最大值",
+    "workScene": "滚动周期复盘：每周回顾最近N天的数据趋势",
+    "aiScene": "时序模型中的滑动窗口特征提取",
+    "lifeScene": null,
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:two-pointers",
+    "leetcodeScene": "三数之和/接雨水/有序数组合并",
+    "workScene": "双线并行推进：前端后端同步开发对齐接口",
+    "aiScene": "对比学习中正负样本对的配对策略",
+    "lifeScene": null,
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:heap",
+    "leetcodeScene": "Top-K问题/合并K个有序链表/中位数流",
+    "workScene": "任务优先级队列：永远先处理最紧急的工单",
+    "aiScene": "A*搜索中的开放列表（优先队列）",
+    "lifeScene": null,
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:trie",
+    "leetcodeScene": "自动补全/单词搜索/前缀统计",
+    "workScene": "分类体系搜索：按层级目录快速定位文档",
+    "aiScene": "NLP分词中的前缀匹配（AC自动机）",
+    "lifeScene": null,
+    "detailJson": null
+  },
+  {
+    "patternId": "pattern:union-find",
+    "leetcodeScene": "连通分量/冗余连接/等式方程",
+    "workScene": "组织架构合并：两个团队合并为一个虚拟组",
+    "aiScene": "聚类算法中的连通分量检测",
+    "lifeScene": null,
+    "detailJson": null
+  }
+]

@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案A — Geist 极简暗色 · 完整UI原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-root:hsl(0 0% 4%);--bg-primary:hsl(0 0% 7%);--bg-secondary:hsl(0 0% 10%);
+  --bg-tertiary:hsl(0 0% 13%);--bg-elevated:hsl(0 0% 15%);
+  --text-primary:hsl(0 0% 93%);--text-secondary:hsl(0 0% 63%);--text-tertiary:hsl(0 0% 44%);
+  --accent:hsl(220 70% 55%);--accent-hover:hsl(220 70% 62%);
+  --accent-subtle:hsl(220 70% 55%/0.12);--accent-glow:hsl(220 70% 55%/0.25);
+  --border-subtle:hsl(0 0% 100%/0.06);--border-default:hsl(0 0% 100%/0.1);
+  --border-strong:hsl(0 0% 100%/0.15);
+  --success:hsl(142 60% 45%);--warning:hsl(38 90% 55%);--error:hsl(0 70% 55%);
+  --easy:hsl(142 55% 48%);--medium:hsl(38 85% 55%);--hard:hsl(350 65% 55%);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+  --font-sans:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-sans);background:var(--bg-root);color:var(--text-primary);font-size:15px;line-height:1.6;}
+a{color:inherit;text-decoration:none;}
+.section-divider{border:none;border-top:1px solid var(--border-default);margin:80px 0 0 0;}
+.page-section{max-width:1080px;margin:0 auto;padding:60px 24px 80px;}
+.section-title{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.section-heading{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:24px;}
+.card{background:var(--bg-primary);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-default);}
+.tag{padding:3px 8px;border-radius:4px;font-size:11px;background:var(--bg-secondary);color:var(--text-secondary);}
+.badge-easy{color:var(--easy);background:hsl(142 55% 48%/0.12);border-radius:9999px;padding:3px 8px;font-size:11px;font-weight:500;}
+.badge-medium{color:var(--medium);background:hsl(38 85% 55%/0.12);border-radius:9999px;padding:3px 8px;font-size:11px;font-weight:500;}
+.badge-hard{color:var(--hard);background:hsl(350 65% 55%/0.12);border-radius:9999px;padding:3px 8px;font-size:11px;font-weight:500;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes flip{0%{transform:rotateY(0)}100%{transform:rotateY(180deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ===== 固定导航栏 ===== -->
+<nav style="position:fixed;top:0;left:0;right:0;height:52px;background:hsl(0 0% 4%/0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 24px;z-index:1000;">
+  <div style="font-weight:700;font-size:15px;letter-spacing:-0.02em;margin-right:28px;">
+    <span style="color:var(--accent);">ADUE</span>
+  </div>
+  <div style="display:flex;gap:2px;overflow-x:auto;flex:1;">
+    <a href="#home" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">首页</a>
+    <a href="#problems" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">题目列表</a>
+    <a href="#problem-detail" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">题目详情</a>
+    <a href="#patterns" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">算法模式</a>
+    <a href="#pattern-detail" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">模式详情</a>
+    <a href="#graph" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">知识图谱</a>
+    <a href="#feynman" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">费曼模式</a>
+    <a href="#interview" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">面试模拟</a>
+    <a href="#review" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">复习中心</a>
+    <a href="#settings" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">设置</a>
+    <a href="#auth" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">登录</a>
+    <a href="#admin" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;">后台</a>
+    <a href="scheme-a-data-mgmt.html" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--accent);white-space:nowrap;">题解/采集 ↗</a>
+  </div>
+  <div style="margin-left:12px;display:flex;align-items:center;gap:10px;">
+    <div onclick="document.getElementById('search-modal').style.display='flex'" style="height:30px;padding:0 10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;cursor:pointer;transition:border-color 0.15s;">
+      <span style="color:var(--text-tertiary);font-size:12px;">🔍 ⌘K 搜索...</span>
+    </div>
+    <!-- 通知铃铛 -->
+    <div style="position:relative;cursor:pointer;">
+      <span style="font-size:16px;">🔔</span>
+      <span style="position:absolute;top:-4px;right:-6px;width:14px;height:14px;background:var(--error);color:#fff;font-size:8px;font-weight:600;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+    </div>
+    <div style="padding:5px 12px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:500;">登录</div>
+  </div>
+</nav>
+
+<!-- P0-4: ⌘K 全局搜索面板 -->
+<div id="search-modal" style="display:none;position:fixed;inset:0;z-index:2000;align-items:flex-start;justify-content:center;padding-top:120px;background:hsl(0 0% 0%/0.6);backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="width:560px;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-xl);box-shadow:0 16px 48px hsl(0 0% 0%/0.4);overflow:hidden;">
+    <!-- 搜索输入 -->
+    <div style="display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border-subtle);">
+      <span style="font-size:16px;color:var(--text-tertiary);margin-right:10px;">🔍</span>
+      <input type="text" placeholder="搜索题目、模式、标签..." style="flex:1;border:none;background:transparent;font-size:15px;color:var(--text-primary);outline:none;font-family:var(--font-sans);" autofocus>
+      <span style="padding:3px 6px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-tertiary);">ESC</span>
+    </div>
+    <!-- 快捷导航 -->
+    <div style="padding:12px 18px;">
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">快速跳转</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;background:var(--bg-secondary);">
+          <span style="font-size:14px;">📋</span>
+          <span style="font-size:13px;flex:1;">题目列表</span>
+          <span style="font-size:11px;color:var(--text-tertiary);">↵</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;">
+          <span style="font-size:14px;">🔗</span>
+          <span style="font-size:13px;flex:1;">算法模式</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;">
+          <span style="font-size:14px;">🧠</span>
+          <span style="font-size:13px;flex:1;">费曼模式</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);cursor:pointer;">
+          <span style="font-size:14px;">📅</span>
+          <span style="font-size:13px;flex:1;">复习中心</span>
+        </div>
+      </div>
+    </div>
+    <!-- 最近搜索 -->
+    <div style="padding:8px 18px 14px;border-top:1px solid var(--border-subtle);">
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">最近搜索</div>
+      <div style="display:flex;gap:6px;">
+        <span style="padding:4px 8px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-secondary);cursor:pointer;">两数之和</span>
+        <span style="padding:4px 8px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-secondary);cursor:pointer;">滑动窗口</span>
+        <span style="padding:4px 8px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-secondary);cursor:pointer;">动态规划</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- PAGE 1: 首页 Hero + 特色功能 + 热门题目   -->
+<!-- ========================================== -->
+<section id="home" style="padding:130px 24px 60px;text-align:center;max-width:800px;margin:0 auto;">
+  <div style="display:inline-block;padding:4px 12px;background:var(--accent-subtle);border-radius:9999px;font-size:12px;color:var(--accent);margin-bottom:20px;">✨ AI 驱动的算法学习平台</div>
+  <h1 style="font-size:52px;font-weight:700;letter-spacing:-0.03em;line-height:1.12;margin-bottom:20px;">
+    算法深度理解引擎
+  </h1>
+  <p style="font-size:18px;color:var(--text-secondary);line-height:1.7;max-width:560px;margin:0 auto 36px;">
+    五级深度 × AI 图解 × 模式提炼<br>从直觉到论文，让每道算法题变成可迁移的知识
+  </p>
+  <div style="display:flex;gap:12px;justify-content:center;">
+    <a href="#problems" class="btn btn-primary" style="padding:12px 28px;font-size:15px;">开始学习</a>
+    <a href="#patterns" class="btn btn-ghost" style="padding:12px 28px;font-size:15px;">探索模式</a>
+  </div>
+  <!-- 数据指标 -->
+  <div style="display:flex;gap:40px;justify-content:center;margin-top:56px;">
+    <div><div style="font-size:28px;font-weight:700;color:var(--text-primary);">50+</div><div style="font-size:12px;color:var(--text-tertiary);">精选深度解析</div></div>
+    <div><div style="font-size:28px;font-weight:700;color:var(--text-primary);">23</div><div style="font-size:12px;color:var(--text-tertiary);">算法模式</div></div>
+    <div><div style="font-size:28px;font-weight:700;color:var(--text-primary);">5</div><div style="font-size:12px;color:var(--text-tertiary);">认知层级</div></div>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- 已登录用户 Dashboard（替代 Hero）           -->
+<!-- ========================================== -->
+<section id="dashboard" style="max-width:1080px;margin:0 auto;padding:80px 24px 40px;">
+  <div style="display:inline-block;padding:4px 12px;background:hsl(142 60% 45%/0.12);border-radius:9999px;font-size:12px;color:var(--success);margin-bottom:16px;">🟢 已登录状态示意</div>
+  <h2 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:24px;">欢迎回来，算法小王子 👋</h2>
+
+  <!-- 今日面板 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+      <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:18px;">📅</div>
+      <div><div style="font-size:14px;font-weight:600;">今日计划</div><div style="font-size:12px;color:var(--text-tertiary);">1 模式回顾 + 1 新题</div></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+      <div style="width:40px;height:40px;border-radius:var(--radius-md);background:hsl(38 90% 55%/0.12);display:flex;align-items:center;justify-content:center;font-size:18px;">🔄</div>
+      <div><div style="font-size:14px;font-weight:600;">待复习 <span style="color:var(--warning);">5</span></div><div style="font-size:12px;color:var(--text-tertiary);">3 道即将到期</div></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:var(--radius-md);background:hsl(350 65% 55%/0.12);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
+      <div><div style="font-size:14px;font-weight:600;">连续 7 天</div><div style="font-size:12px;color:var(--text-tertiary);">保持住！</div></div>
+    </div>
+  </div>
+
+  <!-- 继续学习 -->
+  <div class="card" style="margin-bottom:24px;border:1px solid var(--accent);background:hsl(220 70% 55%/0.04);">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:2px;">继续学习</div>
+        <div style="font-size:15px;font-weight:600;">接雨水 #42 · L3 技术解析</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">上次阅读到「解法对比」部分 · 2 小时前</div>
+      </div>
+      <a href="#problem-detail" class="btn btn-primary" style="font-size:12px;">继续阅读 →</a>
+    </div>
+  </div>
+
+  <!-- 推荐题目 -->
+  <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="font-size:16px;font-weight:600;">🎯 基于薄弱模式推荐</h3>
+    <span style="font-size:12px;color:var(--text-tertiary);">你的 DP 掌握度较低</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--medium);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">最长递增子序列</div><div style="font-size:12px;color:var(--text-tertiary);">DP · #300</div></div>
+      <span class="badge-medium">Medium</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--medium);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">零钱兑换</div><div style="font-size:12px;color:var(--text-tertiary);">DP · #322</div></div>
+      <span class="badge-medium">Medium</span>
+    </div>
+  </div>
+</section>
+
+<!-- 特色功能 -->
+<section style="max-width:1080px;margin:0 auto;padding:0 24px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">🎯</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">五级深度解释</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">从生活类比到论文推导，五个认知层次自由切换</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">📊</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">智能图解</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">Mermaid 流程图 + 动画演示，算法过程一目了然</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">🔗</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">模式提炼</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">跨题目关联，构建可迁移的算法思维框架</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">🧠</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">费曼学习法</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">用自己的话教 AI，暴露知识盲点</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">🎤</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">面试模拟</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">限时模拟 + 多维评分 + 精准反馈</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:12px;">📅</div>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">间隔复习</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">基于遗忘曲线的智能复习调度</p>
+  </div>
+</section>
+
+<!-- 热门题目 -->
+<section style="max-width:1080px;margin:0 auto;padding:0 24px 40px;">
+  <h2 style="font-size:20px;font-weight:600;margin-bottom:20px;">🔥 热门题目</h2>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--easy);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">两数之和</div><div style="font-size:12px;color:var(--text-tertiary);">哈希表 · #1</div></div>
+      <span class="badge-easy">Easy</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--medium);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">无重复字符的最长子串</div><div style="font-size:12px;color:var(--text-tertiary);">滑动窗口 · #3</div></div>
+      <span class="badge-medium">Medium</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--hard);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">接雨水</div><div style="font-size:12px;color:var(--text-tertiary);">双指针 · #42</div></div>
+      <span class="badge-hard">Hard</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--medium);"></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">最长递增子序列</div><div style="font-size:12px;color:var(--text-tertiary);">DP · #300</div></div>
+      <span class="badge-medium">Medium</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 2: 题目列表页                          -->
+<!-- ========================================== -->
+<section id="problems" class="page-section">
+  <div class="section-title">题目列表</div>
+  <h2 class="section-heading">全部题目</h2>
+
+  <!-- 搜索+筛选+排序 -->
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <div style="flex:1;min-width:240px;height:38px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;padding:0 12px;">
+      <span style="color:var(--text-tertiary);font-size:13px;">🔍 搜索题目名称、标签、编号...</span>
+    </div>
+    <select style="height:38px;padding:0 12px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-secondary);font-size:13px;">
+      <option>排序：热度优先</option><option>排序：难度升序</option><option>排序：最近更新</option>
+    </select>
+  </div>
+  <!-- 筛选标签 -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="padding:6px 12px;background:var(--accent-subtle);color:var(--accent);border-radius:var(--radius-sm);font-size:12px;font-weight:500;">全部</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">⭐ 收藏</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">Easy</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">Medium</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">Hard</span>
+    <span style="width:1px;background:var(--border-default);margin:0 4px;"></span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">数组</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">链表</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">树</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">DP</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">图</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">滑动窗口</span>
+    <span style="width:1px;background:var(--border-default);margin:0 4px;"></span>
+    <select style="padding:5px 10px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:12px;cursor:pointer;">
+      <option>🏢 公司筛选</option><option>Google</option><option>Meta</option><option>Amazon</option><option>字节跳动</option><option>Microsoft</option>
+    </select>
+  </div>
+
+  <!-- 题目列表 -->
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;">
+      <div style="font-size:12px;color:var(--text-tertiary);width:32px;">#1</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">两数之和</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">哈希表 · 数组</div></div>
+      <span class="badge-easy">Easy</span>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--success);"></div><span style="font-size:11px;color:var(--text-tertiary);">已生成</span></div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;">
+      <div style="font-size:12px;color:var(--text-tertiary);width:32px;">#3</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">无重复字符的最长子串</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">滑动窗口 · 哈希表</div></div>
+      <span class="badge-medium">Medium</span>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--success);"></div><span style="font-size:11px;color:var(--text-tertiary);">已生成</span></div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;">
+      <div style="font-size:12px;color:var(--text-tertiary);width:32px;">#42</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">接雨水</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">双指针 · 单调栈</div></div>
+      <span class="badge-hard">Hard</span>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--warning);animation:pulse 2s infinite;"></div><span style="font-size:11px;color:var(--warning);">生成中</span></div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;opacity:0.6;">
+      <div style="font-size:12px;color:var(--text-tertiary);width:32px;">#146</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">LRU 缓存</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">设计 · 链表 · 哈希表</div></div>
+      <span class="badge-medium">Medium</span>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--text-tertiary);"></div><span style="font-size:11px;color:var(--text-tertiary);">待生成</span></div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;">
+      <div style="font-size:12px;color:var(--text-tertiary);width:32px;">#300</div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">最长递增子序列</div><div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">DP · 二分查找</div></div>
+      <span class="badge-medium">Medium</span>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--success);"></div><span style="font-size:11px;color:var(--text-tertiary);">已生成</span></div>
+      <span style="font-size:12px;color:var(--text-tertiary);">→</span>
+    </div>
+  </div>
+
+  <!-- 分页 -->
+  <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:24px;">
+    <span class="btn btn-ghost" style="padding:6px 10px;font-size:12px;opacity:0.4;">← 上一页</span>
+    <span style="padding:6px 10px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);font-size:12px;">1</span>
+    <span style="padding:6px 10px;color:var(--text-secondary);font-size:12px;cursor:pointer;">2</span>
+    <span style="padding:6px 10px;color:var(--text-secondary);font-size:12px;cursor:pointer;">3</span>
+    <span style="color:var(--text-tertiary);font-size:12px;">...</span>
+    <span style="padding:6px 10px;color:var(--text-secondary);font-size:12px;cursor:pointer;">25</span>
+    <span class="btn btn-ghost" style="padding:6px 10px;font-size:12px;">下一页 →</span>
+  </div>
+
+  <!-- 空状态 -->
+  <div style="margin-top:32px;padding:40px;text-align:center;background:var(--bg-primary);border:1px dashed var(--border-default);border-radius:var(--radius-lg);">
+    <div style="font-size:32px;margin-bottom:12px;">🔍</div>
+    <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px;">空状态示意：未找到匹配结果</div>
+    <div style="font-size:12px;color:var(--text-tertiary);">尝试更换筛选条件或搜索其他关键词</div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 3: 题目详情页（完整版）                 -->
+<!-- ========================================== -->
+<section id="problem-detail" class="page-section">
+  <div class="section-title">题目详情</div>
+  <h2 class="section-heading">两数之和 · #1</h2>
+
+  <!-- 题目信息头 -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <h3 style="font-size:20px;font-weight:600;">1. 两数之和</h3>
+      <span class="badge-easy">Easy</span>
+      <span style="margin-left:auto;color:var(--medium);font-size:13px;cursor:pointer;" title="点击取消收藏">★ 已收藏</span>
+      <span style="color:var(--text-tertiary);font-size:13px;cursor:pointer;">🔗 分享</span>
+    </div>
+    <!-- 3.16: 多平台链接 -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <a href="#" style="padding:3px 8px;background:hsl(38 85% 55%/0.1);border-radius:4px;font-size:11px;color:var(--medium);">LeetCode #1</a>
+      <a href="#" style="padding:3px 8px;background:hsl(142 55% 48%/0.1);border-radius:4px;font-size:11px;color:var(--easy);">力扣 #1</a>
+      <a href="#" style="padding:3px 8px;background:var(--bg-secondary);border-radius:4px;font-size:11px;color:var(--text-secondary);">牛客 NC01</a>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <span class="tag">哈希表</span><span class="tag">数组</span><span class="tag">Google</span><span class="tag">Amazon</span><span class="tag">Meta</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;color:var(--text-tertiary);">通过率 72% · 提交 1.2M · 最近更新 2 天前</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">v2 · <a href="#" style="color:var(--accent);font-size:12px;">查看历史版本</a></div>
+    </div>
+  </div>
+
+  <!-- LevelTabs 五级切换 -->
+  <div style="display:flex;gap:4px;margin-bottom:20px;padding:4px;background:var(--bg-secondary);border-radius:var(--radius-md);width:fit-content;">
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">💡 L1 直觉</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">📖 L2 类比</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-subtle);cursor:pointer;">🎯 L3 技术</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">⚡ L4 优化</div>
+    <div style="padding:7px 14px;border-radius:6px;font-size:12px;color:var(--text-tertiary);opacity:0.5;cursor:not-allowed;">🔬 L5 论文 🔒</div>
+  </div>
+
+  <!-- P0-3: 触发生成空状态（未生成级别时展示） -->
+  <div class="card" style="margin-bottom:20px;border:1px dashed var(--border-default);text-align:center;padding:32px 20px;">
+    <div style="font-size:32px;margin-bottom:12px;">🚀</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px;">L5 论文级解析尚未生成</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">点击生成按钮，AI 将为你深度解析（预计 20-30 秒）</div>
+    <button class="btn btn-primary" style="padding:10px 24px;font-size:14px;">🚀 AI 生成解析</button>
+    <div style="font-size:11px;color:var(--text-tertiary);margin-top:10px;">需要登录 · 免费用户每日可生成 5 次</div>
+  </div>
+
+  <!-- P0-3: 生成中进度条（触发后展示） -->
+  <div class="card" style="margin-bottom:20px;border:1px solid var(--accent);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="width:16px;height:16px;border:2px solid var(--border-default);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="font-size:14px;font-weight:500;">正在生成 L4 优化解析...</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--text-tertiary);">预计 15 秒</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="color:var(--success);">✓</span><span style="color:var(--text-secondary);">题目分析完成</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span style="color:var(--success);">✓</span><span style="color:var(--text-secondary);">生成多解法思路</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <div style="width:12px;height:12px;border:2px solid var(--border-default);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+        <span style="color:var(--accent);">生成代码与复杂度证明...</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;opacity:0.4;">
+        <span>○</span><span style="color:var(--text-tertiary);">质量校验</span>
+      </div>
+    </div>
+    <div style="margin-top:12px;height:4px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+      <div style="width:65%;height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;"></div>
+    </div>
+  </div>
+
+  <!-- 内容区：双栏 -->
+  <div style="display:grid;grid-template-columns:1fr 180px;gap:20px;">
+    <div>
+      <!-- Markdown 内容 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h4 style="font-size:16px;font-weight:600;margin-bottom:14px;">🎯 L3 技术解析</h4>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">
+          <strong style="color:var(--text-primary);">问题本质：</strong>给定整数数组 nums 和目标值 target，找出和为 target 的两个元素的下标。
+        </p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">
+          <strong style="color:var(--text-primary);">关键洞察：</strong>对每个 nums[i]，我们需要找到 target - nums[i] 是否存在。哈希表提供 O(1) 查找，将整体复杂度从 O(n²) 降到 O(n)。
+        </p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;">
+          <strong style="color:var(--text-primary);">边界处理：</strong>同一元素不能使用两次 → 先查后存。数组可能有重复值 → 哈希表存最新下标即可。
+        </p>
+      </div>
+
+      <!-- Mermaid 图解区 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h4 style="font-size:14px;font-weight:600;">📊 执行流程图解</h4>
+          <span style="font-size:11px;color:var(--text-tertiary);cursor:pointer;">⛶ 全屏</span>
+        </div>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:24px;text-align:center;">
+          <div style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="padding:10px 14px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:6px;font-size:12px;color:var(--accent);">i=0, num=2</div>
+            <span style="color:var(--text-tertiary);">→</span>
+            <div style="padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:6px;font-size:12px;">diff=7 不在map</div>
+            <span style="color:var(--text-tertiary);">→</span>
+            <div style="padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:6px;font-size:12px;">map[2]=0</div>
+          </div>
+          <div style="margin:12px 0;color:var(--text-tertiary);font-size:18px;">↓</div>
+          <div style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="padding:10px 14px;background:hsl(142 55% 48%/0.12);border:1px solid hsl(142 55% 48%/0.3);border-radius:6px;font-size:12px;color:var(--success);">i=1, num=7</div>
+            <span style="color:var(--text-tertiary);">→</span>
+            <div style="padding:10px 14px;background:hsl(142 55% 48%/0.12);border:1px solid hsl(142 55% 48%/0.3);border-radius:6px;font-size:12px;color:var(--success);">diff=2 在map!</div>
+            <span style="color:var(--text-tertiary);">→</span>
+            <div style="padding:10px 14px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:6px;font-size:12px;color:var(--accent);font-weight:600;">return [0,1]</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CodeBlock 多语言代码 -->
+      <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border-subtle);background:var(--bg-tertiary);">
+          <span style="padding:4px 10px;background:var(--bg-primary);border-radius:4px;font-size:12px;font-weight:500;color:var(--text-primary);">Python</span>
+          <span style="padding:4px 10px;font-size:12px;color:var(--text-tertiary);cursor:pointer;">Java</span>
+          <span style="padding:4px 10px;font-size:12px;color:var(--text-tertiary);cursor:pointer;">Go</span>
+          <span style="padding:4px 10px;font-size:12px;color:var(--text-tertiary);cursor:pointer;">C++</span>
+          <span style="padding:4px 10px;font-size:12px;color:var(--text-tertiary);cursor:pointer;">TypeScript</span>
+          <span style="margin-left:auto;font-size:12px;color:var(--text-tertiary);cursor:pointer;">📋 复制</span>
+        </div>
+        <pre style="padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.7;overflow-x:auto;background:var(--bg-primary);"><code style="color:var(--text-secondary);">def twoSum(nums: List[int], target: int) -> List[int]:
+    seen = {}  <span style="color:var(--text-tertiary);"># key: 数值, value: 下标</span>
+    for i, num in enumerate(nums):
+        diff = target - num
+        if diff in seen:
+            return [seen[diff], i]
+        seen[num] = i
+    return []  <span style="color:var(--text-tertiary);"># 题目保证有解，不会到这里</span></code></pre>
+      </div>
+
+      <!-- 解法对比矩阵 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔄 解法对比矩阵</h4>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="border-bottom:1px solid var(--border-default);">
+              <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">方法</th>
+              <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">时间</th>
+              <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">空间</th>
+              <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">适用场景</th>
+              <th style="text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;">面试推荐</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border-subtle);">
+                <td style="padding:10px 12px;">暴力枚举</td>
+                <td style="padding:10px 12px;color:var(--error);">O(n²)</td>
+                <td style="padding:10px 12px;">O(1)</td>
+                <td style="padding:10px 12px;color:var(--text-tertiary);">仅作对比</td>
+                <td style="padding:10px 12px;color:var(--text-tertiary);">⭐</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-subtle);">
+                <td style="padding:10px 12px;font-weight:500;">哈希表一遍扫</td>
+                <td style="padding:10px 12px;color:var(--success);">O(n)</td>
+                <td style="padding:10px 12px;">O(n)</td>
+                <td style="padding:10px 12px;color:var(--text-tertiary);">通用最优</td>
+                <td style="padding:10px 12px;color:var(--success);">⭐⭐⭐</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 12px;">排序+双指针</td>
+                <td style="padding:10px 12px;">O(n log n)</td>
+                <td style="padding:10px 12px;">O(1)</td>
+                <td style="padding:10px 12px;color:var(--text-tertiary);">需返回值非下标</td>
+                <td style="padding:10px 12px;">⭐⭐</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3.8: 解法演进关系图 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔄 解法演进路径</h4>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:20px;text-align:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <!-- 演进节点 -->
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="padding:8px 14px;background:hsl(0 70% 55%/0.1);border:1px solid hsl(0 70% 55%/0.2);border-radius:var(--radius-md);font-size:12px;color:var(--error);">暴力双循环 O(n²)</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;color:var(--text-tertiary);">
+              <span style="font-size:10px;">↓</span>
+              <span style="font-size:10px;color:var(--text-tertiary);">减少重复查找</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="padding:8px 14px;background:hsl(38 85% 55%/0.1);border:1px solid hsl(38 85% 55%/0.2);border-radius:var(--radius-md);font-size:12px;color:var(--medium);">排序+双指针 O(n log n)</div>
+              <div style="padding:8px 14px;background:hsl(142 55% 48%/0.1);border:1px solid hsl(142 55% 48%/0.2);border-radius:var(--radius-md);font-size:12px;color:var(--success);font-weight:500;">哈希表一遍扫 O(n) ⭐</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;color:var(--text-tertiary);margin-top:4px;">
+              <span style="font-size:10px;">↓</span>
+              <span style="font-size:10px;color:var(--accent);">思路迁移</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:11px;color:var(--text-secondary);">三数之和</div>
+              <div style="padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:11px;color:var(--text-secondary);">四数之和</div>
+              <div style="padding:6px 10px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:11px;color:var(--text-secondary);">和为K的子数组</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.9: 底层共同框架提炼 -->
+      <div class="card" style="margin-bottom:16px;border-left:3px solid var(--accent);">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:10px;">💎 底层共同思路</h4>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">
+          <strong style="color:var(--text-primary);">本质：</strong>所有解法的共同本质是"在集合中查找互补元素"——遍历时对每个元素寻找一个"配对"。暴力用 O(n) 扫描找配对，排序后用二分/双指针找，哈希表用 O(1) 查找找。
+        </p>
+        <div style="padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);">
+          🧭 <strong style="color:var(--text-primary);">框架迁移</strong>：这个"查找互补"框架可推广到 → 三数之和（固定一个找两个互补）→ 子数组和（前缀和+找互补）→ 数对计数（哈希表统计频率）
+        </div>
+      </div>
+
+      <!-- 关联题目推荐 -->
+      <div class="card" style="margin-bottom:16px;">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔗 关联题目</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;">
+            <span style="font-size:12px;color:var(--text-tertiary);">#15</span>
+            <span style="font-size:13px;flex:1;">三数之和</span>
+            <span class="badge-medium">Medium</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;">
+            <span style="font-size:12px;color:var(--text-tertiary);">#167</span>
+            <span style="font-size:13px;flex:1;">两数之和 II（有序数组）</span>
+            <span class="badge-medium">Medium</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;">
+            <span style="font-size:12px;color:var(--text-tertiary);">#560</span>
+            <span style="font-size:13px;flex:1;">和为 K 的子数组</span>
+            <span class="badge-medium">Medium</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 反馈组件 -->
+      <div class="card">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">📝 内容反馈</h4>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">这份解析对你有帮助吗？</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <span class="btn btn-ghost" style="font-size:12px;">👍 有帮助</span>
+          <span class="btn btn-ghost" style="font-size:12px;">👎 需改进</span>
+          <span class="btn btn-ghost" style="font-size:12px;">🐛 有错误</span>
+        </div>
+        <textarea style="width:100%;height:60px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:10px;font-size:13px;color:var(--text-primary);resize:none;" placeholder="详细描述你的建议（可选）..."></textarea>
+      </div>
+
+      <!-- 🎯 下一步行动引导（P0-2 修复） -->
+      <div class="card" style="border:1px solid var(--accent);background:hsl(220 70% 55%/0.03);">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🎯 下一步</h4>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          <a href="#feynman" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;transition:background 0.15s;">
+            <span style="font-size:18px;">🧠</span>
+            <div><div style="font-size:13px;font-weight:500;">用费曼模式复述</div><div style="font-size:11px;color:var(--text-tertiary);">用自己的话验证理解</div></div>
+          </a>
+          <a href="#interview" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;transition:background 0.15s;">
+            <span style="font-size:18px;">🎤</span>
+            <div><div style="font-size:13px;font-weight:500;">面试模拟</div><div style="font-size:11px;color:var(--text-tertiary);">限时模拟+追问</div></div>
+          </a>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;">
+            <span style="font-size:18px;">🔗</span>
+            <div><div style="font-size:13px;font-weight:500;">同模式变体题</div><div style="font-size:11px;color:var(--text-tertiary);">三数之和 · 子数组和</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);cursor:pointer;">
+            <span style="font-size:18px;">📅</span>
+            <div><div style="font-size:13px;font-weight:500;">加入复习计划</div><div style="font-size:11px;color:var(--text-tertiary);">明天自动提醒复习</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧 TOC -->
+    <div style="position:sticky;top:68px;align-self:start;">
+      <div style="font-size:11px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">目录</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <a href="#" style="font-size:12px;color:var(--accent);padding-left:8px;border-left:2px solid var(--accent);">技术解析</a>
+        <a href="#" style="font-size:12px;color:var(--text-secondary);padding-left:8px;border-left:2px solid transparent;">流程图解</a>
+        <a href="#" style="font-size:12px;color:var(--text-secondary);padding-left:8px;border-left:2px solid transparent;">代码实现</a>
+        <a href="#" style="font-size:12px;color:var(--text-secondary);padding-left:8px;border-left:2px solid transparent;">解法对比</a>
+        <a href="#" style="font-size:12px;color:var(--text-secondary);padding-left:8px;border-left:2px solid transparent;">关联题目</a>
+        <a href="#" style="font-size:12px;color:var(--text-secondary);padding-left:8px;border-left:2px solid transparent;">反馈</a>
+      </div>
+      <!-- 交互入口 -->
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px;">
+        <a href="#feynman" class="btn btn-ghost" style="font-size:11px;justify-content:center;">💬 费曼模式</a>
+        <a href="#interview" class="btn btn-ghost" style="font-size:11px;justify-content:center;">🎤 面试模拟</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 4: 算法模式列表页                      -->
+<!-- ========================================== -->
+<section id="patterns" class="page-section">
+  <div class="section-title">算法模式</div>
+  <h2 class="section-heading">模式列表</h2>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;">掌握 23 种核心算法模式，解题能力指数级提升</p>
+
+  <!-- 难度分布 -->
+  <div style="display:flex;gap:16px;margin-bottom:28px;">
+    <div style="padding:12px 20px;background:hsl(142 55% 48%/0.08);border:1px solid hsl(142 55% 48%/0.2);border-radius:var(--radius-md);font-size:13px;color:var(--easy);">入门 · 8 个模式</div>
+    <div style="padding:12px 20px;background:hsl(38 85% 55%/0.08);border:1px solid hsl(38 85% 55%/0.2);border-radius:var(--radius-md);font-size:13px;color:var(--medium);">进阶 · 10 个模式</div>
+    <div style="padding:12px 20px;background:hsl(350 65% 55%/0.08);border:1px solid hsl(350 65% 55%/0.2);border-radius:var(--radius-md);font-size:13px;color:var(--hard);">高级 · 5 个模式</div>
+  </div>
+
+  <!-- 模式卡片网格 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">🪟</div>
+        <span class="badge-easy">入门</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">滑动窗口</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">维护动态区间，解决子串/子数组最优问题</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>12 道题</span><span>掌握度 75%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:75%;height:100%;background:var(--easy);border-radius:2px;"></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">👆👇</div>
+        <span class="badge-easy">入门</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">双指针</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">首尾/快慢指针，线性扫描优化</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>15 道题</span><span>掌握度 60%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:60%;height:100%;background:var(--easy);border-radius:2px;"></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">🌳</div>
+        <span class="badge-medium">进阶</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">DFS/BFS</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">树与图的遍历，递归与迭代</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>20 道题</span><span>掌握度 45%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:45%;height:100%;background:var(--medium);border-radius:2px;"></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">📐</div>
+        <span class="badge-medium">进阶</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">动态规划</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">状态定义 + 转移方程，最优子结构问题</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>35 道题</span><span>掌握度 30%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:30%;height:100%;background:var(--medium);border-radius:2px;"></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">🔀</div>
+        <span class="badge-hard">高级</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">单调栈/队列</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">利用单调性维护候选集，O(n) 求区间极值</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>8 道题</span><span>掌握度 15%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:15%;height:100%;background:var(--hard);border-radius:2px;"></div>
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+        <div style="font-size:24px;">🧬</div>
+        <span class="badge-hard">高级</span>
+      </div>
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:6px;">并查集</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">高效处理连通性、合并与查询操作</p>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary);">
+        <span>6 道题</span><span>掌握度 10%</span>
+      </div>
+      <div style="margin-top:8px;height:3px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;">
+        <div style="width:10%;height:100%;background:var(--hard);border-radius:2px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 5: 模式详情页                          -->
+<!-- ========================================== -->
+<section id="pattern-detail" class="page-section">
+  <div class="section-title">模式详情</div>
+  <h2 class="section-heading">🪟 滑动窗口</h2>
+
+  <!-- 模式描述 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="font-size:15px;font-weight:600;margin-bottom:10px;">模式描述</h4>
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;">
+      滑动窗口是一种用于处理连续子数组/子串问题的技巧。通过维护一个动态窗口（通常用左右指针表示），避免重复计算，将 O(n²) 降到 O(n)。适用于求最长/最短满足条件的子串/子数组。
+    </p>
+  </div>
+
+  <!-- 识别信号 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="font-size:15px;font-weight:600;margin-bottom:10px;">🎯 识别信号</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--success);">✓</span><span style="font-size:13px;color:var(--text-secondary);">题目要求连续子数组/子串</span></div>
+      <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--success);">✓</span><span style="font-size:13px;color:var(--text-secondary);">求最长/最短/恰好满足某条件</span></div>
+      <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--success);">✓</span><span style="font-size:13px;color:var(--text-secondary);">可以通过"扩大窗口"和"缩小窗口"来维护条件</span></div>
+      <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--error);">✗</span><span style="font-size:13px;color:var(--text-secondary);">子序列（不连续）问题通常不适用</span></div>
+    </div>
+  </div>
+
+  <!-- 模板代码 -->
+  <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border-subtle);background:var(--bg-tertiary);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:500;">📋 通用模板</span>
+      <span style="font-size:12px;color:var(--text-tertiary);cursor:pointer;">📋 复制</span>
+    </div>
+    <pre style="padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.7;overflow-x:auto;background:var(--bg-primary);"><code style="color:var(--text-secondary);">def sliding_window(s):
+    left = 0
+    window = {}  <span style="color:var(--text-tertiary);"># 窗口内状态</span>
+    result = 0
+    
+    for right in range(len(s)):
+        <span style="color:var(--text-tertiary);"># 1. 扩大窗口</span>
+        window[s[right]] = window.get(s[right], 0) + 1
+        
+        <span style="color:var(--text-tertiary);"># 2. 收缩条件</span>
+        while <span style="color:var(--accent);">窗口不满足条件</span>:
+            window[s[left]] -= 1
+            left += 1
+        
+        <span style="color:var(--text-tertiary);"># 3. 更新答案</span>
+        result = max(result, right - left + 1)
+    
+    return result</code></pre>
+  </div>
+
+  <!-- 关联题目 -->
+  <div class="card">
+    <h4 style="font-size:15px;font-weight:600;margin-bottom:14px;">📚 该模式下的题目</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;color:var(--text-tertiary);">#3</span>
+        <span style="font-size:13px;flex:1;">无重复字符的最长子串</span>
+        <span class="badge-medium">Medium</span>
+        <span style="font-size:11px;color:var(--success);">已掌握</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;color:var(--text-tertiary);">#76</span>
+        <span style="font-size:13px;flex:1;">最小覆盖子串</span>
+        <span class="badge-hard">Hard</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">学习中</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;color:var(--text-tertiary);">#209</span>
+        <span style="font-size:13px;flex:1;">长度最小的子数组</span>
+        <span class="badge-medium">Medium</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">未开始</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;color:var(--text-tertiary);">#438</span>
+        <span style="font-size:13px;flex:1;">找到字符串中所有字母异位词</span>
+        <span class="badge-medium">Medium</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">未开始</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 6: 知识图谱页                          -->
+<!-- ========================================== -->
+<section id="graph" class="page-section">
+  <div class="section-title">知识图谱</div>
+  <h2 class="section-heading">算法知识网络</h2>
+
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;">
+    <!-- 左侧筛选面板 -->
+    <div class="card" style="height:fit-content;">
+      <h4 style="font-size:13px;font-weight:600;margin-bottom:12px;">筛选</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">节点类型</div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-bottom:4px;">
+            <input type="checkbox" checked> 题目
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-bottom:4px;">
+            <input type="checkbox" checked> 模式
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+            <input type="checkbox" checked> 数据结构
+          </label>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">难度</div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--easy);cursor:pointer;margin-bottom:4px;">
+            <input type="checkbox" checked> Easy
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--medium);cursor:pointer;margin-bottom:4px;">
+            <input type="checkbox" checked> Medium
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--hard);cursor:pointer;">
+            <input type="checkbox" checked> Hard
+          </label>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">掌握状态</div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;margin-bottom:4px;">
+            <input type="checkbox" checked> 已掌握
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+            <input type="checkbox" checked> 学习中
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图谱主区域 -->
+    <div class="card" style="min-height:400px;position:relative;overflow:hidden;">
+      <!-- 模拟节点和边 -->
+      <svg width="100%" height="380" style="position:absolute;top:0;left:0;">
+        <line x1="200" y1="120" x2="380" y2="80" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+        <line x1="200" y1="120" x2="150" y2="240" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+        <line x1="200" y1="120" x2="340" y2="200" stroke="hsl(220 70% 55%/0.3)" stroke-width="1.5"/>
+        <line x1="380" y1="80" x2="500" y2="150" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+        <line x1="340" y1="200" x2="500" y2="150" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+        <line x1="340" y1="200" x2="420" y2="300" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+        <line x1="150" y1="240" x2="280" y2="320" stroke="hsl(0 0% 100%/0.08)" stroke-width="1"/>
+      </svg>
+      <!-- 节点 -->
+      <div style="position:absolute;left:170px;top:100px;padding:8px 14px;background:var(--accent);border-radius:20px;font-size:12px;color:#fff;font-weight:500;cursor:pointer;box-shadow:0 0 12px var(--accent-glow);">哈希表</div>
+      <div style="position:absolute;left:350px;top:60px;padding:8px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:20px;font-size:12px;color:var(--text-secondary);cursor:pointer;">双指针</div>
+      <div style="position:absolute;left:120px;top:220px;padding:8px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:20px;font-size:12px;color:var(--text-secondary);cursor:pointer;">数组</div>
+      <div style="position:absolute;left:310px;top:180px;padding:8px 14px;background:hsl(142 55% 48%/0.15);border:1px solid hsl(142 55% 48%/0.3);border-radius:20px;font-size:12px;color:var(--easy);cursor:pointer;">两数之和</div>
+      <div style="position:absolute;left:470px;top:130px;padding:8px 14px;background:hsl(38 85% 55%/0.15);border:1px solid hsl(38 85% 55%/0.3);border-radius:20px;font-size:12px;color:var(--medium);cursor:pointer;">三数之和</div>
+      <div style="position:absolute;left:390px;top:280px;padding:8px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:20px;font-size:12px;color:var(--text-secondary);cursor:pointer;">滑动窗口</div>
+      <div style="position:absolute;left:250px;top:300px;padding:8px 14px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:20px;font-size:12px;color:var(--text-secondary);cursor:pointer;">前缀和</div>
+
+      <!-- 图例 -->
+      <div style="position:absolute;bottom:12px;right:12px;display:flex;gap:12px;font-size:11px;color:var(--text-tertiary);">
+        <span>● 模式</span><span style="color:var(--easy);">● Easy</span><span style="color:var(--medium);">● Medium</span><span style="color:var(--hard);">● Hard</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 节点点击弹窗模拟 -->
+  <div style="margin-top:20px;">
+    <div class="card" style="max-width:360px;border:1px solid var(--accent);box-shadow:0 4px 24px hsl(220 70% 55%/0.15);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h4 style="font-size:14px;font-weight:600;">哈希表</h4>
+        <span style="font-size:12px;color:var(--text-tertiary);cursor:pointer;">✕ 关闭</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">O(1) 查找的核心数据结构，是两数之和、异位词检测等问题的基石。</p>
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">关联 18 道题 · 4 个模式</div>
+      <a href="#" class="btn btn-primary" style="font-size:12px;padding:6px 12px;">查看全部关联 →</a>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 7: 费曼模式页                          -->
+<!-- ========================================== -->
+<section id="feynman" class="page-section">
+  <div class="section-title">费曼学习法</div>
+  <h2 class="section-heading">用教学验证理解</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;">
+    <!-- 对话区 -->
+    <div class="card" style="display:flex;flex-direction:column;max-height:560px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
+        <div><span style="font-size:14px;font-weight:600;">两数之和</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">费曼对话</span></div>
+        <div style="display:flex;gap:8px;">
+          <span class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">📥 导出</span>
+          <span class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">🔄 重置</span>
+          <span class="btn btn-primary" style="font-size:11px;padding:4px 8px;">✅ 结束并生成总结</span>
+        </div>
+      </div>
+
+      <!-- 历史消息 -->
+      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;margin-bottom:14px;">
+        <!-- AI开场 -->
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(270 60% 50%/0.15);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">AI</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            请用你自己的话解释"两数之和"的解题思路。假设你在教一个刚学编程的朋友。
+          </div>
+        </div>
+        <!-- 用户回答 -->
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <div style="background:var(--accent-subtle);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-primary);line-height:1.6;max-width:80%;">
+            就是用一个字典记住已经看过的数字，然后每次看到新数字时算一下差值，如果差值在字典里就找到了。
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">你</div>
+        </div>
+        <!-- AI 追问 -->
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(270 60% 50%/0.15);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">AI</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            思路很清晰！追问两个关键细节：<br>
+            1. 字典的 <strong style="color:var(--text-primary);">key</strong> 和 <strong style="color:var(--text-primary);">value</strong> 分别存什么？为什么这样选择？<br>
+            2. 为什么是"先查后存"而不是"先存后查"？
+          </div>
+        </div>
+        <!-- 用户再答 -->
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <div style="background:var(--accent-subtle);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-primary);line-height:1.6;max-width:80%;">
+            key 存数值，value 存下标，因为我们需要通过值去查找对应的下标。先查后存是为了避免一个元素跟自己配对。
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">你</div>
+        </div>
+        <!-- AI 评价 -->
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(270 60% 50%/0.15);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">AI</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;max-width:80%;">
+            <span style="color:var(--success);">✓ 完全正确！</span> 你清晰地解释了数据结构的选择和操作顺序的理由。
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入框 -->
+      <div style="display:flex;gap:8px;">
+        <input type="text" placeholder="继续用你的话解释..." style="flex:1;height:38px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        <button class="btn btn-primary" style="height:38px;">发送</button>
+      </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- 结构化总结 -->
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📋 理解评估</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text-secondary);">整体思路</span><span style="color:var(--success);">✓ 掌握</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text-secondary);">数据结构选择</span><span style="color:var(--success);">✓ 掌握</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text-secondary);">边界条件</span><span style="color:var(--warning);">⚠ 部分</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:var(--text-secondary);">复杂度分析</span><span style="color:var(--text-tertiary);">— 未涉及</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 多类比选择 -->
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">💡 切换类比视角</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="padding:8px 10px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);font-size:12px;color:var(--accent);cursor:pointer;">📚 字典/电话簿查找</div>
+          <div style="padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);cursor:pointer;">🧩 拼图配对</div>
+          <div style="padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);cursor:pointer;">🏪 超市找零</div>
+        </div>
+      </div>
+
+      <!-- 加载状态模拟 -->
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">加载状态示意</div>
+        <div style="width:24px;height:24px;border:2px solid var(--border-default);border-top-color:var(--accent);border-radius:50%;margin:0 auto;animation:spin 1s linear infinite;"></div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">AI 正在分析你的回答...</div>
+      </div>
+
+      <!-- 6.6: 会话历史列表 -->
+      <div class="card">
+        <h4 style="font-size:13px;font-weight:600;margin-bottom:10px;">📜 历史会话</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="padding:8px 10px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);font-size:12px;color:var(--accent);cursor:pointer;display:flex;justify-content:space-between;">
+            <span>两数之和（当前）</span><span style="color:var(--text-tertiary);">3轮</span>
+          </div>
+          <div style="padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;justify-content:space-between;">
+            <span>最长子串</span><span style="color:var(--text-tertiary);">昨天</span>
+          </div>
+          <div style="padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;justify-content:space-between;">
+            <span>接雨水</span><span style="color:var(--text-tertiary);">3天前</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- ========================================== -->
+<!-- PAGE 8: 面试模拟页                          -->
+<!-- ========================================== -->
+<section id="interview" class="page-section">
+  <div class="section-title">面试模拟</div>
+  <h2 class="section-heading">模拟面试环境</h2>
+
+  <!-- P1-8: 面试配置面板（面试开始前） -->
+  <div class="card" style="margin-bottom:20px;max-width:520px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">⚙️ 面试配置</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <label style="font-size:12px;color:var(--text-tertiary);display:block;margin-bottom:4px;">难度</label>
+        <select style="width:100%;height:34px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 10px;font-size:13px;color:var(--text-primary);">
+          <option>随机</option><option>Easy</option><option selected>Medium</option><option>Hard</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-tertiary);display:block;margin-bottom:4px;">时间限制</label>
+        <select style="width:100%;height:34px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 10px;font-size:13px;color:var(--text-primary);">
+          <option selected>25 分钟</option><option>45 分钟</option><option>60 分钟</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-tertiary);display:block;margin-bottom:4px;">面试风格</label>
+        <select style="width:100%;height:34px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 10px;font-size:13px;color:var(--text-primary);">
+          <option selected>通用</option><option>Google</option><option>Meta</option><option>Amazon</option><option>字节跳动</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-tertiary);display:block;margin-bottom:4px;">指定题目（可选）</label>
+        <input type="text" placeholder="留空则随机选题" style="width:100%;height:34px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 10px;font-size:13px;color:var(--text-primary);outline:none;">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;font-size:14px;">🎤 开始面试</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- 左侧：对话区 + 计时器 -->
+    <div class="card" style="display:flex;flex-direction:column;">
+      <!-- 计时器 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-subtle);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:600;">两数之和 · 面试中</span>
+          <span class="badge-easy">Easy</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="padding:4px 10px;background:var(--bg-secondary);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--warning);">12:34</div>
+          <span style="font-size:11px;color:var(--text-tertiary);">/ 25:00</span>
+        </div>
+      </div>
+
+      <!-- 对话区 -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;margin-bottom:14px;min-height:200px;">
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(38 85% 55%/0.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">面</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+            给定一个整数数组和一个目标值，找出数组中和为目标值的两个数的下标。你能在 O(n) 时间内解决吗？请先描述思路。
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <div style="background:var(--accent-subtle);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-primary);line-height:1.6;max-width:75%;">
+            我会用哈希表，遍历数组时存入已经遇到的值和下标，每次检查 target - nums[i] 是否在表中...
+          </div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">你</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:hsl(38 85% 55%/0.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">面</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+            很好。请写出代码，并说明时间和空间复杂度。
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" placeholder="描述你的思路或提问..." style="flex:1;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        <button class="btn btn-primary" style="height:36px;font-size:12px;">回答</button>
+        <button class="btn btn-ghost" style="height:36px;font-size:12px;">提示</button>
+      </div>
+    </div>
+
+    <!-- 右侧：代码编辑区 -->
+    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border-subtle);background:var(--bg-tertiary);display:flex;align-items:center;">
+        <span style="font-size:12px;font-weight:500;">代码编辑</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);">Python 3</span>
+      </div>
+      <pre style="flex:1;padding:14px;font-family:var(--font-mono);font-size:12px;line-height:1.7;overflow:auto;background:var(--bg-primary);margin:0;"><code style="color:var(--text-secondary);">def twoSum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        diff = target - num
+        if diff in seen:
+            return [seen[diff], i]
+        seen[num] = i
+    return []
+</code></pre>
+      <div style="padding:8px 14px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;">
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 10px;">▶ 运行</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;">提交</button>
+        <span style="margin-left:auto;font-size:11px;color:var(--success);">✓ 通过 2/2 测试用例</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 评分报告雷达图 -->
+  <div style="margin-top:20px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:14px;">📊 面试评分报告</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- 雷达图模拟 -->
+      <div class="card" style="text-align:center;">
+        <div style="font-size:13px;font-weight:500;margin-bottom:16px;">能力雷达</div>
+        <svg viewBox="0 0 200 200" width="180" height="180" style="margin:0 auto;display:block;">
+          <!-- 背景网格 -->
+          <polygon points="100,20 172,55 172,145 100,180 28,145 28,55" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+          <polygon points="100,40 156,65 156,135 100,160 44,135 44,65" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+          <polygon points="100,60 140,75 140,125 100,140 60,125 60,75" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+          <!-- 数据多边形 -->
+          <polygon points="100,30 165,62 150,140 100,165 50,120 45,60" fill="hsl(220 70% 55%/0.15)" stroke="var(--accent)" stroke-width="1.5"/>
+          <!-- 顶点 -->
+          <circle cx="100" cy="30" r="3" fill="var(--accent)"/>
+          <circle cx="165" cy="62" r="3" fill="var(--accent)"/>
+          <circle cx="150" cy="140" r="3" fill="var(--accent)"/>
+          <circle cx="100" cy="165" r="3" fill="var(--accent)"/>
+          <circle cx="50" cy="120" r="3" fill="var(--accent)"/>
+          <circle cx="45" cy="60" r="3" fill="var(--accent)"/>
+          <!-- 标签 -->
+          <text x="100" y="14" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="9">思路清晰度</text>
+          <text x="185" y="60" text-anchor="start" fill="hsl(0 0% 63%)" font-size="9">代码质量</text>
+          <text x="178" y="148" text-anchor="start" fill="hsl(0 0% 63%)" font-size="9">复杂度分析</text>
+          <text x="100" y="195" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="9">沟通表达</text>
+          <text x="18" y="128" text-anchor="end" fill="hsl(0 0% 63%)" font-size="9">边界处理</text>
+          <text x="18" y="58" text-anchor="end" fill="hsl(0 0% 63%)" font-size="9">优化意识</text>
+        </svg>
+      </div>
+      <!-- 评分细项 -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:14px;">详细评分</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">思路清晰度</span><span style="color:var(--success);">92/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:92%;height:100%;background:var(--success);border-radius:2px;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">代码质量</span><span style="color:var(--success);">85/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:85%;height:100%;background:var(--success);border-radius:2px;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">复杂度分析</span><span style="color:var(--medium);">70/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:70%;height:100%;background:var(--medium);border-radius:2px;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">沟通表达</span><span style="color:var(--success);">88/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:88%;height:100%;background:var(--success);border-radius:2px;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">边界处理</span><span style="color:var(--medium);">60/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:60%;height:100%;background:var(--medium);border-radius:2px;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text-secondary);">优化意识</span><span style="color:var(--medium);">65/100</span></div><div style="height:4px;background:var(--bg-secondary);border-radius:2px;"><div style="width:65%;height:100%;background:var(--medium);border-radius:2px;"></div></div></div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border-subtle);font-size:13px;font-weight:600;color:var(--accent);">总分：78/100 · 评级 B+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错误状态示意 -->
+  <div style="margin-top:20px;">
+    <div class="card" style="text-align:center;border:1px dashed var(--error);background:hsl(0 70% 55%/0.04);">
+      <div style="font-size:24px;margin-bottom:8px;">⚠️</div>
+      <div style="font-size:14px;color:var(--error);margin-bottom:4px;">连接中断</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">面试过程因网络问题中断，你的进度已保存</div>
+      <button class="btn btn-ghost" style="font-size:12px;">重新连接</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 9: 复习中心页                          -->
+<!-- ========================================== -->
+<section id="review" class="page-section">
+  <div class="section-title">复习中心</div>
+  <h2 class="section-heading">今日复习</h2>
+
+  <!-- P1-9: 算法日历 — 今日计划 -->
+  <div class="card" style="margin-bottom:20px;border:1px solid var(--accent);background:hsl(220 70% 55%/0.03);">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:var(--radius-md);background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:22px;">📅</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:2px;">今日学习计划</div>
+        <div style="font-size:12px;color:var(--text-secondary);">
+          🔄 回顾模式：<span style="color:var(--accent);">动态规划</span> · 📝 新题推荐：<span style="color:var(--accent);">零钱兑换 #322</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="font-size:12px;">开始今日计划</button>
+    </div>
+  </div>
+
+  <!-- P1-10: 多样化复习方式选择 -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="font-size:13px;color:var(--text-secondary);line-height:30px;">复习方式：</span>
+    <span style="padding:6px 12px;background:var(--accent-subtle);color:var(--accent);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;">🃏 经典翻卡</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">🖼 看图猜算法</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">✏️ 补全代码</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">🧩 模式识别 Quiz</span>
+    <span class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">⚡ 复杂度训练</span>
+  </div>
+
+  <!-- 学习统计面板 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--accent);">5</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">今日待复习</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--success);">12</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">本周已完成</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--text-primary);">7</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">连续学习天数</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--medium);">68%</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">记忆保持率</div>
+    </div>
+  </div>
+
+  <!-- 今日待复习卡片 -->
+  <h3 style="font-size:16px;font-weight:600;margin-bottom:14px;">📋 待复习卡片</h3>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px;">
+    <!-- 卡片正面 -->
+    <div class="card" style="cursor:pointer;min-height:160px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:8px;">正面 · 点击翻转</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:8px;">两数之和</div>
+      <div style="font-size:13px;color:var(--text-secondary);">用哈希表如何将时间复杂度从 O(n²) 降到 O(n)？</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-tertiary);">上次复习：2天前 · 间隔：4天</div>
+    </div>
+    <!-- 卡片背面（翻转后） -->
+    <div class="card" style="min-height:160px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--accent);background:hsl(220 70% 55%/0.04);">
+      <div style="font-size:11px;color:var(--accent);margin-bottom:8px;">背面 · 答案</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;">
+        遍历时用 map 存 {值:下标}，每次检查 target-num 是否在 map 中。一次遍历 O(n)，查找 O(1)。
+      </div>
+      <!-- 自评按钮 -->
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button style="padding:6px 14px;background:var(--error);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">😟 忘了</button>
+        <button style="padding:6px 14px;background:var(--medium);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">🤔 模糊</button>
+        <button style="padding:6px 14px;background:var(--success);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">😊 记得</button>
+        <button style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">🚀 秒杀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 翻转动画模拟 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🔄 卡片翻转效果预览</h4>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <div style="width:180px;height:100px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-secondary);">正面（问题）</div>
+      <div style="font-size:18px;color:var(--text-tertiary);">⟶</div>
+      <div style="width:180px;height:100px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);transform:rotateY(180deg) rotateY(180deg);">背面（答案）</div>
+    </div>
+  </div>
+
+  <!-- 学习统计详细 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📈 学习趋势（最近7天）</h4>
+    <div style="display:flex;align-items:end;gap:8px;height:100px;padding-bottom:4px;">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:30px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">一</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:50px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">二</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:40px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">三</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:70px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">四</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:55px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">五</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:90px;"></div>
+        <span style="font-size:10px;color:var(--text-tertiary);">六</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:100%;background:var(--accent-subtle);border:1px dashed var(--accent);border-radius:3px 3px 0 0;height:20px;"></div>
+        <span style="font-size:10px;color:var(--accent);">今</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:11px;color:var(--text-tertiary);">
+      <span>平均每天复习 4.5 道</span><span>本周已完成 12/15 目标</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 10: 设置页                             -->
+<!-- ========================================== -->
+<section id="settings" class="page-section">
+  <div class="section-title">设置</div>
+  <h2 class="section-heading">个人偏好设置</h2>
+
+  <div style="max-width:600px;">
+    <!-- 默认解释级别 -->
+    <div class="card" style="margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🎯 默认解释级别</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">进入题目详情时默认展示的认知层级</p>
+      <div style="display:flex;gap:4px;padding:4px;background:var(--bg-secondary);border-radius:var(--radius-md);width:fit-content;">
+        <div style="padding:6px 12px;border-radius:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">L1 直觉</div>
+        <div style="padding:6px 12px;border-radius:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">L2 类比</div>
+        <div style="padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;background:var(--accent-subtle);color:var(--accent);cursor:pointer;">L3 技术</div>
+        <div style="padding:6px 12px;border-radius:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">L4 优化</div>
+        <div style="padding:6px 12px;border-radius:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">L5 论文</div>
+      </div>
+    </div>
+
+    <!-- 默认编程语言 -->
+    <div class="card" style="margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">💻 默认编程语言</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">代码示例优先展示的语言</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="padding:6px 14px;background:var(--accent-subtle);color:var(--accent);border:1px solid hsl(220 70% 55%/0.3);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;">Python</span>
+        <span style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);cursor:pointer;">Java</span>
+        <span style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);cursor:pointer;">Go</span>
+        <span style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);cursor:pointer;">C++</span>
+        <span style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);cursor:pointer;">TypeScript</span>
+        <span style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);cursor:pointer;">Rust</span>
+      </div>
+    </div>
+
+    <!-- 主题偏好 -->
+    <div class="card" style="margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🎨 主题偏好</h4>
+      <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">界面外观模式</p>
+      <div style="display:flex;gap:12px;">
+        <div style="padding:12px 20px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.3);border-radius:var(--radius-md);text-align:center;cursor:pointer;">
+          <div style="font-size:18px;margin-bottom:4px;">🌙</div>
+          <div style="font-size:12px;color:var(--accent);font-weight:500;">暗色</div>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);text-align:center;cursor:pointer;">
+          <div style="font-size:18px;margin-bottom:4px;">☀️</div>
+          <div style="font-size:12px;color:var(--text-secondary);">亮色</div>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:var(--radius-md);text-align:center;cursor:pointer;">
+          <div style="font-size:18px;margin-bottom:4px;">💻</div>
+          <div style="font-size:12px;color:var(--text-secondary);">跟随系统</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 其他设置 -->
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">⚙️ 其他</h4>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">每日复习提醒</div><div style="font-size:11px;color:var(--text-tertiary);">每天 09:00 推送复习通知</div></div>
+          <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">代码行号</div><div style="font-size:11px;color:var(--text-tertiary);">在代码块中显示行号</div></div>
+          <div style="width:36px;height:20px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:var(--text-tertiary);border-radius:50%;position:absolute;top:2px;left:2px;"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">动画效果</div><div style="font-size:11px;color:var(--text-tertiary);">页面过渡和交互动画</div></div>
+          <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 11: 登录/注册页                        -->
+<!-- ========================================== -->
+<section id="auth" class="page-section">
+  <div class="section-title">认证</div>
+  <h2 class="section-heading">登录 / 注册</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:720px;">
+    <!-- 登录表单 -->
+    <div class="card">
+      <h4 style="font-size:16px;font-weight:600;margin-bottom:16px;">登录</h4>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">邮箱</label>
+          <input type="email" value="user@example.com" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">密码</label>
+          <input type="password" value="password123" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer;">
+            <input type="checkbox"> 记住我
+          </label>
+          <a href="#" style="font-size:12px;color:var(--accent);">忘记密码？</a>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;height:38px;">登录</button>
+        <div style="text-align:center;font-size:12px;color:var(--text-tertiary);">— 或 —</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;height:38px;font-size:13px;">🔗 GitHub 登录</button>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;height:38px;font-size:13px;">📧 Google 登录</button>
+      </div>
+    </div>
+
+    <!-- 注册表单 -->
+    <div class="card">
+      <h4 style="font-size:16px;font-weight:600;margin-bottom:16px;">注册</h4>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">用户名</label>
+          <input type="text" placeholder="3-20位字母或数字" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">邮箱</label>
+          <input type="email" value="bad-email" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--error);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+          <div style="font-size:11px;color:var(--error);margin-top:4px;">⚠ 请输入有效的邮箱地址</div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">密码</label>
+          <input type="password" placeholder="至少8位，含大小写和数字" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+          <!-- 密码强度指示 -->
+          <div style="display:flex;gap:4px;margin-top:6px;">
+            <div style="flex:1;height:3px;background:var(--error);border-radius:2px;"></div>
+            <div style="flex:1;height:3px;background:var(--error);border-radius:2px;"></div>
+            <div style="flex:1;height:3px;background:var(--bg-tertiary);border-radius:2px;"></div>
+            <div style="flex:1;height:3px;background:var(--bg-tertiary);border-radius:2px;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--error);margin-top:4px;">密码强度：弱</div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">确认密码</label>
+          <input type="password" placeholder="再次输入密码" style="width:100%;height:36px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;height:38px;">创建账户</button>
+        <div style="font-size:11px;color:var(--text-tertiary);text-align:center;">注册即表示同意 <a href="#" style="color:var(--accent);">服务条款</a> 和 <a href="#" style="color:var(--accent);">隐私政策</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 已登录状态 -->
+  <div style="margin-top:24px;">
+    <div class="card" style="max-width:360px;border:1px solid var(--success);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>
+        <div>
+          <div style="font-size:14px;font-weight:500;">已登录状态示意</div>
+          <div style="font-size:12px;color:var(--text-tertiary);">user@example.com · 加入 30 天</div>
+        </div>
+        <span style="margin-left:auto;font-size:12px;color:var(--error);cursor:pointer;">退出</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- PAGE 12: 管理后台页                         -->
+<!-- ========================================== -->
+<section id="admin" class="page-section">
+  <div class="section-title">管理后台</div>
+  <h2 class="section-heading">内容管理面板</h2>
+
+  <!-- 顶部统计 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--accent);">487</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">题目总数</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--warning);">12</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">待审核</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--success);">3</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">生成中</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:20px;font-weight:700;color:var(--error);">5</div>
+      <div style="font-size:11px;color:var(--text-tertiary);">用户反馈</div>
+    </div>
+  </div>
+
+  <!-- 内容审核列表 -->
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;">📋 内容审核队列</h4>
+      <div style="display:flex;gap:8px;">
+        <span class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">全部</span>
+        <span style="padding:4px 8px;background:var(--warning);color:#fff;border-radius:var(--radius-sm);font-size:11px;">待审核</span>
+        <span class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">已通过</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);"></span>
+        <span style="font-size:13px;flex:1;">二叉树的层序遍历 · L3 内容生成完毕</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">2 小时前</span>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;">审核</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">跳过</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);"></span>
+        <span style="font-size:13px;flex:1;">合并 K 个排序链表 · L2 内容待审</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">5 小时前</span>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;">审核</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">跳过</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--success);"></span>
+        <span style="font-size:13px;flex:1;color:var(--text-tertiary);">最小生成树 · 已通过</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">1 天前</span>
+        <span style="font-size:11px;color:var(--success);">✓ 通过</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 生成管理 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">⚡ 内容生成管理</h4>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;"></div>
+        <span style="font-size:13px;flex:1;">接雨水 · L4 优化解析</span>
+        <div style="width:120px;height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;">
+          <div style="width:65%;height:100%;background:var(--accent);border-radius:2px;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--text-tertiary);">65%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;"></div>
+        <span style="font-size:13px;flex:1;">LRU 缓存 · 全级别生成</span>
+        <div style="width:120px;height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;">
+          <div style="width:30%;height:100%;background:var(--accent);border-radius:2px;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--text-tertiary);">30%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:hsl(0 70% 55%/0.05);border:1px solid hsl(0 70% 55%/0.2);border-radius:var(--radius-md);">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--error);"></div>
+        <span style="font-size:13px;flex:1;color:var(--error);">字符串匹配 KMP · 生成失败</span>
+        <span style="font-size:11px;color:var(--error);">Token 超限</span>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;">重试</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;">
+      <button class="btn btn-primary" style="font-size:12px;">+ 新建生成任务</button>
+      <button class="btn btn-ghost" style="font-size:12px;">批量生成</button>
+    </div>
+  </div>
+
+  <!-- 反馈仪表盘 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">💬 用户反馈仪表盘</h4>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+      <div style="text-align:center;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:18px;font-weight:700;color:var(--success);">89%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">正面评价</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:18px;font-weight:700;color:var(--warning);">8%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">需改进</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div style="font-size:18px;font-weight:700;color:var(--error);">3%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">报告错误</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;">🐛</span>
+        <span style="font-size:12px;flex:1;color:var(--text-secondary);">「两数之和」L2 类比中有一处描述不准确</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">30 分钟前</span>
+        <span style="padding:3px 6px;background:hsl(0 70% 55%/0.12);color:var(--error);border-radius:4px;font-size:10px;">待处理</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;">👍</span>
+        <span style="font-size:12px;flex:1;color:var(--text-secondary);">「滑动窗口模式」模板代码很实用</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">2 小时前</span>
+        <span style="padding:3px 6px;background:hsl(142 55% 48%/0.12);color:var(--success);border-radius:4px;font-size:10px;">已确认</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <span style="font-size:12px;">💡</span>
+        <span style="font-size:12px;flex:1;color:var(--text-secondary);">建议增加 Rust 语言代码示例</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">1 天前</span>
+        <span style="padding:3px 6px;background:hsl(38 85% 55%/0.12);color:var(--medium);border-radius:4px;font-size:10px;">规划中</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="max-width:1080px;margin:0 auto;padding:40px 24px 60px;border-top:1px solid var(--border-subtle);">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px;">ADUE · 算法深度理解引擎</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">方案A — Geist 极简暗色风格 · UI 原型预览</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);">
+      包含 12 个页面区域 · 完整交互状态展示
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

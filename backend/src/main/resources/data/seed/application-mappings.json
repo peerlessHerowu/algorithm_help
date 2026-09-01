@@ -1,0 +1,35 @@
+[
+  {
+    "patternId": "pattern:dijkstra",
+    "domain": "INDUSTRY",
+    "title": "导航路径规划",
+    "subtitle": "Dijkstra → Google Maps",
+    "description": "Google Maps 等导航应用的核心就是最短路径算法。当你输入起点和终点时，系统将道路网络建模为加权图（权重为距离或时间），然后用 Dijkstra 或 A* 找到最优路径。\n\n实际工程中会加入实时路况权重动态调整、分层图加速等优化，但核心思想不变。",
+    "miniCaseCode": "import heapq\n\ndef dijkstra(graph, start):\n    \"\"\"简化版 Dijkstra：模拟导航路径规划\"\"\"\n    # graph: {node: [(neighbor, weight), ...]}\n    dist = {node: float('inf') for node in graph}\n    dist[start] = 0\n    pq = [(0, start)]  # (距离, 节点)\n\n    while pq:\n        d, u = heapq.heappop(pq)\n        if d > dist[u]:\n            continue\n        for v, w in graph[u]:\n            if dist[u] + w < dist[v]:\n                dist[v] = dist[u] + w\n                heapq.heappush(pq, (dist[v], v))\n    return dist\n\n# 模拟城市路网\ncity_map = {\n    '家': [('地铁站', 5), ('公交站', 3)],\n    '地铁站': [('公司', 10), ('商场', 8)],\n    '公交站': [('公司', 15), ('地铁站', 4)],\n    '商场': [('公司', 3)],\n    '公司': []\n}\n\nresult = dijkstra(city_map, '家')\nfor dest, d in sorted(result.items(), key=lambda x: x[1]):\n    print(f'家 → {dest}: {d} 分钟')",
+    "miniCaseLanguage": "python",
+    "icon": "🗺️",
+    "runtimeRequirements": "Python 3.8+，无额外依赖"
+  },
+  {
+    "patternId": "pattern:bfs",
+    "domain": "AI_ML",
+    "title": "社交网络影响力传播",
+    "subtitle": "BFS → 推荐系统好友发现",
+    "description": "社交网络中的好友推荐本质是 BFS 遍历：从当前用户出发，逐层扩展寻找潜在好友。LinkedIn 的'你可能认识的人'就是典型的 BFS 应用。\n\n通过控制遍历层数和过滤条件，可以高效发现二度、三度人脉关系。",
+    "miniCaseCode": "from collections import deque\n\ndef find_friends_of_friends(graph, user, max_depth=2):\n    \"\"\"BFS 发现潜在好友（类似 LinkedIn 推荐）\"\"\"\n    visited = {user}\n    queue = deque([(user, 0)])\n    recommendations = []\n\n    while queue:\n        current, depth = queue.popleft()\n        if depth >= max_depth:\n            break\n        for friend in graph.get(current, []):\n            if friend not in visited:\n                visited.add(friend)\n                queue.append((friend, depth + 1))\n                # 非直接好友才推荐\n                if depth >= 1:\n                    recommendations.append(\n                        (friend, depth + 1)\n                    )\n    return recommendations\n\n# 模拟社交网络\nsocial = {\n    'Alice': ['Bob', 'Carol'],\n    'Bob': ['Alice', 'Dave', 'Eve'],\n    'Carol': ['Alice', 'Frank'],\n    'Dave': ['Bob'],\n    'Eve': ['Bob', 'Frank'],\n    'Frank': ['Carol', 'Eve']\n}\n\nrecs = find_friends_of_friends(social, 'Alice')\nfor person, degree in recs:\n    print(f'推荐: {person}（{degree}度人脉）')",
+    "miniCaseLanguage": "python",
+    "icon": "🌐",
+    "runtimeRequirements": "Python 3.8+，无额外依赖"
+  },
+  {
+    "patternId": "pattern:dp",
+    "domain": "INDUSTRY",
+    "title": "资源分配优化",
+    "subtitle": "DP 背包问题 → 云服务器选型",
+    "description": "云计算中的虚拟机选型问题本质就是背包问题：在有限预算（容量）下，选择最优的服务器配置组合（物品），使性能收益（价值）最大化。\n\nAWS、阿里云的竞价实例调度也依赖动态规划思想来优化资源利用率。",
+    "miniCaseCode": "import java.util.*;\n\npublic class ServerSelection {\n    /**\n     * 0-1 背包：有限预算下选择最优服务器组合\n     * budget: 月预算（元）\n     * costs: 每种配置的月费用\n     * scores: 每种配置的性能评分\n     */\n    public static int maxPerformance(\n            int budget, int[] costs, int[] scores) {\n        int n = costs.length;\n        int[] dp = new int[budget + 1];\n\n        for (int i = 0; i < n; i++) {\n            // 逆序遍历保证每个配置只选一次\n            for (int j = budget; j >= costs[i]; j--) {\n                dp[j] = Math.max(\n                    dp[j], dp[j - costs[i]] + scores[i]\n                );\n            }\n        }\n        return dp[budget];\n    }\n\n    public static void main(String[] args) {\n        // 月预算 1000 元\n        int budget = 1000;\n        // 配置: 2C4G/4C8G/8C16G/16C32G\n        int[] costs = {200, 400, 700, 1000};\n        int[] scores = {30, 55, 85, 100};\n\n        int best = maxPerformance(budget, costs, scores);\n        System.out.println(\"最优性能评分: \" + best);\n    }\n}",
+    "miniCaseLanguage": "java",
+    "icon": "☁️",
+    "runtimeRequirements": "Java 17+，需 import java.util.*"
+  }
+]

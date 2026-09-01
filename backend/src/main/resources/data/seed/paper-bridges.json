@@ -1,0 +1,128 @@
+[
+  {
+    "id": "bfs-to-gcn",
+    "baseAlgorithm": "BFS",
+    "paperTitle": "Semi-Supervised Classification with Graph Convolutional Networks",
+    "paperAuthors": "Thomas N. Kipf, Max Welling",
+    "paperYear": 2017,
+    "paperUrl": "https://arxiv.org/abs/1609.02907",
+    "domain": "CV",
+    "bridgePath": [
+      {"order": 1, "title": "BFS 基础", "description": "理解图的逐层遍历机制：从源节点出发，逐层访问邻居", "connectionToNext": "GCN的消息传递本质上是BFS的连续化推广"},
+      {"order": 2, "title": "图的邻接矩阵表示", "description": "将图结构编码为矩阵，理解矩阵乘法与邻居聚合的关系", "connectionToNext": "GCN用归一化邻接矩阵实现特征传播"},
+      {"order": 3, "title": "GCN 核心思想", "description": "每层GCN对每个节点聚合邻居特征并做非线性变换，等价于在图上做'学习版BFS'", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "GCN可以理解为'带学习能力的BFS'：每一层网络相当于BFS向外扩展一层，但不是简单复制信息，而是学习如何融合邻居特征。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/gcn-basic.ipynb"
+  },
+  {
+    "id": "dp-to-attention",
+    "baseAlgorithm": "动态规划",
+    "paperTitle": "Attention Is All You Need",
+    "paperAuthors": "Ashish Vaswani, Noam Shazeer, et al.",
+    "paperYear": 2017,
+    "paperUrl": "https://arxiv.org/abs/1706.03762",
+    "domain": "NLP",
+    "bridgePath": [
+      {"order": 1, "title": "序列DP基础", "description": "理解序列上的状态转移：当前状态依赖前面所有/部分状态", "connectionToNext": "Attention机制将'依赖前面状态'泛化为'加权关注所有位置'"},
+      {"order": 2, "title": "从固定窗口到全局注意力", "description": "DP通常只看固定范围的前驱状态，Attention让每个位置直接关注全局信息", "connectionToNext": "Self-Attention通过Q/K/V矩阵学习位置间的关联权重"},
+      {"order": 3, "title": "Transformer架构", "description": "多头注意力+FFN+残差连接构建的纯注意力架构，取代了RNN的序列依赖", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "Transformer的Self-Attention可以理解为'动态规划的泛化'：DP通过转移方程决定看哪些前驱状态，Attention通过学习的权重决定关注哪些位置，本质都是'选择性聚合历史信息'。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/attention-from-scratch.ipynb"
+  },
+  {
+    "id": "astar-to-slam",
+    "baseAlgorithm": "A*",
+    "paperTitle": "ORB-SLAM: A Versatile and Accurate Monocular SLAM System",
+    "paperAuthors": "Raúl Mur-Artal, J.M.M. Montiel, Juan D. Tardós",
+    "paperYear": 2015,
+    "paperUrl": "https://arxiv.org/abs/1502.00956",
+    "domain": "ROBOTICS",
+    "bridgePath": [
+      {"order": 1, "title": "A*寻路基础", "description": "在已知地图上用启发式函数引导搜索最短路径", "connectionToNext": "SLAM中机器人需要边建图边规划路径，A*是已知地图下规划的核心组件"},
+      {"order": 2, "title": "从已知地图到未知环境", "description": "A*假设地图已知，SLAM解决的是同时定位与建图的鸡生蛋问题", "connectionToNext": "ORB-SLAM用特征点匹配建图，路径规划模块仍可使用A*"},
+      {"order": 3, "title": "ORB-SLAM系统", "description": "基于ORB特征的视觉SLAM系统，包含跟踪、建图、闭环检测三个并行线程", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "ORB-SLAM可以理解为'A*的升级版场景'：A*在已知地图上找路，SLAM则是机器人边走边画地图再找路。特征匹配建图后，路径规划仍然依赖A*这样的搜索算法。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/slam-basic.ipynb"
+  },
+  {
+    "id": "collaborative-filtering-to-ncf",
+    "baseAlgorithm": "协同过滤（矩阵分解）",
+    "paperTitle": "Neural Collaborative Filtering",
+    "paperAuthors": "Xiangnan He, Lizi Liao, Hanwang Zhang, et al.",
+    "paperYear": 2017,
+    "paperUrl": "https://arxiv.org/abs/1708.05031",
+    "domain": "RECOMMENDATION",
+    "bridgePath": [
+      {"order": 1, "title": "基于相似度的协同过滤", "description": "利用用户-物品交互矩阵计算相似度，通过邻居偏好进行推荐", "connectionToNext": "矩阵分解将显式相似度计算转为隐向量内积"},
+      {"order": 2, "title": "矩阵分解", "description": "将稀疏交互矩阵分解为用户和物品的低维隐向量，内积近似原始评分", "connectionToNext": "NCF用神经网络替代内积，学习更复杂的用户-物品交互模式"},
+      {"order": 3, "title": "Neural CF", "description": "用MLP建模用户和物品隐向量间的非线性交互，突破内积的线性限制", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "NCF的核心思想是：传统协同过滤用内积（线性）衡量用户-物品匹配度，但真实偏好可能是非线性的。用神经网络替换内积，就能捕捉更复杂的交互模式。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/ncf-basic.ipynb"
+  },
+  {
+    "id": "dp-to-rna-folding",
+    "baseAlgorithm": "区间DP",
+    "paperTitle": "RNA Secondary Structure Prediction Using Stochastic Context-Free Grammars and Evolutionary History",
+    "paperAuthors": "Bjarne Knudsen, Jotun Hein",
+    "paperYear": 2003,
+    "paperUrl": "https://doi.org/10.1093/bioinformatics/btg140",
+    "domain": "BIOINFORMATICS",
+    "bridgePath": [
+      {"order": 1, "title": "区间DP基础", "description": "在区间[i,j]上定义状态，通过枚举分割点k进行转移，经典应用如矩阵链乘法", "connectionToNext": "RNA碱基配对天然形成嵌套括号结构，完美匹配区间DP模型"},
+      {"order": 2, "title": "Nussinov算法", "description": "最基础的RNA折叠算法，用区间DP最大化碱基配对数", "connectionToNext": "实际RNA结构需要能量模型而非简单配对计数"},
+      {"order": 3, "title": "随机上下文无关文法与RNA预测", "description": "将区间DP扩展为概率模型，结合进化信息预测更准确的RNA二级结构", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "RNA折叠预测本质是区间DP问题：RNA链的碱基配对形成嵌套结构（类似合法括号序列），区间DP天然适合求解这类'嵌套最优子结构'问题。从LeetCode的戳气球问题到RNA折叠，核心DP思想完全相通。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/rna-folding-dp.ipynb"
+  },
+  {
+    "id": "grover-search",
+    "baseAlgorithm": "线性搜索",
+    "paperTitle": "A Fast Quantum Mechanical Algorithm for Database Search",
+    "paperAuthors": "Lov K. Grover",
+    "paperYear": 1996,
+    "paperUrl": "https://arxiv.org/abs/quant-ph/9605043",
+    "domain": "QUANTUM",
+    "bridgePath": [
+      {"order": 1, "title": "经典线性搜索", "description": "在无序数组中查找目标元素，最坏情况需要O(n)次比较", "connectionToNext": "量子计算的叠加态允许'同时检查多个元素'"},
+      {"order": 2, "title": "量子叠加与振幅放大", "description": "量子比特可以处于0和1的叠加态，Grover利用振幅放大提高目标态的概率", "connectionToNext": "通过O(√n)次Oracle调用和扩散变换将目标态概率放大到接近1"},
+      {"order": 3, "title": "Grover搜索算法", "description": "利用量子Oracle标记目标，反复执行振幅放大，O(√n)次即可找到目标", "connectionToNext": null}
+    ],
+    "leveledInterpretation": {
+      "3": "Grover算法是经典线性搜索的量子加速版：经典搜索必须逐个检查需要O(n)次，Grover利用量子叠加'同时考虑所有可能'，再通过振幅放大'聚焦正确答案'，只需O(√n)次操作。这是量子计算对暴力搜索的平方级加速。",
+      "4": "即将支持",
+      "5": "即将支持"
+    },
+    "experimentType": "COLAB",
+    "experimentUrl": "https://colab.research.google.com/github/algorithm-help/experiments/blob/main/grover-search-qiskit.ipynb"
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Introduction to Algorithms",
+    "aliases": ["CLRS", "Cormen et al.", "算法导论"],
+    "type": "textbook"
+  },
+  {
+    "name": "The Art of Computer Programming",
+    "aliases": ["TAOCP", "Knuth TAOCP"],
+    "type": "textbook"
+  },
+  {
+    "name": "Concrete Mathematics",
+    "aliases": ["Graham, Knuth, Patashnik", "具体数学"],
+    "type": "textbook"
+  },
+  {
+    "name": "Algorithm Design",
+    "aliases": ["Kleinberg, Tardos", "算法设计"],
+    "type": "textbook"
+  },
+  {
+    "name": "MIT 6.006 Introduction to Algorithms",
+    "aliases": ["MIT 6.006", "6.006"],
+    "type": "course"
+  },
+  {
+    "name": "MIT 6.046 Design and Analysis of Algorithms",
+    "aliases": ["MIT 6.046", "6.046"],
+    "type": "course"
+  },
+  {
+    "name": "Stanford CS161 Design and Analysis of Algorithms",
+    "aliases": ["Stanford CS161", "CS161"],
+    "type": "course"
+  },
+  {
+    "name": "A Note on Two Problems in Connexion with Graphs",
+    "aliases": ["Dijkstra 1959", "Dijkstra shortest path"],
+    "type": "paper"
+  },
+  {
+    "name": "Fast Pattern Matching in Strings",
+    "aliases": ["KMP 1977", "Knuth-Morris-Pratt"],
+    "type": "paper"
+  },
+  {
+    "name": "Depth-First Search and Linear Graph Algorithms",
+    "aliases": ["Tarjan 1972", "Tarjan SCC"],
+    "type": "paper"
+  },
+  {
+    "name": "A Fast Algorithm for Computing Longest Common Subsequences",
+    "aliases": ["Hunt, Szymanski 1977", "LCS algorithm"],
+    "type": "paper"
+  },
+  {
+    "name": "Quicksort",
+    "aliases": ["Hoare 1962", "C.A.R. Hoare Quicksort"],
+    "type": "paper"
+  },
+  {
+    "name": "A Relational Model of Data for Large Shared Data Banks",
+    "aliases": ["Codd 1970", "relational model"],
+    "type": "paper"
+  },
+  {
+    "name": "Reducibility Among Combinatorial Problems",
+    "aliases": ["Karp 1972", "21 NP-complete problems"],
+    "type": "paper"
+  },
+  {
+    "name": "The Complexity of Theorem-Proving Procedures",
+    "aliases": ["Cook 1971", "Cook's theorem", "SAT NP-completeness"],
+    "type": "paper"
+  },
+  {
+    "name": "A Linear-Time Algorithm for Finding All Simple Cycles in a Graph",
+    "aliases": ["Johnson 1975"],
+    "type": "paper"
+  },
+  {
+    "name": "Expected Time Bounds for Selection",
+    "aliases": ["Floyd, Rivest 1975", "median selection"],
+    "type": "paper"
+  },
+  {
+    "name": "A New Algorithm for Generating All the Permutations of a Set",
+    "aliases": ["Heap 1963", "Heap's algorithm"],
+    "type": "paper"
+  },
+  {
+    "name": "Fibonacci Heaps and Their Uses in Improved Network Optimization Algorithms",
+    "aliases": ["Fredman, Tarjan 1987", "Fibonacci heap"],
+    "type": "paper"
+  },
+  {
+    "name": "A Randomized Linear-Time Algorithm to Find Minimum Spanning Trees",
+    "aliases": ["Karger, Klein, Tarjan 1995", "randomized MST"],
+    "type": "paper"
+  },
+  {
+    "name": "An O(n log n) Algorithm for the Voronoi Diagram",
+    "aliases": ["Fortune 1987", "Fortune's algorithm"],
+    "type": "paper"
+  }
+]

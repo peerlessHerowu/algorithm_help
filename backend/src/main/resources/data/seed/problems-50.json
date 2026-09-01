@@ -1,0 +1,47 @@
+[
+  {
+    "id": "two-sum",
+    "title": "Two Sum",
+    "difficulty": "easy",
+    "tags": ["array", "hash-table"],
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+    "constraints": ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9", "Only one valid answer exists."],
+    "examples": ["Input: nums = [2,7,11,15], target = 9  Output: [0,1]"]
+  },
+  {
+    "id": "add-two-numbers",
+    "title": "Add Two Numbers",
+    "difficulty": "medium",
+    "tags": ["linked-list", "math", "recursion"],
+    "description": "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order.",
+    "constraints": ["The number of nodes in each linked list is in the range [1, 100]", "0 <= Node.val <= 9"],
+    "examples": ["Input: l1 = [2,4,3], l2 = [5,6,4]  Output: [7,0,8]"]
+  },
+  {
+    "id": "longest-substring-without-repeating",
+    "title": "Longest Substring Without Repeating Characters",
+    "difficulty": "medium",
+    "tags": ["string", "sliding-window", "hash-table"],
+    "description": "Given a string s, find the length of the longest substring without repeating characters.",
+    "constraints": ["0 <= s.length <= 5 * 10^4", "s consists of English letters, digits, symbols and spaces."],
+    "examples": ["Input: s = 'abcabcbb'  Output: 3"]
+  },
+  {
+    "id": "median-of-two-sorted-arrays",
+    "title": "Median of Two Sorted Arrays",
+    "difficulty": "hard",
+    "tags": ["array", "binary-search", "divide-and-conquer"],
+    "description": "Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays.",
+    "constraints": ["nums1.length == m", "nums2.length == n", "0 <= m <= 1000", "The overall run time complexity should be O(log (m+n))."],
+    "examples": ["Input: nums1 = [1,3], nums2 = [2]  Output: 2.0"]
+  },
+  {
+    "id": "longest-palindromic-substring",
+    "title": "Longest Palindromic Substring",
+    "difficulty": "medium",
+    "tags": ["string", "dynamic-programming", "two-pointers"],
+    "description": "Given a string s, return the longest palindromic substring in s.",
+    "constraints": ["1 <= s.length <= 1000", "s consist of only digits and English letters."],
+    "examples": ["Input: s = 'babad'  Output: 'bab' or 'aba'"]
+  }
+]

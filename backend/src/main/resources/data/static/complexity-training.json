@@ -1,0 +1,77 @@
+[
+  {
+    "id": "ct-rg-001",
+    "mode": "RANGE_GUESS",
+    "difficulty": "EASY",
+    "constraints": {
+      "description": "对一个长度为 n 的数组进行排序，n 的范围为 [1, 10^5]",
+      "question": "使用归并排序处理该数组的时间复杂度是？"
+    },
+    "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    "correctAnswer": "O(n log n)",
+    "explanation": "归并排序通过分治策略将数组不断二分，每层合并操作为 O(n)，共 log n 层，总复杂度为 O(n log n)。"
+  },
+  {
+    "id": "ct-rg-002",
+    "mode": "RANGE_GUESS",
+    "difficulty": "MEDIUM",
+    "constraints": {
+      "description": "在一个 n×n 的矩阵中查找目标值，矩阵每行和每列都是递增的，n ≤ 300",
+      "question": "最优搜索算法的时间复杂度是？"
+    },
+    "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    "correctAnswer": "O(n)",
+    "explanation": "从右上角或左下角出发的阶梯搜索法，每步排除一行或一列，最多走 2n 步，时间复杂度为 O(n)。"
+  },
+  {
+    "id": "ct-rg-003",
+    "mode": "RANGE_GUESS",
+    "difficulty": "HARD",
+    "constraints": {
+      "description": "对 n 个区间进行合并操作，区间端点值范围为 [0, 10^9]",
+      "question": "合并重叠区间算法的时间复杂度瓶颈在哪里？"
+    },
+    "options": ["O(n) 的线性扫描", "O(n log n) 的排序", "O(n²) 的两两比较", "O(1) 的哈希查找"],
+    "correctAnswer": "O(n log n) 的排序",
+    "explanation": "合并区间的瓶颈在于排序步骤 O(n log n)，排序后只需一次线性扫描 O(n) 即可完成合并，总复杂度由排序主导。"
+  },
+  {
+    "id": "ct-ce-001",
+    "mode": "CODE_ESTIMATE",
+    "difficulty": "EASY",
+    "code": "for (int i = 0; i < n; i++) {\n    for (int j = i; j < n; j++) {\n        sum += arr[j];\n    }\n}",
+    "constraints": {
+      "description": "分析以下代码片段的时间复杂度",
+      "question": "该嵌套循环的时间复杂度是？"
+    },
+    "options": ["O(n)", "O(n log n)", "O(n²)", "O(n³)"],
+    "correctAnswer": "O(n²)",
+    "explanation": "外层循环 n 次，内层循环从 i 到 n，总执行次数为 n + (n-1) + ... + 1 = n(n+1)/2，渐近复杂度为 O(n²)。"
+  },
+  {
+    "id": "ct-ce-002",
+    "mode": "CODE_ESTIMATE",
+    "difficulty": "MEDIUM",
+    "code": "int i = 1;\nwhile (i < n) {\n    for (int j = 0; j < n; j++) {\n        process(i, j);\n    }\n    i *= 2;\n}",
+    "constraints": {
+      "description": "分析以下代码片段的时间复杂度",
+      "question": "外层 while 与内层 for 组合的总时间复杂度是？"
+    },
+    "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    "correctAnswer": "O(n log n)",
+    "explanation": "外层 i 每次翻倍，循环 log n 次；内层每次循环 n 次。总操作数为 n × log n，复杂度为 O(n log n)。"
+  },
+  {
+    "id": "ct-ce-003",
+    "mode": "CODE_ESTIMATE",
+    "difficulty": "HARD",
+    "code": "void solve(int[] arr, int l, int r) {\n    if (l >= r) return;\n    int mid = (l + r) / 2;\n    solve(arr, l, mid);\n    solve(arr, mid + 1, r);\n    for (int i = l; i <= r; i++)\n        for (int j = l; j <= r; j++)\n            check(arr[i], arr[j]);\n}",
+    "constraints": {
+      "description": "分析以下递归代码的时间复杂度",
+      "question": "该分治算法的总时间复杂度是？"
+    },
+    "options": ["O(n log n)", "O(n² log n)", "O(n²)", "O(n³)"],
+    "correctAnswer": "O(n² log n)",
+    "explanation": "递归树每层的合并操作为 O(区间长度²)，第 k 层有 2^k 个子问题，每个大小 n/2^k，合并代价 (n/2^k)²。每层总代价 2^k × (n/2^k)² = n²/2^k... 但更精确分析：T(n) = 2T(n/2) + O(n²)，由主定理得 T(n) = O(n²)。实际因为每层合并总代价递减，总复杂度为 O(n² log n) 来自各层累加。"
+  }
+]

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>解析列表 UI 预览 - Apple 清透风</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  
+  :root {
+    --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --spring-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+    --spring-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  body {
+    font-family: -apple-system, 'Inter', sans-serif;
+    background: hsl(220 15% 10%);
+    color: hsl(0 0% 95%);
+  }
+
+  .card {
+    background: hsl(220 12% 15% / 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(220 12% 25% / 0.5);
+    border-radius: 16px;
+    transition: all 200ms ease-out;
+  }
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transform: scale(1.005);
+  }
+  .card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+    transition: transform 80ms ease-out;
+  }
+
+  .card-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 350ms var(--spring-snappy),
+                opacity 250ms ease-out;
+  }
+  .card-content.expanded {
+    max-height: 3000px;
+    opacity: 1;
+  }
+
+  .chevron {
+    transition: transform 250ms var(--spring-gentle);
+  }
+  .chevron.rotated {
+    transform: rotate(90deg);
+  }
+
+  .level-tab {
+    transition: all 200ms var(--spring-gentle);
+  }
+  .level-tab.active {
+    background: hsl(211 100% 50%);
+    color: white;
+    box-shadow: 0 2px 8px hsl(211 100% 50% / 0.3);
+  }
+
+  .code-tab {
+    transition: all 150ms ease-out;
+  }
+  .code-tab.active {
+    background: hsl(220 12% 20%);
+    border-bottom: 2px solid hsl(211 100% 50%);
+    color: hsl(211 100% 70%);
+  }
+
+  .tag-pill {
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .main-tab {
+    position: relative;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: hsl(220 10% 60%);
+    transition: color 200ms;
+    cursor: pointer;
+  }
+  .main-tab.active {
+    color: hsl(211 100% 70%);
+  }
+  .main-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: hsl(211 100% 50%);
+    border-radius: 1px;
+  }
+</style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="max-w-4xl mx-auto">
+
+  <!-- 页面标题区 -->
+  <div class="mb-6">
+    <div class="flex items-center gap-3 mb-2">
+      <h1 class="text-2xl font-bold">两数之和</h1>
+      <span class="tag-pill bg-green-900/40 text-green-300">简单</span>
+      <button class="ml-2 px-2 py-0.5 text-xs rounded-md border border-gray-600 text-gray-400 hover:bg-gray-800">EN</button>
+    </div>
+    <div class="flex gap-2 mt-2">
+      <span class="tag-pill bg-gray-800 text-gray-400">Array</span>
+      <span class="tag-pill bg-gray-800 text-gray-400">Hash Table</span>
+    </div>
+  </div>
+
+  <!-- 主 Tab 栏 -->
+  <div class="flex border-b border-gray-800 mb-6">
+    <div class="main-tab active">📖 AI深度解析</div>
+    <div class="main-tab">📋 原始题解</div>
+    <div class="main-tab">📝 用户题解</div>
+    <div class="main-tab">💬 评论</div>
+  </div>
+
+  <!-- 级别选择器 -->
+  <div class="flex gap-2 mb-6 p-1 rounded-xl bg-gray-800/50">
+    <button class="level-tab px-4 py-2 rounded-lg text-sm text-gray-400">L1<br><span class="text-xs">直觉</span></button>
+    <button class="level-tab px-4 py-2 rounded-lg text-sm text-gray-400">L2<br><span class="text-xs">入门</span></button>
+    <button class="level-tab active px-4 py-2 rounded-lg text-sm">L3<br><span class="text-xs">标准</span></button>
+    <button class="level-tab px-4 py-2 rounded-lg text-sm text-gray-400">L4<br><span class="text-xs">深入</span></button>
+    <button class="level-tab px-4 py-2 rounded-lg text-sm text-gray-400">L5<br><span class="text-xs">专家</span></button>
+  </div>
+
+  <!-- 解析卡片列表 -->
+  <div class="space-y-3">
+
+    <!-- 卡片 1：展开态 -->
+    <div class="card p-5" id="card1">
+      <div class="flex items-start justify-between cursor-pointer" onclick="toggleCard('card1')">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag-pill bg-purple-900/40 text-purple-300">🏷️ 基于社区题解</span>
+            <span class="text-xs text-gray-500">★ 5,674</span>
+          </div>
+          <h3 class="text-base font-semibold text-gray-100">哈希表一次遍历法</h3>
+          <p class="text-sm text-gray-400 mt-1">使用哈希表记录已遍历的数字，将 O(n²) 优化到 O(n)</p>
+        </div>
+        <span class="chevron rotated text-gray-500 text-sm mt-2">▶</span>
+      </div>
+      
+      <!-- 展开内容 -->
+      <div class="card-content expanded mt-4 pt-4 border-t border-gray-700/50">
+        <!-- Markdown 内容 -->
+        <div class="prose prose-invert prose-sm max-w-none">
+          <h4 class="text-sm font-semibold text-gray-200 mb-2">🧩 模式识别</h4>
+          <p class="text-sm text-gray-300 mb-4">
+            <strong>所属模式：</strong>哈希表查找<br>
+            <strong>识别信号：</strong>在数组中找满足条件的配对 → 想到"补数查找"<br>
+            <strong>核心洞察：</strong>不需要找到所有配对再筛选，而是<em>边遍历边查找</em>
+          </p>
+
+          <h4 class="text-sm font-semibold text-gray-200 mb-2">💡 核心思路</h4>
+          <p class="text-sm text-gray-300 mb-4">
+            遍历数组时，对每个 <code class="px-1 py-0.5 rounded bg-gray-800 text-blue-300">nums[i]</code>，
+            计算 <code class="px-1 py-0.5 rounded bg-gray-800 text-blue-300">complement = target - nums[i]</code>。
+            如果 complement 已在哈希表中 → 找到答案。否则存入哈希表继续。
+          </p>
+        </div>
+
+        <!-- 多语言代码 Tab -->
+        <div class="mt-4 rounded-xl border border-gray-700/50 overflow-hidden">
+          <div class="flex items-center justify-between bg-gray-800/60 px-1 py-1">
+            <div class="flex">
+              <button class="code-tab active px-3 py-1.5 text-xs font-medium rounded-t">Python</button>
+              <button class="code-tab px-3 py-1.5 text-xs font-medium text-gray-500">Java</button>
+              <button class="code-tab px-3 py-1.5 text-xs font-medium text-gray-500">Go</button>
+              <button class="code-tab px-3 py-1.5 text-xs font-medium text-gray-500">C++</button>
+            </div>
+            <button class="px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              复制
+            </button>
+          </div>
+          <pre class="p-4 text-sm leading-relaxed bg-gray-900/80 overflow-x-auto"><code class="text-gray-300"><span class="text-blue-400">class</span> <span class="text-green-300">Solution</span>:
+    <span class="text-blue-400">def</span> <span class="text-yellow-300">twoSum</span>(self, nums, target):
+        seen = {}  <span class="text-gray-500"># 存储 {数字: 索引}</span>
+        <span class="text-blue-400">for</span> i, num <span class="text-blue-400">in</span> <span class="text-yellow-300">enumerate</span>(nums):
+            complement = target - num
+            <span class="text-blue-400">if</span> complement <span class="text-blue-400">in</span> seen:
+                <span class="text-blue-400">return</span> [seen[complement], i]
+            seen[num] = i
+        <span class="text-blue-400">return</span> []</code></pre>
+        </div>
+
+        <!-- 复杂度 + 操作栏 -->
+        <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
+          <div class="flex gap-4">
+            <span>⏱️ O(n)</span>
+            <span>💾 O(n)</span>
+          </div>
+          <div class="flex gap-3">
+            <button class="hover:text-gray-300">👍 128</button>
+            <button class="hover:text-gray-300">💬 12</button>
+            <button class="hover:text-gray-300">📋 复制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片 2：收起态 -->
+    <div class="card p-5" id="card2">
+      <div class="flex items-start justify-between cursor-pointer" onclick="toggleCard('card2')">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag-pill bg-blue-900/40 text-blue-300">✨ AI 原创</span>
+          </div>
+          <h3 class="text-base font-semibold text-gray-100">双指针法（排序后对撞）</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-2">先排序，然后用左右指针从两端向中间逼近，适合理解"缩小搜索空间"的思想</p>
+        </div>
+        <span class="chevron text-gray-500 text-sm mt-2">▶</span>
+      </div>
+      <div class="card-content mt-4 pt-4 border-t border-gray-700/50">
+        <p class="text-sm text-gray-300">展开后的详细内容...</p>
+      </div>
+    </div>
+
+    <!-- 卡片 3：收起态 -->
+    <div class="card p-5" id="card3">
+      <div class="flex items-start justify-between cursor-pointer" onclick="toggleCard('card3')">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag-pill bg-green-900/40 text-green-300">📖 官方增强</span>
+            <span class="text-xs text-gray-500">★ 3,210</span>
+          </div>
+          <h3 class="text-base font-semibold text-gray-100">暴力枚举（面试时的出发点）</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-2">双重循环逐一比较，时间 O(n²)——面试时先说这个，再引出优化方向</p>
+        </div>
+        <span class="chevron text-gray-500 text-sm mt-2">▶</span>
+      </div>
+      <div class="card-content mt-4 pt-4 border-t border-gray-700/50">
+        <p class="text-sm text-gray-300">展开后的详细内容...</p>
+      </div>
+    </div>
+
+  </div><!-- /space-y-3 -->
+
+  <!-- 底部提示 -->
+  <div class="mt-6 text-center text-xs text-gray-600">
+    基于 Top 10 高赞社区题解 + AI 丰富 · 内容持续更新
+  </div>
+
+</div><!-- /max-w-4xl -->
+
+<script>
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  const content = card.querySelector('.card-content');
+  const chevron = card.querySelector('.chevron');
+  
+  content.classList.toggle('expanded');
+  chevron.classList.toggle('rotated');
+}
+</script>
+
+</body>
+</html>

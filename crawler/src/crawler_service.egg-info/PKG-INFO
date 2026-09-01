@@ -1,0 +1,29 @@
+Metadata-Version: 2.4
+Name: crawler-service
+Version: 0.1.0
+Summary: Python 数据采集微服务 - 从多个算法平台自动采集题目和题解数据
+Author: algorithm-help team
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.104.0
+Requires-Dist: uvicorn[standard]>=0.24.0
+Requires-Dist: httpx>=0.25.0
+Requires-Dist: beautifulsoup4>=4.12.0
+Requires-Dist: markdownify>=0.11.0
+Requires-Dist: playwright>=1.40.0
+Requires-Dist: sqlalchemy[asyncio]>=2.0.23
+Requires-Dist: asyncmy>=0.2.9
+Requires-Dist: redis>=5.0.0
+Requires-Dist: minio>=7.2.0
+Requires-Dist: apscheduler>=4.0.0a4
+Requires-Dist: prometheus-client>=0.19.0
+Requires-Dist: structlog>=23.2.0
+Requires-Dist: pydantic-settings>=2.1.0
+Requires-Dist: pydantic>=2.5.0
+Requires-Dist: watchfiles>=0.21.0
+Requires-Dist: pyyaml>=6.0.1
+Provides-Extra: dev
+Requires-Dist: hypothesis>=6.92.0; extra == "dev"
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"

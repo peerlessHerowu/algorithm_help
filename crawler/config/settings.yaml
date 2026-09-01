@@ -1,0 +1,130 @@
+# Python Crawler Service 默认配置文件
+# 修改此文件后 30 秒内自动生效（watchfiles 热更新）
+
+project: "algorithm-help"
+
+platforms:
+  leetcode_global:
+    enabled: true
+    base_url: "https://leetcode.com"
+    api_url: "https://leetcode.com/api"
+    graphql_url: "https://leetcode.com/graphql"
+    rate_limit: 30
+    retry_max: 3
+    retry_delay_ms: 1000
+    cookie_key: "crawler:cookie:leetcode_global"
+    capabilities:
+      - "problem_fetch"
+      - "solution_fetch"
+      - "editorial_fetch"
+      - "comment_fetch"
+    solution_fetch_enabled: true
+    request_delay_ms: [1000, 3000]
+
+  leetcode_cn:
+    enabled: true
+    base_url: "https://leetcode.cn"
+    api_url: "https://leetcode.cn/api"
+    graphql_url: "https://leetcode.cn/graphql"
+    rate_limit: 30
+    retry_max: 3
+    retry_delay_ms: 1000
+    cookie_key: "crawler:cookie:leetcode_cn"
+    capabilities:
+      - "problem_fetch"
+      - "solution_fetch"
+      - "editorial_fetch"
+      - "comment_fetch"
+    solution_fetch_enabled: true
+    request_delay_ms: [1000, 3000]
+
+  codeforces:
+    enabled: true
+    base_url: "https://codeforces.com"
+    api_url: "https://codeforces.com/api"
+    rate_limit: 20
+    retry_max: 3
+    retry_delay_ms: 2000
+    cookie_key: "crawler:cookie:codeforces"
+    capabilities:
+      - "problem_fetch"
+      - "solution_fetch"
+    solution_fetch_enabled: true
+    request_delay_ms: [2000, 5000]
+
+  nowcoder:
+    enabled: true
+    base_url: "https://www.nowcoder.com"
+    api_url: "https://www.nowcoder.com/api"
+    rate_limit: 15
+    retry_max: 3
+    retry_delay_ms: 2000
+    cookie_key: "crawler:cookie:nowcoder"
+    capabilities:
+      - "problem_fetch"
+    solution_fetch_enabled: false
+    request_delay_ms: [2000, 5000]
+
+  atcoder:
+    enabled: true
+    base_url: "https://atcoder.jp"
+    api_url: "https://kenkoooo.com/atcoder/resources"
+    rate_limit: 20
+    retry_max: 3
+    retry_delay_ms: 1500
+    cookie_key: "crawler:cookie:atcoder"
+    capabilities:
+      - "problem_fetch"
+    solution_fetch_enabled: false
+    request_delay_ms: [1500, 4000]
+
+  luogu:
+    enabled: false
+    base_url: "https://www.luogu.com.cn"
+    api_url: "https://www.luogu.com.cn/api"
+    rate_limit: 10
+    retry_max: 3
+    retry_delay_ms: 2000
+    cookie_key: "crawler:cookie:luogu"
+    capabilities:
+      - "problem_fetch"
+    solution_fetch_enabled: false
+    request_delay_ms: [2000, 5000]
+
+anti_detect:
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15"
+  request_delay_ms: [1000, 3000]
+  circuit_breaker:
+    failure_threshold: 5
+    wait_duration_ms: 300000
+  proxy:
+    enabled: false
+    provider: ""
+
+database:
+  url: "mysql+asyncmy://root:password@localhost:3306/algorithm_help"
+  pool_size: 10
+  max_overflow: 20
+
+redis:
+  url: "redis://localhost:6379/0"
+  max_connections: 10
+
+minio:
+  endpoint: "localhost:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  secure: false
+  bucket_crawler_assets: "crawler-assets"
+  bucket_user_uploads: "user-uploads"
+
+ai:
+  base_url: "http://localhost:8100"
+  timeout: 60
+  batch_rate_limit: 10
+  daily_budget: 1000

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../math-helper"
+		}
+	],
+	"settings": {
+		"typescript.autoClosingTags": false
+	}
+}

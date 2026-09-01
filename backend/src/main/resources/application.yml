@@ -1,0 +1,180 @@
+# 算法深度理解引擎 - 应用配置
+spring:
+  application:
+    name: algorithm-help
+
+  main:
+    allow-bean-definition-overriding: true
+
+  # MySQL 数据源配置（支持环境变量覆盖）
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:algorithm_help}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  # Spring Data Redis 配置
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+
+# Actuator 配置 - 启用 health、metrics 端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: ${ACTUATOR_HEALTH_DETAILS:when-authorized}
+
+# 服务端口
+server:
+  port: ${SERVER_PORT:8080}
+  # 请求体大小限制（1MB）
+  tomcat:
+    max-http-form-post-size: 1MB
+    max-swallow-size: 1MB
+  servlet:
+    encoding:
+      charset: UTF-8
+
+# Spring MVC 请求体大小限制
+spring.servlet.multipart:
+  max-file-size: 1MB
+  max-request-size: 1MB
+
+# CORS 配置
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  # 内部 API 鉴权（供 Python 爬虫服务调用）
+  internal-api:
+    token: ${INTERNAL_API_TOKEN:change-me-in-production}
+
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:this-is-a-development-secret-key-at-least-32-chars-long!!}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:86400000}   # 24h
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7d
+
+# 搜索策略配置
+search:
+  strategy: ${SEARCH_STRATEGY:mysql-fulltext}  # mysql-fulltext | meilisearch
+  meilisearch:
+    host: ${MEILISEARCH_HOST:http://localhost:7700}
+    api-key: ${MEILISEARCH_API_KEY:}
+    index-name: problems
+
+# 爬虫服务调用配置
+crawler:
+  # 开关：true 使用 HTTP 调用 Python 爬虫服务，false 回退至 Dubbo 调用 Java 爬虫模块
+  use-http-client: ${CRAWLER_USE_HTTP_CLIENT:true}
+  service:
+    url: ${CRAWLER_SERVICE_URL:http://python-crawler-service:8000}
+    timeout-ms: ${CRAWLER_SERVICE_TIMEOUT:10000}
+
+# 内容批量生成配置
+content:
+  batch:
+    max-concurrency: ${BATCH_MAX_CONCURRENCY:3}
+    retry-max: ${BATCH_RETRY_MAX:3}
+    retry-interval-ms: ${BATCH_RETRY_INTERVAL:2000}
+  seed:
+    auto-init: ${SEED_AUTO_INIT:true}
+  # v2 Enrichment Pipeline 配置
+  enrichment:
+    enabled: ${ENRICHMENT_ENABLED:true}
+    timeout: ${ENRICHMENT_TIMEOUT:180}
+    max-retries: ${ENRICHMENT_MAX_RETRIES:2}
+    # AI 输出长度保护
+    guard:
+      l1-max-bytes: ${ENRICHMENT_GUARD_L1:5120}
+      l2l3-max-bytes: ${ENRICHMENT_GUARD_L2L3:30720}
+      l4l5-max-bytes: ${ENRICHMENT_GUARD_L4L5:51200}
+    # source_url 域名白名单
+    url-whitelist: ${ENRICHMENT_URL_WHITELIST:leetcode.com,leetcode-cn.com,github.com,lintcode.com,nowcoder.com,codeforces.com}
+    # 频率限制配置
+    rate-limit:
+      # 用户生成频率：每小时最多 N 次
+      user-max-per-hour: ${ENRICHMENT_RATE_LIMIT_USER:5}
+      # 详情接口 IP 限流：每分钟最多 N 次
+      ip-detail-per-minute: ${ENRICHMENT_RATE_LIMIT_IP_DETAIL:60}
+      # 用户级详情限流：每分钟最多 N 次
+      user-detail-per-minute: ${ENRICHMENT_RATE_LIMIT_USER_DETAIL:200}
+    steps:
+      error-check:
+        enabled: true
+      source-filter:
+        enabled: true
+      polish:
+        enabled: true
+      multi-lang:
+        enabled: true
+      visualization:
+        enabled: true
+      diversity-check:
+        enabled: true
+      quality-score:
+        enabled: true
+
+# AI Provider 配置
+ai:
+  default-provider: ${AI_DEFAULT_PROVIDER:kiro-cli}
+  provider-priority:
+    - kiro-cli
+    - static
+    - ollama
+    - openai
+    - anthropic
+  kiro-cli:
+    path: ${KIRO_CLI_PATH:/Users/peerlesswu/.local/bin/kiro-cli}
+    model: ${KIRO_CLI_MODEL:claude-opus-4.6}
+    timeout: ${KIRO_CLI_TIMEOUT:120}
+  generation:
+    default-level: 3
+    default-languages:
+      - python
+      - java
+      - go
+      - cpp
+    include-diagrams: true
+  ollama:
+    host: ${OLLAMA_HOST:http://localhost:11434}
+    model: ${OLLAMA_MODEL:qwen3-coder:7b}
+    timeout: 60000
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+    model: ${OPENAI_MODEL:gpt-4o}
+    timeout: 30000
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${ANTHROPIC_MODEL:claude-sonnet-4-20250514}
+    timeout: 30000

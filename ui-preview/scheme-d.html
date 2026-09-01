@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案D — Apple 清透风</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-root: hsl(220 20% 97%);
+  --bg-primary: hsl(0 0% 100% / 0.8);
+  --bg-secondary: hsl(220 15% 95%);
+  --bg-sidebar: hsl(220 15% 94% / 0.7);
+  --text-primary: hsl(220 15% 15%);
+  --text-secondary: hsl(220 10% 45%);
+  --text-tertiary: hsl(220 8% 65%);
+  --blue: hsl(211 100% 50%);
+  --purple: hsl(270 70% 55%);
+  --green: hsl(145 60% 42%);
+  --orange: hsl(30 95% 55%);
+  --red: hsl(355 75% 55%);
+  --teal: hsl(185 60% 42%);
+  --border: hsl(220 15% 88%);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+* { margin:0;padding:0;box-sizing:border-box; }
+body { font-family:var(--font-sans);background:var(--bg-root);color:var(--text-primary);font-size:15px;line-height:1.5; }
+.pressable { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s; cursor:pointer; }
+.pressable:active { transform:scale(0.97);opacity:0.85; }
+.pressable:hover { transform:scale(1.01);box-shadow:var(--shadow-md); }
+</style>
+</head>
+<body>
+
+<!-- ===== TOOLBAR / NAVBAR ===== -->
+<nav style="position:fixed;top:0;left:0;right:0;height:48px;background:hsl(220 15% 96% / 0.75);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:100;">
+  <div style="font-weight:700;font-size:15px;margin-right:28px;color:var(--blue);">ADUE</div>
+  <div style="display:flex;gap:2px;">
+    <a href="#" style="color:var(--text-primary);text-decoration:none;padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;background:hsl(0 0% 0% / 0.05);">首页</a>
+    <a href="#" style="color:var(--text-secondary);text-decoration:none;padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;">题目</a>
+    <a href="#" style="color:var(--text-secondary);text-decoration:none;padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;">模式</a>
+    <a href="#" style="color:var(--text-secondary);text-decoration:none;padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;">图谱</a>
+    <a href="#" style="color:var(--text-secondary);text-decoration:none;padding:5px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;">学习</a>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+    <div style="width:180px;height:30px;background:hsl(0 0% 0% / 0.04);border-radius:var(--radius-sm);display:flex;align-items:center;padding:0 10px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.04);">
+      <span style="color:var(--text-tertiary);font-size:12px;">🔍 搜索</span>
+    </div>
+    <div style="padding:5px 14px;background:var(--blue);color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 2px 8px hsl(211 100% 50% / 0.3);">登录</div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section style="padding:130px 24px 80px;text-align:center;max-width:720px;margin:0 auto;">
+  <h1 style="font-size:48px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:18px;color:var(--text-primary);">
+    算法深度理解引擎
+  </h1>
+  <p style="font-size:17px;color:var(--text-secondary);line-height:1.7;max-width:480px;margin:0 auto 32px;">
+    五级深度 × AI 图解 × 模式提炼<br>让每道算法题变成可迁移的知识
+  </p>
+  <div style="display:flex;gap:12px;justify-content:center;">
+    <button class="pressable" style="padding:11px 26px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-md);font-size:15px;font-weight:600;box-shadow:0 4px 16px hsl(211 100% 50% / 0.25);">开始学习</button>
+    <button class="pressable" style="padding:11px 26px;background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border);border-radius:var(--radius-md);font-size:15px;font-weight:500;box-shadow:var(--shadow-sm);">了解更多</button>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section style="max-width:900px;margin:0 auto;padding:0 24px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+  <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+    <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:hsl(211 100% 50% / 0.1);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;">🎯</div>
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:6px;">五级深度解释</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">从生活类比到论文推导</p>
+  </div>
+  <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+    <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:hsl(270 70% 55% / 0.1);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;">📊</div>
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:6px;">智能图解</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">自动选择最佳图解方式</p>
+  </div>
+  <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+    <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:hsl(145 60% 42% / 0.1);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;">🔗</div>
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:6px;">模式提炼</h3>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">跨题目构建思维框架</p>
+  </div>
+</section>
+
+<!-- ===== PROBLEM LIST ===== -->
+<section style="max-width:900px;margin:0 auto;padding:0 24px 80px;">
+  <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:20px;">热门题目</h2>
+  
+  <div style="display:flex;gap:10px;margin-bottom:16px;">
+    <div style="flex:1;height:34px;background:var(--bg-secondary);border-radius:var(--radius-sm);display:flex;align-items:center;padding:0 12px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.04);">
+      <span style="color:var(--text-tertiary);font-size:13px;">🔍 搜索题目...</span>
+    </div>
+    <!-- Segmented Control -->
+    <div style="display:flex;padding:3px;background:var(--bg-secondary);border-radius:var(--radius-sm);box-shadow:inset 0 1px 2px rgba(0,0,0,0.04);">
+      <span style="padding:5px 12px;background:#fff;border-radius:6px;font-size:12px;font-weight:500;box-shadow:var(--shadow-sm);">全部</span>
+      <span style="padding:5px 12px;font-size:12px;color:var(--text-secondary);">Easy</span>
+      <span style="padding:5px 12px;font-size:12px;color:var(--text-secondary);">Medium</span>
+      <span style="padding:5px 12px;font-size:12px;color:var(--text-secondary);">Hard</span>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--green);"></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:2px;">两数之和</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">哈希表 · #1</div>
+      </div>
+      <span style="padding:3px 9px;border-radius:9999px;font-size:11px;font-weight:600;color:var(--green);background:hsl(145 60% 42% / 0.1);">Easy</span>
+      <span style="padding:3px 8px;background:var(--bg-secondary);border-radius:6px;font-size:11px;color:var(--text-secondary);">哈希表</span>
+      <span style="font-size:14px;color:var(--text-tertiary);">›</span>
+    </div>
+    <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--orange);"></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:2px;">无重复字符的最长子串</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">滑动窗口 · #3</div>
+      </div>
+      <span style="padding:3px 9px;border-radius:9999px;font-size:11px;font-weight:600;color:var(--orange);background:hsl(30 95% 55% / 0.1);">Medium</span>
+      <span style="padding:3px 8px;background:var(--bg-secondary);border-radius:6px;font-size:11px;color:var(--text-secondary);">滑动窗口</span>
+      <span style="font-size:14px;color:var(--text-tertiary);">›</span>
+    </div>
+    <div class="pressable" style="background:var(--bg-primary);backdrop-filter:blur(8px);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--red);"></div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:2px;">接雨水</div>
+        <div style="font-size:12px;color:var(--text-tertiary);">双指针/单调栈 · #42</div>
+      </div>
+      <span style="padding:3px 9px;border-radius:9999px;font-size:11px;font-weight:600;color:var(--red);background:hsl(355 75% 55% / 0.1);">Hard</span>
+      <span style="padding:3px 8px;background:var(--bg-secondary);border-radius:6px;font-size:11px;color:var(--text-secondary);">单调栈</span>
+      <span style="font-size:14px;color:var(--text-tertiary);">›</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROBLEM DETAIL ===== -->
+<section style="max-width:900px;margin:0 auto;padding:0 24px 80px;">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;padding-top:32px;border-top:1px solid var(--border);">题目详情 · 两数之和</h2>
+
+  <!-- Header Card -->
+  <div class="pressable" style="background:var(--bg-primary);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <h3 style="font-size:20px;font-weight:700;">1. 两数之和</h3>
+      <span style="padding:3px 9px;border-radius:9999px;font-size:11px;font-weight:600;color:var(--green);background:hsl(145 60% 42% / 0.1);">Easy</span>
+      <span style="margin-left:auto;font-size:13px;color:var(--text-tertiary);cursor:pointer;">☆ 收藏</span>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <span style="padding:3px 9px;background:var(--bg-secondary);border-radius:6px;font-size:12px;color:var(--text-secondary);">哈希表</span>
+      <span style="padding:3px 9px;background:var(--bg-secondary);border-radius:6px;font-size:12px;color:var(--text-secondary);">数组</span>
+      <span style="padding:3px 9px;background:var(--bg-secondary);border-radius:6px;font-size:12px;color:var(--text-secondary);">Google</span>
+    </div>
+  </div>
+
+  <!-- Segmented Control for Levels -->
+  <div style="display:inline-flex;padding:3px;background:var(--bg-secondary);border-radius:var(--radius-sm);box-shadow:inset 0 1px 2px rgba(0,0,0,0.04);margin-bottom:20px;">
+    <span style="padding:6px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);">💡 L1</span>
+    <span style="padding:6px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);">📖 L2</span>
+    <span style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:var(--blue);background:#fff;box-shadow:var(--shadow-sm);">🎯 L3</span>
+    <span style="padding:6px 14px;border-radius:6px;font-size:12px;color:var(--text-secondary);">⚡ L4</span>
+    <span style="padding:6px 14px;border-radius:6px;font-size:12px;color:var(--text-tertiary);opacity:0.5;">🔬 L5 🔒</span>
+  </div>
+
+  <!-- Content -->
+  <div style="background:var(--bg-primary);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);">
+    <h4 style="font-size:16px;font-weight:600;margin-bottom:14px;">💡 直觉建立</h4>
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.75;margin-bottom:24px;">
+      想象你在一堆硬币中找到两枚面值加起来刚好等于某个数的组合。暴力做法是每枚都跟其他所有硬币比一遍 —— 但如果你有一本"账本"，就能一次扫描搞定。
+    </p>
+
+    <!-- Diagram -->
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:20px;margin-bottom:24px;text-align:center;box-shadow:inset 0 1px 2px rgba(0,0,0,0.03);">
+      <div style="display:flex;justify-content:center;gap:10px;align-items:center;">
+        <div style="padding:9px 14px;background:hsl(211 100% 50% / 0.1);border:1px solid hsl(211 100% 50% / 0.2);border-radius:var(--radius-sm);font-size:12px;color:var(--blue);font-weight:500;">遍历 nums[i]</div>
+        <span style="color:var(--text-tertiary);">→</span>
+        <div style="padding:9px 14px;background:#fff;border-radius:var(--radius-sm);font-size:12px;box-shadow:var(--shadow-sm);">计算 diff</div>
+        <span style="color:var(--text-tertiary);">→</span>
+        <div style="padding:9px 14px;background:hsl(145 60% 42% / 0.1);border:1px solid hsl(145 60% 42% / 0.2);border-radius:var(--radius-sm);font-size:12px;color:var(--green);font-weight:500;">查哈希表 ✓</div>
+      </div>
+    </div>
+
+    <!-- Code -->
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-md);overflow:hidden;margin-bottom:24px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.03);">
+      <div style="display:flex;padding:8px 14px;border-bottom:1px solid var(--border);align-items:center;">
+        <!-- Segmented control for languages -->
+        <div style="display:flex;padding:2px;background:hsl(0 0% 0% / 0.03);border-radius:6px;">
+          <span style="padding:3px 10px;background:#fff;border-radius:5px;font-size:11px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,0.05);">Python</span>
+          <span style="padding:3px 10px;font-size:11px;color:var(--text-tertiary);">Java</span>
+          <span style="padding:3px 10px;font-size:11px;color:var(--text-tertiary);">Go</span>
+          <span style="padding:3px 10px;font-size:11px;color:var(--text-tertiary);">C++</span>
+        </div>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);cursor:pointer;">📋 复制</span>
+      </div>
+      <pre style="padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.7;"><code>def twoSum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        diff = target - num
+        if diff in seen:
+            return [seen[diff], i]
+        seen[num] = i</code></pre>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;padding-top:20px;border-top:1px solid var(--border);">
+      <button class="pressable" style="padding:8px 16px;background:var(--bg-secondary);border:none;border-radius:var(--radius-sm);font-size:13px;color:var(--text-secondary);box-shadow:var(--shadow-sm);">💬 费曼模式</button>
+      <button class="pressable" style="padding:8px 16px;background:var(--bg-secondary);border:none;border-radius:var(--radius-sm);font-size:13px;color:var(--text-secondary);box-shadow:var(--shadow-sm);">🎤 面试模拟</button>
+      <button class="pressable" style="padding:8px 16px;background:var(--bg-secondary);border:none;border-radius:var(--radius-sm);font-size:13px;color:var(--text-secondary);box-shadow:var(--shadow-sm);">🧭 追问</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEYNMAN CHAT ===== -->
+<section style="max-width:900px;margin:0 auto;padding:0 24px 80px;">
+  <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;padding-top:32px;border-top:1px solid var(--border);">费曼模式</h2>
+  <div style="background:var(--bg-primary);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);max-width:600px;">
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:9999px;background:hsl(211 100% 50% / 0.1);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--blue);font-weight:600;flex-shrink:0;">你</div>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">两数之和就是用字典存看过的数，查差值就行</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:9999px;background:hsl(270 70% 55% / 0.1);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--purple);font-weight:600;flex-shrink:0;">AI</div>
+        <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6;box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+          方向对了！追问：<strong style="color:var(--text-primary);">字典的 key 和 value 分别存什么？</strong>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" placeholder="继续解释..." style="flex:1;height:34px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;font-size:13px;color:var(--text-primary);outline:none;box-shadow:inset 0 1px 2px rgba(0,0,0,0.03);">
+      <button style="height:34px;padding:0 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 2px 8px hsl(211 100% 50% / 0.25);">发送</button>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

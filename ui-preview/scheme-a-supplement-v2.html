@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案A 补充 v2 — 错误页面·骨架屏·设置增强·匿名引导·网络状态·后台增强·深度统计·面试增强</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-root:hsl(0 0% 4%);--bg-primary:hsl(0 0% 7%);--bg-secondary:hsl(0 0% 10%);
+  --bg-tertiary:hsl(0 0% 13%);--bg-elevated:hsl(0 0% 15%);
+  --text-primary:hsl(0 0% 93%);--text-secondary:hsl(0 0% 63%);--text-tertiary:hsl(0 0% 44%);
+  --accent:hsl(220 70% 55%);--accent-subtle:hsl(220 70% 55%/0.12);
+  --border-subtle:hsl(0 0% 100%/0.06);--border-default:hsl(0 0% 100%/0.1);
+  --success:hsl(142 60% 45%);--warning:hsl(38 90% 55%);--error:hsl(0 70% 55%);
+  --easy:hsl(142 55% 48%);--medium:hsl(38 85% 55%);--hard:hsl(350 65% 55%);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+  --font-sans:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-sans);background:var(--bg-root);color:var(--text-primary);font-size:15px;line-height:1.6;}
+a{color:inherit;text-decoration:none;}
+.section-divider{border:none;border-top:1px solid var(--border-default);margin:80px 0 0 0;}
+.page-section{max-width:1080px;margin:0 auto;padding:60px 24px 80px;}
+.section-title{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.section-heading{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:24px;}
+.card{background:var(--bg-primary);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:20px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-default);}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg,var(--bg-secondary) 25%,var(--bg-tertiary) 50%,var(--bg-secondary) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-sm);}
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav style="position:fixed;top:0;left:0;right:0;height:52px;background:hsl(0 0% 4%/0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 24px;z-index:1000;">
+  <div style="font-weight:700;font-size:15px;color:var(--accent);margin-right:20px;">ADUE 补充v2</div>
+  <div style="display:flex;gap:2px;overflow-x:auto;flex:1;">
+    <a href="#errors" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">错误页面</a>
+    <a href="#skeleton" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">骨架屏</a>
+    <a href="#settings-v2" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">设置增强</a>
+    <a href="#anon-guide" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">匿名引导</a>
+    <a href="#network-banner" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">网络状态</a>
+    <a href="#admin-v2" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">后台增强</a>
+    <a href="#review-deep" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">复习深度统计</a>
+    <a href="#interview-v2" style="padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);">面试增强</a>
+  </div>
+</nav>
+
+
+<!-- ========================================== -->
+<!-- 1. 错误页面（404/500/429/503）             -->
+<!-- ========================================== -->
+<section id="errors" class="page-section" style="padding-top:120px;">
+  <div class="section-title">错误页面</div>
+  <h2 class="section-heading">统一错误状态展示</h2>
+
+  <!-- 404 页面 -->
+  <div class="card" style="text-align:center;padding:48px 24px;margin-bottom:20px;">
+    <div style="font-size:64px;margin-bottom:16px;">🔍</div>
+    <div style="font-size:72px;font-weight:700;color:var(--text-tertiary);letter-spacing:-0.04em;margin-bottom:8px;">404</div>
+    <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">页面不存在</h3>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;">你访问的页面可能已被移动或删除</p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <a href="#" class="btn btn-primary">返回首页</a>
+      <a href="#" class="btn btn-ghost">搜索题目</a>
+    </div>
+  </div>
+
+  <!-- 500 服务器错误 -->
+  <div class="card" style="text-align:center;padding:48px 24px;margin-bottom:20px;border:1px solid hsl(0 70% 55%/0.2);">
+    <div style="font-size:64px;margin-bottom:16px;">⚠️</div>
+    <div style="font-size:72px;font-weight:700;color:var(--error);letter-spacing:-0.04em;margin-bottom:8px;">500</div>
+    <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">服务器开小差了</h3>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;">我们已收到错误报告，正在紧急修复中</p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-primary" onclick="location.reload()">🔄 重试</button>
+      <a href="#" class="btn btn-ghost">反馈问题</a>
+    </div>
+    <div style="font-size:11px;color:var(--text-tertiary);margin-top:16px;">错误ID: err_7f3a2b · 如反复出现请联系我们</div>
+  </div>
+
+  <!-- 429 限流 -->
+  <div class="card" style="text-align:center;padding:40px 24px;margin-bottom:20px;border:1px solid hsl(38 90% 55%/0.2);">
+    <div style="font-size:48px;margin-bottom:12px;">⏳</div>
+    <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;color:var(--warning);">请求过于频繁</h3>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">请稍等片刻后再试（约 30 秒）</p>
+    <div style="width:200px;height:4px;background:var(--bg-secondary);border-radius:2px;margin:0 auto;overflow:hidden;">
+      <div style="width:40%;height:100%;background:var(--warning);border-radius:2px;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">限制：每分钟 60 次请求</div>
+  </div>
+
+  <!-- 503 AI 服务不可用 -->
+  <div class="card" style="text-align:center;padding:40px 24px;border:1px solid hsl(220 70% 55%/0.2);">
+    <div style="font-size:48px;margin-bottom:12px;">🤖</div>
+    <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">AI 服务暂时繁忙</h3>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">生成功能暂时不可用，你仍可浏览已生成的内容</p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <a href="#" class="btn btn-primary">浏览已有内容</a>
+      <button class="btn btn-ghost">10 秒后自动重试</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 2. Skeleton 骨架屏加载态                    -->
+<!-- ========================================== -->
+<section id="skeleton" class="page-section">
+  <div class="section-title">骨架屏</div>
+  <h2 class="section-heading">加载状态展示</h2>
+
+  <!-- 题目列表骨架屏 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📋 题目列表加载态</h4>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div class="skeleton" style="width:32px;height:14px;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skeleton" style="width:60%;height:16px;"></div>
+          <div class="skeleton" style="width:30%;height:12px;"></div>
+        </div>
+        <div class="skeleton" style="width:48px;height:20px;border-radius:9999px;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div class="skeleton" style="width:32px;height:14px;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skeleton" style="width:45%;height:16px;"></div>
+          <div class="skeleton" style="width:25%;height:12px;"></div>
+        </div>
+        <div class="skeleton" style="width:48px;height:20px;border-radius:9999px;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+        <div class="skeleton" style="width:32px;height:14px;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <div class="skeleton" style="width:55%;height:16px;"></div>
+          <div class="skeleton" style="width:35%;height:12px;"></div>
+        </div>
+        <div class="skeleton" style="width:48px;height:20px;border-radius:9999px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 题目详情骨架屏 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📖 题目详情加载态</h4>
+    <div style="padding:20px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+      <div class="skeleton" style="width:40%;height:24px;margin-bottom:12px;"></div>
+      <div class="skeleton" style="width:20%;height:16px;margin-bottom:20px;"></div>
+      <div style="display:flex;gap:8px;margin-bottom:24px;">
+        <div class="skeleton" style="width:60px;height:28px;border-radius:var(--radius-sm);"></div>
+        <div class="skeleton" style="width:60px;height:28px;border-radius:var(--radius-sm);"></div>
+        <div class="skeleton" style="width:60px;height:28px;border-radius:var(--radius-sm);"></div>
+        <div class="skeleton" style="width:60px;height:28px;border-radius:var(--radius-sm);"></div>
+        <div class="skeleton" style="width:60px;height:28px;border-radius:var(--radius-sm);"></div>
+      </div>
+      <div class="skeleton" style="width:100%;height:14px;margin-bottom:8px;"></div>
+      <div class="skeleton" style="width:90%;height:14px;margin-bottom:8px;"></div>
+      <div class="skeleton" style="width:70%;height:14px;margin-bottom:20px;"></div>
+      <div class="skeleton" style="width:100%;height:120px;border-radius:var(--radius-md);"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 3. 设置页增强（账户删除/数据导出/通知细化） -->
+<!-- ========================================== -->
+<section id="settings-v2" class="page-section">
+  <div class="section-title">设置页增强</div>
+  <h2 class="section-heading">新增设置项</h2>
+
+  <div style="max-width:600px;">
+    <!-- 通知设置细化 -->
+    <div class="card" style="margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🔔 通知设置（细化）</h4>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">生成完成通知</div><div style="font-size:11px;color:var(--text-tertiary);">AI 完成解析生成时推送</div></div>
+          <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">复习提醒</div><div style="font-size:11px;color:var(--text-tertiary);">每日到期复习卡片提醒</div></div>
+          <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">系统公告</div><div style="font-size:11px;color:var(--text-tertiary);">新功能上线、维护通知</div></div>
+          <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;">全服飘屏</div><div style="font-size:11px;color:var(--text-tertiary);">其他用户解锁成就时的飘屏动画</div></div>
+          <div style="width:36px;height:20px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:var(--text-tertiary);border-radius:50%;position:absolute;top:2px;left:2px;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据导出 -->
+    <div class="card" style="margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">📥 数据管理</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+          <div><div style="font-size:13px;">导出我的学习数据</div><div style="font-size:11px;color:var(--text-tertiary);">收藏、进度、复习记录（JSON 格式）</div></div>
+          <button class="btn btn-ghost" style="font-size:11px;">📥 导出</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);">
+          <div><div style="font-size:13px;">学习水平自测</div><div style="font-size:11px;color:var(--text-tertiary);">5 题快测，推荐适合你的默认级别</div></div>
+          <button class="btn btn-ghost" style="font-size:11px;">🎯 开始测试</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 危险区域：账户删除 -->
+    <div class="card" style="border:1px solid hsl(0 70% 55%/0.3);background:hsl(0 70% 55%/0.03);">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;color:var(--error);">⚠️ 危险区域</h4>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">以下操作不可逆，请谨慎操作。</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:hsl(0 70% 55%/0.06);border:1px solid hsl(0 70% 55%/0.15);border-radius:var(--radius-md);">
+        <div>
+          <div style="font-size:13px;color:var(--error);">删除我的账户</div>
+          <div style="font-size:11px;color:var(--text-tertiary);">30 天内可通过邮件联系恢复，之后永久删除</div>
+        </div>
+        <button style="padding:6px 12px;background:var(--error);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;">删除账户</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 4. 匿名用户引导注册                         -->
+<!-- ========================================== -->
+<section id="anon-guide" class="page-section">
+  <div class="section-title">匿名用户引导</div>
+  <h2 class="section-heading">引导注册弹窗与横幅</h2>
+
+  <!-- 非侵入式横幅（浏览5题后出现） -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📌 页面底部横幅（浏览 5 题后非侵入式出现）</h4>
+    <div style="padding:14px 18px;background:linear-gradient(135deg,hsl(220 70% 55%/0.08),hsl(270 60% 50%/0.08));border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-lg);display:flex;align-items:center;gap:14px;">
+      <div style="font-size:24px;">✨</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:500;">注册后解锁更多功能</div>
+        <div style="font-size:12px;color:var(--text-secondary);">收藏题目 · 追踪进度 · 费曼模式 · 面试模拟 · 间隔复习</div>
+      </div>
+      <button class="btn btn-primary" style="font-size:12px;">免费注册</button>
+      <span style="font-size:11px;color:var(--text-tertiary);cursor:pointer;">✕ 暂不</span>
+    </div>
+  </div>
+
+  <!-- 点击需认证功能时的弹窗 -->
+  <div class="card" style="max-width:400px;border:1px solid var(--accent);box-shadow:0 8px 32px hsl(220 70% 55%/0.15);">
+    <div style="text-align:center;padding:12px 0;">
+      <div style="font-size:36px;margin-bottom:12px;">🔒</div>
+      <h4 style="font-size:16px;font-weight:600;margin-bottom:6px;">需要登录</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">「费曼学习模式」需要登录后才能使用<br>注册免费，仅需邮箱</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-primary" style="padding:10px 24px;">登录 / 注册</button>
+        <button class="btn btn-ghost" style="padding:10px 24px;">继续浏览</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);margin-top:12px;">支持 GitHub / Google 一键登录</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ========================================== -->
+<!-- 5. 网络状态 Banner + WebSocket 重连         -->
+<!-- ========================================== -->
+<section id="network-banner" class="page-section">
+  <div class="section-title">网络状态</div>
+  <h2 class="section-heading">断网·重连·降级提示</h2>
+
+  <!-- 网络断开横幅 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🔴 网络断开（页面顶部固定横幅）</h4>
+    <div style="padding:10px 16px;background:hsl(0 70% 55%/0.1);border:1px solid hsl(0 70% 55%/0.2);border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+      <span style="color:var(--error);">⚠</span>
+      <span style="font-size:13px;color:var(--text-primary);flex:1;">网络连接已断开，部分功能暂时不可用</span>
+      <span style="font-size:12px;color:var(--text-tertiary);">检测中...</span>
+    </div>
+  </div>
+
+  <!-- 网络恢复 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🟢 网络恢复（自动消失）</h4>
+    <div style="padding:10px 16px;background:hsl(142 60% 45%/0.1);border:1px solid hsl(142 60% 45%/0.2);border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+      <span style="color:var(--success);">✓</span>
+      <span style="font-size:13px;color:var(--text-primary);">网络已恢复，数据同步中...</span>
+    </div>
+  </div>
+
+  <!-- WebSocket 断线重连 -->
+  <div class="card" style="margin-bottom:16px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🔄 WebSocket 重连提示（费曼/面试页内）</h4>
+    <div style="padding:12px 16px;background:hsl(38 90% 55%/0.08);border:1px solid hsl(38 90% 55%/0.2);border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+      <span style="color:var(--warning);">⚠</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--text-primary);">实时连接已断开</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">你的对话进度已保存 · 5 秒后自动重连</div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">立即重连</button>
+    </div>
+  </div>
+
+  <!-- AI 降级提示 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">🤖 AI 降级提示</h4>
+    <div style="padding:12px 16px;background:var(--accent-subtle);border:1px solid hsl(220 70% 55%/0.2);border-radius:var(--radius-md);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:16px;">💡</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--text-primary);">AI 服务繁忙，已切换到本地模型</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">生成速度可能较慢，质量不受影响</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 6. 管理后台增强（健康监控/用户管理）         -->
+<!-- ========================================== -->
+<section id="admin-v2" class="page-section">
+  <div class="section-title">管理后台增强</div>
+  <h2 class="section-heading">系统健康 · 用户管理</h2>
+
+  <!-- 系统健康监控面板 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">💚 系统健康监控</h4>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--success);">99.2%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">AI 成功率</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--accent);">92%</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">缓存命中率</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);">3</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">队列排队</div>
+      </div>
+      <div style="padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:var(--success);">健康</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">DB / Redis</div>
+      </div>
+    </div>
+    <!-- 服务状态详情 -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);font-size:12px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--success);"></span>
+        <span style="flex:1;color:var(--text-secondary);">MySQL</span>
+        <span style="color:var(--text-tertiary);">连接池 8/20 · 响应 2ms</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);font-size:12px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--success);"></span>
+        <span style="flex:1;color:var(--text-secondary);">Redis</span>
+        <span style="color:var(--text-tertiary);">内存 128MB/512MB · 命中率 92%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);font-size:12px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--success);"></span>
+        <span style="flex:1;color:var(--text-secondary);">Ollama (本地 AI)</span>
+        <span style="color:var(--text-tertiary);">qwen3-coder:7b · GPU 45%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:hsl(38 90% 55%/0.06);border:1px solid hsl(38 90% 55%/0.15);border-radius:var(--radius-md);font-size:12px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);"></span>
+        <span style="flex:1;color:var(--text-secondary);">OpenAI API</span>
+        <span style="color:var(--warning);">余额 $12.34 · 本月用量 $87</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 用户管理 -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h4 style="font-size:14px;font-weight:600;">👥 用户管理</h4>
+      <div style="display:flex;gap:6px;">
+        <input type="text" placeholder="搜索邮箱/昵称..." style="height:30px;width:160px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:0 8px;font-size:12px;color:var(--text-primary);outline:none;">
+        <select style="height:30px;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:11px;padding:0 6px;">
+          <option>全部角色</option><option>USER</option><option>ADMIN</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:1px solid var(--border-default);">
+          <th style="text-align:left;padding:8px;color:var(--text-tertiary);font-weight:500;">用户</th>
+          <th style="text-align:left;padding:8px;color:var(--text-tertiary);font-weight:500;">邮箱</th>
+          <th style="text-align:left;padding:8px;color:var(--text-tertiary);font-weight:500;">角色</th>
+          <th style="text-align:left;padding:8px;color:var(--text-tertiary);font-weight:500;">注册时间</th>
+          <th style="text-align:left;padding:8px;color:var(--text-tertiary);font-weight:500;">操作</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border-subtle);">
+            <td style="padding:8px;">算法小王子</td>
+            <td style="padding:8px;color:var(--text-secondary);">prince@example.com</td>
+            <td style="padding:8px;"><span style="padding:2px 6px;background:var(--accent-subtle);color:var(--accent);border-radius:4px;font-size:10px;">ADMIN</span></td>
+            <td style="padding:8px;color:var(--text-tertiary);">2026-05-01</td>
+            <td style="padding:8px;"><span style="color:var(--accent);cursor:pointer;">编辑</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);">
+            <td style="padding:8px;">CodeMaster</td>
+            <td style="padding:8px;color:var(--text-secondary);">coder@example.com</td>
+            <td style="padding:8px;"><span style="padding:2px 6px;background:var(--bg-secondary);color:var(--text-secondary);border-radius:4px;font-size:10px;">USER</span></td>
+            <td style="padding:8px;color:var(--text-tertiary);">2026-06-10</td>
+            <td style="padding:8px;"><span style="color:var(--accent);cursor:pointer;">编辑</span> <span style="color:var(--error);cursor:pointer;margin-left:6px;">封禁</span></td>
+          </tr>
+          <tr>
+            <td style="padding:8px;">NewLearner</td>
+            <td style="padding:8px;color:var(--text-secondary);">learner@test.com</td>
+            <td style="padding:8px;"><span style="padding:2px 6px;background:var(--bg-secondary);color:var(--text-secondary);border-radius:4px;font-size:10px;">USER</span></td>
+            <td style="padding:8px;color:var(--text-tertiary);">2026-06-20</td>
+            <td style="padding:8px;"><span style="color:var(--accent);cursor:pointer;">编辑</span> <span style="color:var(--error);cursor:pointer;margin-left:6px;">封禁</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 7. 复习深度统计（雷达图/遗忘曲线/热力图）   -->
+<!-- ========================================== -->
+<section id="review-deep" class="page-section">
+  <div class="section-title">复习深度统计</div>
+  <h2 class="section-heading">学习洞察</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <!-- 掌握程度雷达图 -->
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🎯 掌握程度雷达图</h4>
+      <svg viewBox="0 0 200 200" width="180" height="180" style="display:block;margin:0 auto;">
+        <polygon points="100,20 172,55 172,145 100,180 28,145 28,55" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+        <polygon points="100,40 156,65 156,135 100,160 44,135 44,65" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+        <polygon points="100,60 140,75 140,125 100,140 60,125 60,75" fill="none" stroke="hsl(0 0% 100%/0.06)" stroke-width="1"/>
+        <polygon points="100,30 165,58 160,140 100,168 42,125 38,55" fill="hsl(220 70% 55%/0.15)" stroke="hsl(220 70% 55%)" stroke-width="1.5"/>
+        <text x="100" y="12" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="8">滑动窗口 95%</text>
+        <text x="185" y="55" text-anchor="start" fill="hsl(0 0% 63%)" font-size="8">双指针 85%</text>
+        <text x="185" y="148" text-anchor="start" fill="hsl(0 0% 63%)" font-size="8">DP 40%</text>
+        <text x="100" y="196" text-anchor="middle" fill="hsl(0 0% 63%)" font-size="8">图论 30%</text>
+        <text x="12" y="128" text-anchor="end" fill="hsl(0 0% 63%)" font-size="8">树 65%</text>
+        <text x="12" y="55" text-anchor="end" fill="hsl(0 0% 63%)" font-size="8">回溯 50%</text>
+      </svg>
+      <div style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:8px;">基于复习正确率和完成度计算</div>
+    </div>
+
+    <!-- 遗忘曲线 -->
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📉 遗忘曲线</h4>
+      <div style="position:relative;height:160px;padding:10px 0;">
+        <!-- Y轴 -->
+        <div style="position:absolute;left:0;top:10px;bottom:30px;width:30px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:var(--text-tertiary);text-align:right;">
+          <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+        </div>
+        <!-- 曲线区域 -->
+        <div style="position:absolute;left:36px;right:0;top:10px;bottom:30px;background:var(--bg-secondary);border-radius:var(--radius-sm);overflow:hidden;">
+          <!-- 模拟遗忘曲线 SVG -->
+          <svg width="100%" height="100%" viewBox="0 0 300 120" preserveAspectRatio="none">
+            <path d="M0,10 C50,15 80,40 120,55 C160,70 200,82 250,90 C280,95 300,98 300,100" fill="none" stroke="hsl(0 70% 55%)" stroke-width="2" opacity="0.6"/>
+            <path d="M0,10 C50,12 80,20 120,28 C160,36 200,42 250,48 C280,52 300,55 300,58" fill="none" stroke="hsl(220 70% 55%)" stroke-width="2"/>
+            <text x="260" y="55" font-size="8" fill="hsl(220 70% 55%)">有复习</text>
+            <text x="260" y="98" font-size="8" fill="hsl(0 70% 55%/0.6)">无复习</text>
+          </svg>
+        </div>
+        <!-- X轴 -->
+        <div style="position:absolute;left:36px;right:0;bottom:8px;display:flex;justify-content:space-between;font-size:9px;color:var(--text-tertiary);">
+          <span>1天</span><span>3天</span><span>7天</span><span>14天</span><span>30天</span>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:4px;">蓝线=有间隔复习 · 红线=无复习自然遗忘</div>
+    </div>
+  </div>
+
+  <!-- 薄弱点热力图 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔥 薄弱点热力图</h4>
+    <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">颜色越深=正确率越低，需要加强练习</p>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;">
+      <div style="padding:10px 6px;text-align:center;background:hsl(142 55% 48%/0.15);border-radius:var(--radius-sm);font-size:10px;color:var(--easy);">哈希表<br>92%</div>
+      <div style="padding:10px 6px;text-align:center;background:hsl(142 55% 48%/0.12);border-radius:var(--radius-sm);font-size:10px;color:var(--easy);">滑动窗口<br>88%</div>
+      <div style="padding:10px 6px;text-align:center;background:hsl(38 85% 55%/0.12);border-radius:var(--radius-sm);font-size:10px;color:var(--medium);">双指针<br>72%</div>
+      <div style="padding:10px 6px;text-align:center;background:hsl(38 85% 55%/0.15);border-radius:var(--radius-sm);font-size:10px;color:var(--medium);">BFS/DFS<br>65%</div>
+      <div style="padding:10px 6px;text-align:center;background:hsl(350 65% 55%/0.12);border-radius:var(--radius-sm);font-size:10px;color:var(--hard);">DP<br>42%</div>
+      <div style="padding:10px 6px;text-align:center;background:hsl(350 65% 55%/0.18);border-radius:var(--radius-sm);font-size:10px;color:var(--hard);">图论<br>35%</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-primary" style="font-size:11px;">🎯 训练薄弱模式（DP）</button>
+      <button class="btn btn-ghost" style="font-size:11px;">查看详细分析</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+
+<!-- ========================================== -->
+<!-- 8. 面试增强（Follow-up/白板/沟通反馈）      -->
+<!-- ========================================== -->
+<section id="interview-v2" class="page-section">
+  <div class="section-title">面试增强</div>
+  <h2 class="section-heading">Follow-up · 白板模式 · 沟通反馈</h2>
+
+  <!-- Follow-up 变体题展示 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">🔄 Follow-up 变体题（面试追问后展示）</h4>
+    <div style="padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:12px;border-left:3px solid var(--accent);">
+      <div style="font-size:12px;color:var(--accent);margin-bottom:6px;">面试官追问</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px;">"如果数组已排序，你能用 O(1) 额外空间解决吗？"</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">提示：思考双指针方法</div>
+    </div>
+    <div style="padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);border-left:3px solid var(--medium);">
+      <div style="font-size:12px;color:var(--medium);margin-bottom:6px;">进阶变体</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px;">"如果要求找出所有满足条件的数对（不只是一对）？"</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">考察去重逻辑 · 关联题：三数之和</div>
+    </div>
+  </div>
+
+  <!-- 白板模式开关 -->
+  <div class="card" style="margin-bottom:20px;">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">📝 白板模式（无 IDE 辅助）</h4>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:12px;">
+      <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer;"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;"></div></div>
+      <div>
+        <div style="font-size:13px;font-weight:500;">白板模式已开启</div>
+        <div style="font-size:11px;color:var(--text-tertiary);">关闭语法高亮和自动补全，模拟真实白板面试</div>
+      </div>
+    </div>
+    <!-- 白板模式代码区 -->
+    <div style="padding:14px;background:hsl(0 0% 3%);border:2px solid var(--border-default);border-radius:var(--radius-md);font-family:var(--font-mono);font-size:13px;line-height:1.8;color:hsl(0 0% 80%);min-height:100px;">
+      <div>def twoSum(nums, target):</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;seen = {}</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;for i, num in enumerate(nums):</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff = target - num</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if diff in seen:</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return [seen[diff], i]</div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen[num] = i<span style="animation:blink 1s step-end infinite;color:var(--accent);">|</span></div>
+    </div>
+    <style>@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}</style>
+  </div>
+
+  <!-- 沟通能力实时反馈 -->
+  <div class="card">
+    <h4 style="font-size:14px;font-weight:600;margin-bottom:14px;">💬 沟通能力实时反馈</h4>
+    <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">AI 在面试过程中实时分析你的表达质量</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="padding:10px 14px;background:hsl(142 60% 45%/0.06);border:1px solid hsl(142 60% 45%/0.15);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="color:var(--success);font-size:12px;">✓</span>
+          <span style="font-size:12px;font-weight:500;color:var(--success);">思路表达清晰</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);">"用哈希表存已遍历的值"——简洁明了，面试官一听就懂</div>
+      </div>
+      <div style="padding:10px 14px;background:hsl(38 90% 55%/0.06);border:1px solid hsl(38 90% 55%/0.15);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="color:var(--warning);font-size:12px;">⚠</span>
+          <span style="font-size:12px;font-weight:500;color:var(--warning);">建议补充复杂度分析</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);">你描述了方法但没主动说时间/空间复杂度。建议每种方法结尾补一句。</div>
+      </div>
+      <div style="padding:10px 14px;background:hsl(220 70% 55%/0.06);border:1px solid hsl(220 70% 55%/0.15);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="color:var(--accent);font-size:12px;">💡</span>
+          <span style="font-size:12px;font-weight:500;color:var(--accent);">面试技巧提示</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);">在写代码之前，可以先确认："我准备用哈希表，O(n) 时间 O(n) 空间，这个方向可以吗？"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="max-width:1080px;margin:0 auto;padding:40px 24px 60px;border-top:1px solid var(--border-subtle);">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px;">ADUE · 算法深度理解引擎</div>
+      <div style="font-size:12px;color:var(--text-tertiary);">方案A 补充v2 — 错误页面 · 骨架屏 · 设置增强 · 匿名引导 · 网络状态 · 后台增强 · 深度统计 · 面试增强</div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <a href="scheme-a.html" style="font-size:12px;color:var(--accent);">← 主页面</a>
+      <a href="scheme-a-supplement.html" style="font-size:12px;color:var(--accent);">补充v1 →</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

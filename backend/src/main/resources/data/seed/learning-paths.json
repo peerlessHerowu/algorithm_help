@@ -1,0 +1,68 @@
+[
+  {
+    "id": "dp-beginner",
+    "name": "动态规划入门之路",
+    "description": "从零开始掌握动态规划，涵盖递推、背包、区间DP等核心模型，配合数学基础和论文拓展",
+    "category": "动态规划",
+    "estimatedHours": 40,
+    "totalNodes": 12,
+    "nodes": [
+      {"nodeId":"pattern:dp-basic","nodeType":"PATTERN","order":1,"optional":false,"unlockCondition":null,"milestone":"DP 入门"},
+      {"nodeId":"problem:climbing-stairs","nodeType":"PROBLEM","order":2,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"math:combinatorics","nodeType":"MATH","order":3,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:coin-change","nodeType":"PROBLEM","order":4,"optional":false,"unlockCondition":"完成爬楼梯","milestone":null},
+      {"nodeId":"pattern:dp-knapsack","nodeType":"PATTERN","order":5,"optional":false,"unlockCondition":"完成零钱兑换","milestone":"背包模型掌握"},
+      {"nodeId":"problem:longest-increasing-subsequence","nodeType":"PROBLEM","order":6,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"math:master-theorem","nodeType":"MATH","order":7,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:dp-interval","nodeType":"PATTERN","order":8,"optional":false,"unlockCondition":"完成LIS","milestone":"区间DP突破"},
+      {"nodeId":"pattern:dp-tree","nodeType":"PATTERN","order":9,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"paper:resnet","nodeType":"PAPER","order":10,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"paper:attention-mechanism","nodeType":"PAPER","order":11,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:greedy","nodeType":"PATTERN","order":12,"optional":false,"unlockCondition":"完成区间DP","milestone":"DP与贪心融会贯通"}
+    ]
+  },
+  {
+    "id": "graph-basics",
+    "name": "图论基础全攻略",
+    "description": "从BFS/DFS出发，逐步掌握拓扑排序、最短路、最小生成树等图论核心算法",
+    "category": "图论",
+    "estimatedHours": 35,
+    "totalNodes": 13,
+    "nodes": [
+      {"nodeId":"pattern:bfs","nodeType":"PATTERN","order":1,"optional":false,"unlockCondition":null,"milestone":"图遍历入门"},
+      {"nodeId":"pattern:dfs","nodeType":"PATTERN","order":2,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:binary-tree-level-order","nodeType":"PROBLEM","order":3,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:number-of-islands","nodeType":"PROBLEM","order":4,"optional":false,"unlockCondition":"完成层序遍历","milestone":null},
+      {"nodeId":"pattern:topological-sort","nodeType":"PATTERN","order":5,"optional":false,"unlockCondition":"掌握BFS和DFS","milestone":"拓扑排序掌握"},
+      {"nodeId":"problem:course-schedule","nodeType":"PROBLEM","order":6,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:union-find","nodeType":"PATTERN","order":7,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:connected-components","nodeType":"PROBLEM","order":8,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:dijkstra","nodeType":"PATTERN","order":9,"optional":false,"unlockCondition":"掌握BFS","milestone":"最短路突破"},
+      {"nodeId":"problem:network-delay-time","nodeType":"PROBLEM","order":10,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:mst","nodeType":"PATTERN","order":11,"optional":false,"unlockCondition":"掌握并查集","milestone":null},
+      {"nodeId":"paper:pagerank","nodeType":"PAPER","order":12,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"paper:gnn","nodeType":"PAPER","order":13,"optional":true,"unlockCondition":null,"milestone":"图论与前沿AI"}
+    ]
+  },
+  {
+    "id": "two-pointers-mastery",
+    "name": "双指针技巧精通",
+    "description": "系统掌握双指针、滑动窗口及其变体，从简单到困难逐步突破",
+    "category": "双指针",
+    "estimatedHours": 25,
+    "totalNodes": 11,
+    "nodes": [
+      {"nodeId":"pattern:two-pointers","nodeType":"PATTERN","order":1,"optional":false,"unlockCondition":null,"milestone":"双指针入门"},
+      {"nodeId":"problem:two-sum","nodeType":"PROBLEM","order":2,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:container-with-most-water","nodeType":"PROBLEM","order":3,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:three-sum","nodeType":"PROBLEM","order":4,"optional":false,"unlockCondition":"完成两数之和","milestone":null},
+      {"nodeId":"pattern:sliding-window","nodeType":"PATTERN","order":5,"optional":false,"unlockCondition":"掌握双指针基础","milestone":"滑动窗口掌握"},
+      {"nodeId":"problem:minimum-window-substring","nodeType":"PROBLEM","order":6,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"pattern:monotone-stack","nodeType":"PATTERN","order":7,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"problem:daily-temperatures","nodeType":"PROBLEM","order":8,"optional":false,"unlockCondition":null,"milestone":null},
+      {"nodeId":"math:information-theory","nodeType":"MATH","order":9,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"paper:attention-mechanism","nodeType":"PAPER","order":10,"optional":true,"unlockCondition":null,"milestone":null},
+      {"nodeId":"paper:bert","nodeType":"PAPER","order":11,"optional":true,"unlockCondition":null,"milestone":"双指针与NLP前沿"}
+    ]
+  }
+]
