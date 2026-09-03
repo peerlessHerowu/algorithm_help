@@ -87,16 +87,21 @@ const DEFAULT_HEARTBEAT_TIMEOUT = 5000;
 
 // ============ 工具函数 ============
 
-/** 从 API 基地址推导 WebSocket 地址 */
-function deriveWsUrl(): string {
+/** 从 API 基地址推导 WebSocket 地址，并可附带 token 参数 */
+function deriveWsUrl(token?: string | null): string {
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
-  if (wsUrl) return wsUrl;
+  const base = wsUrl || (() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+    const protocol = apiBase.startsWith('https') ? 'wss' : 'ws';
+    const host = apiBase.replace(/^https?:\/\//, '');
+    return `${protocol}://${host}/ws/interactive`;
+  })();
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-  // http → ws, https → wss
-  const protocol = apiBase.startsWith('https') ? 'wss' : 'ws';
-  const host = apiBase.replace(/^https?:\/\//, '');
-  return `${protocol}://${host}/ws`;
+  // 将 token 附加到 URL 参数（后端 WsAuthInterceptor 从此处读取）
+  if (token) {
+    return `${base}?token=${encodeURIComponent(token)}`;
+  }
+  return base;
 }
 
 /** 计算指数退避延迟，最大不超过 maxInterval */
@@ -226,7 +231,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       wsRef.current = null;
     }
 
-    const wsUrl = url || deriveWsUrl();
+    // token 必须存在才能连接（后端握手需要 token 参数）
+    const token = getToken();
+    const wsUrl = url ? url : deriveWsUrl(token);
     stateRef.current = 'connecting';
 
     try {

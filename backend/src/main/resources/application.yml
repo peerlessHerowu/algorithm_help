@@ -155,7 +155,7 @@ ai:
     - anthropic
   kiro-cli:
     path: ${KIRO_CLI_PATH:/Users/peerlesswu/.local/bin/kiro-cli}
-    model: ${KIRO_CLI_MODEL:claude-opus-4.6}
+    model: ${KIRO_CLI_MODEL:claude-sonnet-4.6}
     timeout: ${KIRO_CLI_TIMEOUT:120}
   generation:
     default-level: 3

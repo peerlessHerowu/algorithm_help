@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 import MobileNav from "@/components/layout/MobileNav";
+import AuthInitializer from "@/components/layout/AuthInitializer";
 import { ThemeScript } from "./theme-script";
 
 const geistSans = localFont({
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100`}
       >
         <Navbar />
+        <AuthInitializer />
         <div className="flex min-h-[calc(100vh-4rem)]">
           <Sidebar />
           <main className="flex-1 min-w-0 px-4 py-6 pb-20 md:pb-6 mx-auto w-full max-w-7xl">

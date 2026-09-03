@@ -18,6 +18,16 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
+     * 处理业务校验失败（如邮箱已注册）→ HTTP 400
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("业务校验失败: {}", ex.getMessage());
+        ApiResponse<Void> response = ApiResponse.error(400, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
      * 处理资源未找到异常 → HTTP 404
      */
     @ExceptionHandler(ResourceNotFoundException.class)

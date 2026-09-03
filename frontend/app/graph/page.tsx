@@ -1,4 +1,5 @@
 'use client';
+import { fetcher } from '@/lib/fetcher';
 
 import { useState, useEffect, useCallback } from 'react';
 import KnowledgeGraphDynamic from '@/components/KnowledgeGraphDynamic';
@@ -53,11 +54,8 @@ export default function GraphPage() {
   useEffect(() => {
     async function fetchInitialData() {
       try {
-        const res = await fetch('/api/graph/subgraph?nodeId=pattern:dp&depth=2');
-        if (res.ok) {
-          const data: GraphData = await res.json();
-          setGraphData(data);
-        }
+        const data = await fetcher<GraphData>('/api/graph/subgraph?nodeId=pattern:dp-basic&depth=2');
+        setGraphData(data);
       } catch (err) {
         console.error('加载图谱数据失败:', err);
       }
@@ -69,26 +67,15 @@ export default function GraphPage() {
 
   const handleNodeExpand = useCallback(async (nodeId: string) => {
     try {
-      const res = await fetch(`/api/graph/subgraph?nodeId=${encodeURIComponent(nodeId)}&depth=1`);
-      if (!res.ok) return;
-      const newData: GraphData = await res.json();
-
+      const newData = await fetcher<GraphData>(`/api/graph/subgraph?nodeId=${encodeURIComponent(nodeId)}&depth=1`);
       setGraphData((prev) => {
         const existingNodeIds = new Set(prev.nodes.map((n) => n.id));
         const existingEdgeIds = new Set(prev.edges.map((e) => e.id));
-
-        const mergedNodes = [
-          ...prev.nodes,
-          ...newData.nodes.filter((n) => !existingNodeIds.has(n.id)),
-        ];
-        const mergedEdges = [
-          ...prev.edges,
-          ...newData.edges.filter((e) => !existingEdgeIds.has(e.id)),
-        ];
-
-        return { nodes: mergedNodes, edges: mergedEdges };
+        return {
+          nodes: [...prev.nodes, ...newData.nodes.filter((n) => !existingNodeIds.has(n.id))],
+          edges: [...prev.edges, ...newData.edges.filter((e) => !existingEdgeIds.has(e.id))],
+        };
       });
-    } catch (err) {
       console.error('展开节点数据加载失败:', err);
     }
   }, []);

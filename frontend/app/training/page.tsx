@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useAppStore } from '@/store';
+import { useRouter } from 'next/navigation';
 
 // ===== 类型定义 =====
 
@@ -37,46 +39,64 @@ interface PatternStat {
 
 // ===== 常量 =====
 
-const USER_ID = 'user1';
 const QUESTION_COUNT = 10;
-const API_BASE = '/api/training';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // ===== 主页面组件 =====
 
 export default function TrainingPage() {
-  // 测验数据
+  const { token, isAuthenticated, user } = useAppStore();
+  const router = useRouter();
+
   const [quiz, setQuiz] = useState<Quiz | null>(null);
-  // 当前题目索引
   const [currentIndex, setCurrentIndex] = useState(0);
-  // 选中的答案
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  // 是否已提交
   const [submitted, setSubmitted] = useState(false);
-  // 提交结果
   const [result, setResult] = useState<QuizResult | null>(null);
-  // 是否训练完成
   const [completed, setCompleted] = useState(false);
-  // 正确答案计数
   const [correctCount, setCorrectCount] = useState(0);
-  // 每题结果记录
   const [answers, setAnswers] = useState<{ correct: boolean; patternName: string }[]>([]);
-  // 统计数据
   const [stats, setStats] = useState<PatternStat[]>([]);
-  // 加载状态
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 统一 API 请求（携带 token）
+  const apiRequest = useCallback(async (path: string, options: RequestInit = {}) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    if (res.status === 401) {
+      router.push('/auth/login');
+      throw new Error('请先登录');
+    }
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.message || `请求失败 (${res.status})`);
+    }
+    const json = await res.json();
+    return json?.data ?? json;
+  }, [token, router]);
 
   // ===== 开始训练 =====
 
   const startTraining = useCallback(async () => {
+    if (!isAuthenticated) {
+      router.push('/auth/login');
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${API_BASE}/quiz`, {
+      const data = await apiRequest('/api/v1/training/quiz', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: USER_ID, questionCount: QUESTION_COUNT }),
+        body: JSON.stringify({
+          userId: user?.id ?? 'guest',
+          questionCount: QUESTION_COUNT,
+        }),
       });
-      if (!res.ok) throw new Error('获取测验失败');
-      const data: Quiz = await res.json();
       setQuiz(data);
       setCurrentIndex(0);
       setSelectedAnswer(null);
@@ -86,76 +106,62 @@ export default function TrainingPage() {
       setCorrectCount(0);
       setAnswers([]);
       setStats([]);
-    } catch (err) {
-      console.error('开始训练失败:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '获取测验失败，请重试';
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, apiRequest, user, router]);
 
   // ===== 提交答案 =====
 
   const submitAnswer = useCallback(async () => {
     if (!quiz || !selectedAnswer) return;
     setLoading(true);
+    setError(null);
     try {
       const currentQuestion = quiz.questions[currentIndex];
-      const res = await fetch(`${API_BASE}/submit`, {
+      const data = await apiRequest('/api/v1/training/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: USER_ID,
+          userId: user?.id ?? 'guest',
           problemId: currentQuestion.problemId,
           answer: selectedAnswer,
         }),
       });
-      if (!res.ok) throw new Error('提交答案失败');
-      const data: QuizResult = await res.json();
       setResult(data);
       setSubmitted(true);
-      if (data.correct) {
-        setCorrectCount((prev) => prev + 1);
-      }
+      if (data.correct) setCorrectCount((prev) => prev + 1);
       setAnswers((prev) => [
         ...prev,
         { correct: data.correct, patternName: data.correctPatternName },
       ]);
-    } catch (err) {
-      console.error('提交答案失败:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '提交失败，请重试';
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [quiz, selectedAnswer, currentIndex]);
+  }, [quiz, selectedAnswer, currentIndex, apiRequest, user]);
 
   // ===== 下一题 =====
 
   const nextQuestion = useCallback(async () => {
     if (!quiz) return;
     if (currentIndex + 1 >= quiz.questions.length) {
-      // 训练结束，加载统计
       setCompleted(true);
-      await loadStats();
+      try {
+        const data = await apiRequest(`/api/v1/training/stats/${user?.id ?? 'guest'}`);
+        setStats(Array.isArray(data) ? data : []);
+      } catch { /* 统计加载失败不阻断流程 */ }
     } else {
       setCurrentIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setSubmitted(false);
       setResult(null);
     }
-  }, [quiz, currentIndex]);
-
-  // ===== 加载统计数据 =====
-
-  const loadStats = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/stats/${USER_ID}`);
-      if (res.ok) {
-        const data: PatternStat[] = await res.json();
-        setStats(data);
-      }
-    } catch (err) {
-      console.error('加载统计失败:', err);
-    }
-  };
+  }, [quiz, currentIndex, apiRequest, user]);
 
   // ===== 渲染：开始画面 =====
 
@@ -167,7 +173,12 @@ export default function TrainingPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">🏋️ 训练中心</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">选择训练方式，针对性提升算法能力</p>
 
-          {/* 训练方式网格 */}
+          {/* 错误提示 */}
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+              ⚠️ {error}
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* 模式识别 */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">

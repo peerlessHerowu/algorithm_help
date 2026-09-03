@@ -1,5 +1,6 @@
 package com.algorithm.help.auth.controller;
 
+import com.algorithm.help.common.ApiResponse;
 import com.algorithm.help.auth.dto.AuthResponse;
 import com.algorithm.help.auth.dto.LoginRequest;
 import com.algorithm.help.auth.dto.RegisterRequest;
@@ -31,54 +32,55 @@ public class AuthController {
 
     /** 用户注册 */
     @PostMapping("/register")
-    public ResponseEntity<UserInfoResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ApiResponse<UserInfoResponse> register(@Valid @RequestBody RegisterRequest request) {
         UserInfoResponse userInfo = authService.register(request);
-        return ResponseEntity.ok(userInfo);
+        return ApiResponse.success(userInfo);
     }
 
     /** 用户登录 — 返回 Token 对并设置 httpOnly cookie */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
-                                              HttpServletResponse response) {
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request,
+                                           HttpServletResponse response) {
         AuthResponse authResponse = authService.login(request);
         setTokenCookies(response, authResponse);
-        return ResponseEntity.ok(authResponse);
+        return ApiResponse.success(authResponse);
     }
 
     /** 刷新 Token — 旧 Token 失效，生成新 Token 对 */
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestBody(required = false) RefreshBody body,
-                                                HttpServletRequest request,
-                                                HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+            @RequestBody(required = false) RefreshBody body,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         String refreshToken = extractRefreshToken(body, request);
         if (refreshToken == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "缺少 refresh token"));
         }
         AuthResponse authResponse = authService.refresh(refreshToken);
         setTokenCookies(response, authResponse);
-        return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok(ApiResponse.success(authResponse));
     }
 
     /** 登出 — 撤销 Refresh Token 并清除 Cookie */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshBody body,
-                                       HttpServletRequest request,
-                                       HttpServletResponse response) {
+    public ApiResponse<Void> logout(@RequestBody(required = false) RefreshBody body,
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
         String refreshToken = extractRefreshToken(body, request);
         if (refreshToken != null) {
             authService.logout(refreshToken);
         }
         clearTokenCookies(response);
-        return ResponseEntity.ok().build();
+        return ApiResponse.success();
     }
 
     /** 获取当前用户信息 */
     @GetMapping("/me")
-    public ResponseEntity<UserInfoResponse> me(@AuthenticationPrincipal User user) {
+    public ResponseEntity<ApiResponse<UserInfoResponse>> me(@AuthenticationPrincipal User user) {
         if (user == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(ApiResponse.error(401, "未登录"));
         }
-        return ResponseEntity.ok(authService.getCurrentUser(user));
+        return ResponseEntity.ok(ApiResponse.success(authService.getCurrentUser(user)));
     }
 
     // ==================== 私有方法 ====================

@@ -76,8 +76,10 @@ export const useAppStore = create<AppStore>()(
     {
       name: 'algorithm-help-store', // localStorage key
       partialize: (state) => ({
-        // 只持久化 token 和偏好，用户信息从服务端获取
+        // 持久化 token、用户信息、认证状态和偏好
         token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
         currentLevel: state.currentLevel,
         preferredLanguage: state.preferredLanguage,
       }),
