@@ -177,6 +177,16 @@ public class LearningAnalyticsService {
     }
 
     /**
+     * 获取用户连续学习天数（公开，供其他服务调用）
+     *
+     * @param userId 用户 ID
+     * @return 连续天数
+     */
+    public int getStreakDays(String userId) {
+        return calculateStreakDays(userId);
+    }
+
+    /**
      * 获取每日学习计划（今日推荐）
      *
      * @param userId 用户 ID

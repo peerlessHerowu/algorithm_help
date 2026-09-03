@@ -17,4 +17,5 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
 
     @Query("SELECT COUNT(DISTINCT ua.userId) FROM UserAchievement ua WHERE ua.type = :type")
     long countDistinctUsersByType(AchievementType type);
+    long countByUserId(String userId);
 }
