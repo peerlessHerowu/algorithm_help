@@ -1,0 +1,92 @@
+@import url('https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css');
+@import url('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* 暗色模式下使用 github-dark 代码高亮主题 */
+.dark pre code.hljs,
+.dark .hljs {
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-type {
+  color: #ff7b72;
+}
+
+.dark .hljs-string,
+.dark .hljs-addition {
+  color: #a5d6ff;
+}
+
+.dark .hljs-number,
+.dark .hljs-literal {
+  color: #79c0ff;
+}
+
+.dark .hljs-title,
+.dark .hljs-title.function_,
+.dark .hljs-section {
+  color: #d2a8ff;
+}
+
+.dark .hljs-built_in,
+.dark .hljs-name {
+  color: #ffa657;
+}
+
+.dark .hljs-variable,
+.dark .hljs-attr,
+.dark .hljs-params {
+  color: #c9d1d9;
+}
+
+.dark .hljs-deletion {
+  color: #ffa198;
+  background-color: rgba(255, 129, 130, 0.15);
+}
+
+.dark .hljs-addition {
+  background-color: rgba(63, 185, 80, 0.15);
+}
+
+.dark .hljs-meta {
+  color: #79c0ff;
+}
+
+.dark .hljs-symbol,
+.dark .hljs-bullet {
+  color: #ffa657;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
