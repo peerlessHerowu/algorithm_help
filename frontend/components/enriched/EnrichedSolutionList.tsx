@@ -61,6 +61,8 @@ interface EnrichedSolutionListProps {
   onLoginRequired?: (intent: string) => void;
   /** 初始级别（来自 URL 参数或阅读进度） */
   initialLevel?: number;
+  /** 隐藏内部 LevelTabs（由父组件管理级别时使用） */
+  hideLevelTabs?: boolean;
   /** 自定义类名 */
   className?: string;
 }
@@ -92,6 +94,7 @@ export default function EnrichedSolutionList({
   isAdmin = false,
   onLoginRequired,
   initialLevel,
+  hideLevelTabs = false,
   className,
 }: EnrichedSolutionListProps) {
   // 智能默认级别
@@ -240,12 +243,14 @@ export default function EnrichedSolutionList({
   return (
     <div className={`space-y-3 ${className || ''}`}>
       {/* LevelTabs 级别选择器 */}
+      {!hideLevelTabs && (
       <LevelTabs
         activeLevel={activeLevel}
         onLevelChange={handleLevelChange}
         counts={levelCounts}
         isNewUser={isNewUser}
       />
+      )}
 
       {/* TagFilter 标签筛选栏 */}
       {!isLegacy && (

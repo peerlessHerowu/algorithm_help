@@ -564,6 +564,7 @@ function EnrichedAITab({
             isAdmin={isAdmin}
             onLoginRequired={handleLoginRequired}
             initialLevel={level}
+            hideLevelTabs={true}
           />
           </div>
         )}

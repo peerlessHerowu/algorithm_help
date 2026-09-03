@@ -23,6 +23,7 @@ import ComplexityInfo from './ComplexityInfo';
 import ActionBar, { type VoteState } from './ActionBar';
 import { DetailSkeleton } from './SkeletonLoader';
 import { sanitizeHtml } from '@/lib/sanitize';
+import CodeBlock from '@/components/CodeBlock';
 
 /** 卡片数据接口 */
 export interface EnrichedCardData {
@@ -30,6 +31,7 @@ export interface EnrichedCardData {
   title: string;
   summary?: string;
   content?: string;
+  codeImplementations?: string | null;
   tags?: string[];
   sourceType: SourceType;
   sourceVotes?: number | null;
@@ -262,12 +264,19 @@ export default function CollapsibleCard({
           {!loading && detail && (
             <div className="space-y-3">
               {/* Markdown 正文（DOMPurify sanitize） */}
+              {detail.content && (
               <div
                 className="prose prose-sm prose-gray dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(detail.content || ''),
                 }}
               />
+              )}
+
+              {/* 代码实现（codeImplementations JSON） */}
+              {!detail.content && detail.codeImplementations && (
+                <CodeImplBlock raw={detail.codeImplementations} />
+              )}
 
               {/* 复杂度标注区 */}
               <ComplexityInfo
@@ -323,3 +332,35 @@ export default function CollapsibleCard({
   );
 }
 
+
+/**
+ * CodeImplBlock - 渲染 codeImplementations JSON 字段
+ * 格式：{"python": "...", "java": "...", "cpp": "...", "go": "..."}
+ */
+function CodeImplBlock({ raw }: { raw: string }) {
+  let parsed: Record<string, string> = {};
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+
+  // 过滤掉空值和明显的错误信息（kiro-cli 有时输出 tool 警告）
+  const langs = Object.entries(parsed)
+    .filter(([, code]) => code && code.length > 10 && !code.includes('Not all mcp servers'))
+    .reduce<Record<string, string>>((acc, [lang, code]) => {
+      // 去掉代码块首行的语言标记（如 "python\n" 开头）
+      const cleaned = code.replace(/^\s*\w+\n/, '').trim();
+      acc[lang] = cleaned;
+      return acc;
+    }, {});
+
+  if (Object.keys(langs).length === 0) return null;
+
+  return (
+    <div className="space-y-2 animate-fade-in-up">
+      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">代码实现</p>
+      <CodeBlock code={langs} className="my-2" />
+    </div>
+  );
+}
