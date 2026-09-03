@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * 题目卡片组件
- * 展示题目标题、难度标签（颜色编码）、分类标签和生成状态指示器
+ * 题目卡片组件 - 升级版
+ * 升级内容：卡片hover升起动效、难度色块优化、生成状态清晰展示
  */
 
 import Link from 'next/link';
@@ -13,81 +13,60 @@ interface ProblemCardProps {
   problem: ProblemListItem;
 }
 
-/** 难度标签颜色映射 */
-const difficultyConfig: Record<Difficulty, { label: string; className: string }> = {
-  EASY: { label: '简单', className: 'bg-green-100 text-green-700' },
-  MEDIUM: { label: '中等', className: 'bg-yellow-100 text-yellow-700' },
-  HARD: { label: '困难', className: 'bg-red-100 text-red-700' },
+const difficultyConfig: Record<Difficulty, { label: string; bg: string; text: string; border: string }> = {
+  EASY:   { label: '简单', bg: 'bg-emerald-50  dark:bg-emerald-900/20',  text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+  MEDIUM: { label: '中等', bg: 'bg-amber-50    dark:bg-amber-900/20',    text: 'text-amber-700   dark:text-amber-400',   border: 'border-amber-200   dark:border-amber-800'   },
+  HARD:   { label: '困难', bg: 'bg-rose-50     dark:bg-rose-900/20',     text: 'text-rose-700    dark:text-rose-400',    border: 'border-rose-200    dark:border-rose-800'    },
 };
 
-/** 根据 problem 数据推断生成状态 */
 function getGenerationStatus(problem: ProblemListItem): GenerationStatus {
   if (problem.generationStatus) return problem.generationStatus;
   return problem.hasExplanation ? 'generated' : 'not_generated';
 }
 
-/** 生成状态指示器组件 */
-function GenerationStatusIndicator({ status }: { status: GenerationStatus }) {
+function StatusDot({ status }: { status: GenerationStatus }) {
   switch (status) {
     case 'generated':
-      return (
-        <span className="inline-flex items-center" title="已生成">
-          <svg className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        </span>
-      );
+      return <span className="h-2 w-2 rounded-full bg-emerald-500" title="已有AI解析" />;
     case 'generating':
-      return (
-        <span className="inline-flex items-center" title="生成中">
-          <svg className="h-4 w-4 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        </span>
-      );
+      return <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" title="生成中" />;
     case 'failed':
-      return (
-        <span className="inline-flex items-center" title="生成失败">
-          <svg className="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-        </span>
-      );
-    case 'not_generated':
+      return <span className="h-2 w-2 rounded-full bg-red-400" title="生成失败" />;
     default:
-      return (
-        <span className="inline-flex items-center" title="未生成">
-          <span className="h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600" />
-        </span>
-      );
+      return <span className="h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" title="暂无解析" />;
   }
 }
 
 export default function ProblemCard({ problem }: ProblemCardProps) {
-  const difficulty = difficultyConfig[problem.difficulty];
+  const diff   = difficultyConfig[problem.difficulty];
   const status = getGenerationStatus(problem);
-  const tags = safeArray(problem.tags);
+  const tags   = safeArray(problem.tags).slice(0, 4); // 最多显示4个tag
 
   return (
     <Link
       href={`/problems/${problem.id}`}
-      className="block rounded-xl border border-gray-200 bg-white p-5
-                 transition-all hover:shadow-md hover:border-gray-300
-                 dark:bg-gray-900 dark:border-gray-700 dark:hover:border-gray-500"
+      className="group block rounded-xl border border-gray-200 bg-white p-5
+        transition-all duration-200 ease-out
+        hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-300
+        dark:bg-gray-900 dark:border-gray-700
+        dark:hover:border-gray-600 dark:hover:shadow-black/30"
     >
-      {/* 标题行 */}
+      {/* 顶行：状态点 + 标题 + 难度 */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <GenerationStatusIndicator status={status} />
-          <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+          <span className="mt-1.5 shrink-0">
+            <StatusDot status={status} />
+          </span>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100
+            line-clamp-2 leading-snug
+            group-hover:text-blue-600 dark:group-hover:text-blue-400
+            transition-colors duration-150">
             {problem.title}
           </h3>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${difficulty.className}`}
-        >
-          {difficulty.label}
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium border
+          ${diff.bg} ${diff.text} ${diff.border}`}>
+          {diff.label}
         </span>
       </div>
 
@@ -97,12 +76,28 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600
-                         dark:bg-gray-800 dark:text-gray-400"
+              className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500
+                dark:bg-gray-800 dark:text-gray-400
+                transition-colors group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
             >
               {tag}
             </span>
           ))}
+          {safeArray(problem.tags).length > 4 && (
+            <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-400 dark:bg-gray-800">
+              +{safeArray(problem.tags).length - 4}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 底部：有AI解析时的提示 */}
+      {status === 'generated' && (
+        <div className="mt-3 flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          <span>含AI深度解析</span>
         </div>
       )}
     </Link>

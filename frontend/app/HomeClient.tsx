@@ -11,6 +11,7 @@ import { fetcher } from '@/lib/fetcher';
 import type { PageResponse, ProblemListItem, Difficulty } from '@/lib/types';
 import ProblemCard from '@/components/ProblemCard';
 import SearchFilter from '@/components/SearchFilter';
+import { CardSkeletonList } from '@/components/enriched/SkeletonLoader';
 
 /** 构建查询参数字符串 */
 function buildQuery(params: {
@@ -82,10 +83,10 @@ export default function HomeClient() {
           onDifficultyChange={handleDifficultyChange}
         />
 
-        {/* 加载状态 */}
+        {/* 加载状态 - 骨架屏 */}
         {isLoading && !data && (
-          <div className="mt-12 flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <CardSkeletonList count={6} />
           </div>
         )}
 
@@ -100,8 +101,14 @@ export default function HomeClient() {
         {data && (
           <>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {data.content.map((problem) => (
-                <ProblemCard key={problem.id} problem={problem} />
+              {data.content.map((problem, idx) => (
+                <div
+                  key={problem.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${Math.min(idx * 30, 300)}ms`, animationFillMode: 'both' }}
+                >
+                  <ProblemCard problem={problem} />
+                </div>
               ))}
             </div>
 

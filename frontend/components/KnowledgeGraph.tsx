@@ -437,12 +437,13 @@ export default function KnowledgeGraph({
   }
 
   return (
-    <div className="knowledge-graph-container w-full h-full relative">
+    <div className="knowledge-graph-container w-full h-full relative overflow-hidden">
       <svg
         ref={svgRef}
         width={width}
         height={height}
-        className="bg-white rounded-lg border border-gray-200"
+        className="bg-white dark:bg-gray-900"
+        style={{ display: 'block' }}
       />
       {/* 边 hover tooltip */}
       <div
@@ -450,17 +451,14 @@ export default function KnowledgeGraph({
         className="absolute pointer-events-none bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg z-50"
         style={{ display: 'none' }}
       />
-      {/* 图例 */}
-      <div className="absolute bottom-4 left-4 bg-white/90 rounded-lg p-3 shadow-sm border border-gray-100 text-xs">
-        <div className="font-medium text-gray-700 mb-2">节点类型</div>
-        <div className="flex flex-col gap-1">
+      {/* 图例 - 右下角避开侧边栏 */}
+      <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-800/95 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700 text-xs backdrop-blur-sm">
+        <div className="font-medium text-gray-600 dark:text-gray-300 mb-2 text-[10px] uppercase tracking-wider">节点类型</div>
+        <div className="flex flex-col gap-1.5">
           {Object.entries(NODE_COLOR_MAP).map(([type, color]) => (
             <div key={type} className="flex items-center gap-2">
-              <span
-                className="inline-block w-3 h-3 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-gray-600">{type}</span>
+              <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              <span className="text-gray-500 dark:text-gray-400">{type}</span>
             </div>
           ))}
         </div>

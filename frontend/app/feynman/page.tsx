@@ -28,27 +28,31 @@ function parseJson<T>(text: string): T | null {
   } catch { return null; }
 }
 
-// ============ 子组件：消息气泡 ============
-function Bubble({ m }: { m: Msg }) {
+// ============ 子组件：消息气泡（AI消息支持打字机动效） ============
+function Bubble({ m, isLatestAI = false }: { m: Msg; isLatestAI?: boolean }) {
   if (m.role === 'system') return (
     <div className="flex justify-center">
-      <div className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+      <div className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400 animate-fade-in">
         {m.content}
       </div>
     </div>
   );
   const isUser = m.role === 'user';
   return (
-    <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-2 animate-fade-in-up ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-        isUser ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
+        isUser ? 'bg-blue-600 text-white' : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
       }`}>
         {isUser ? '我' : 'AI'}
       </div>
       <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-        isUser ? 'bg-blue-600 text-white' : 'bg-white shadow-sm border border-gray-100 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200'
+        isUser
+          ? 'bg-blue-600 text-white'
+          : 'bg-white shadow-sm border border-gray-100 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200'
       }`}>
-        <div className="whitespace-pre-wrap">{m.content}</div>
+        <div className={`whitespace-pre-wrap ${!isUser && isLatestAI ? 'typing-cursor' : ''}`}>
+          {m.content}
+        </div>
         <div className={`mt-1 text-xs ${isUser ? 'text-blue-200 text-right' : 'text-gray-400'}`}>
           {new Date(m.ts).toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })}
         </div>
@@ -325,7 +329,11 @@ function FeynmanContent() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${wsState === 'connected' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`} />
+          <span className={`h-2 w-2 rounded-full ${
+            wsState === 'connected'
+              ? 'bg-green-500 status-dot-online'
+              : 'bg-yellow-500 animate-pulse'
+          }`} />
           {active && (
             <>
               <button onClick={handleReset}
@@ -346,14 +354,21 @@ function FeynmanContent() {
         {/* 左栏：对话区 */}
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {msgs.map(m => <Bubble key={m.id} m={m} />)}
+            {msgs.map((m, idx) => (
+              <Bubble
+                key={m.id}
+                m={m}
+                isLatestAI={m.role === 'ai' && idx === msgs.length - 1}
+              />
+            ))}
             {aiTyping && (
-              <div className="flex gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white shrink-0">AI</div>
+              <div className="flex gap-2 animate-fade-in">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-xs font-bold text-white shrink-0">AI</div>
                 <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {[0,150,300].map(d => (
-                      <span key={d} className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: `${d}ms` }} />
+                      <span key={d} className="h-2 w-2 rounded-full bg-purple-400 animate-bounce"
+                        style={{ animationDelay: `${d}ms`, animationDuration: '0.8s' }} />
                     ))}
                   </div>
                 </div>

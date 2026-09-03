@@ -42,6 +42,7 @@ import BackToTop from '@/components/enriched/BackToTop';
 import EnrichedSolutionList from '@/components/enriched/EnrichedSolutionList';
 import EmptyState from '@/components/enriched/EmptyState';
 import GenerationProgress from '@/components/enriched/GenerationProgress';
+import { AIAnalysisSkeleton } from '@/components/enriched/SkeletonLoader';
 import { useEnrichmentTask } from '@/hooks/useEnrichmentTask';
 import { enrichedApi } from '@/lib/enriched-api';
 
@@ -544,13 +545,12 @@ function EnrichedAITab({
 
         {/* 加载中（非生成态） */}
         {enrichedLoading && !isGenerating && (
-          <div className="flex justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-3 border-gray-200 border-t-blue-500" />
-          </div>
+          <AIAnalysisSkeleton />
         )}
 
         {/* enriched 丰富内容 */}
         {!enrichedLoading && !isGenerating && hasEnrichedContent && (
+          <div className="animate-fade-in-up">
           <EnrichedSolutionList
             problemId={problemId}
             levelCounts={{ [level]: enrichedItems.length }}
@@ -565,15 +565,14 @@ function EnrichedAITab({
             onLoginRequired={handleLoginRequired}
             initialLevel={level}
           />
+          </div>
         )}
 
         {/* legacy 回退：使用旧版 ExplanationContent */}
         {!enrichedLoading && !isGenerating && isLegacyFallback && (
           <div>
             {explanationLoading && !explanation && (
-              <div className="flex justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-3 border-gray-200 border-t-blue-500" />
-              </div>
+              <AIAnalysisSkeleton />
             )}
             {explanationError && (
               <GenerationStatus
@@ -615,9 +614,7 @@ function EnrichedAITab({
         {!enrichedLoading && !isGenerating && enrichedError && (
           <div>
             {explanationLoading && !explanation && (
-              <div className="flex justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-3 border-gray-200 border-t-blue-500" />
-              </div>
+              <AIAnalysisSkeleton />
             )}
             {explanation && (
               <ExplanationContent

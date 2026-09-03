@@ -18,9 +18,21 @@ const config: Config = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in-down': {
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
         'scale-in': {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(16px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
         },
         marquee: {
           '0%': { transform: 'translateX(0)' },
@@ -30,13 +42,37 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'scale(0.8)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
+        'typing-cursor': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
+        'progress-pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.5s infinite linear',
         'fade-in': 'fade-in 150ms ease-out',
+        'fade-in-up': 'fade-in-up 250ms ease-out',
+        'fade-in-up-slow': 'fade-in-up 400ms ease-out',
+        'fade-in-down': 'fade-in-down 200ms ease-out',
         'scale-in': 'scale-in 200ms ease-out',
+        'slide-in-right': 'slide-in-right 250ms ease-out',
         marquee: 'marquee 8s linear infinite',
         'fadeInScale': 'fadeInScale 0.3s ease',
+        'typing-cursor': 'typing-cursor 1s ease-in-out infinite',
+        'progress-pulse': 'progress-pulse 2s ease-in-out infinite',
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
       },
       colors: {
         background: "var(--background)",
