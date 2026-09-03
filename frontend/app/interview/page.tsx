@@ -277,6 +277,8 @@ function InterviewContent() {
   const [code, setCode] = useState('// 在这里编写代码...\n');
   const [scoreReport, setScoreReport] = useState<ScoreReport | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 会话 ID（通过 REST 创建，WS 通信时携带）
+  const [sessionId, setSessionId] = useState('');
 
   // 消息列表自动滚动
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -298,9 +300,59 @@ function InterviewContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 订阅 WebSocket 面试消息
+  // 订阅 WebSocket 面试消息（对齐后端实际消息类型）
   useEffect(() => {
-    const unsubInterviewer = subscribe<{ content: string; phase?: InterviewPhase }>(
+    // 后端发 AI_RESPONSE → 面试官回复
+    const unsubAiResponse = subscribe<{ content: string } | string>(
+      'AI_RESPONSE',
+      (payload) => {
+        const content = typeof payload === 'string' ? payload : payload.content;
+        const newMsg: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          role: 'interviewer',
+          content,
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [...prev, newMsg]);
+      }
+    );
+
+    // 后端发 INTERVIEW_REPORT → 评分报告
+    const unsubReport = subscribe<ScoreReport | string>('INTERVIEW_REPORT', (payload) => {
+      try {
+        const report = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        // 映射后端字段到前端 ScoreReport
+        const mapped: ScoreReport = {
+          overallScore: report.totalScore ?? report.overallScore ?? 0,
+          summary: report.summary ?? '',
+          dimensions: [
+            { name: '🧠 正确性', score: (report.correctnessScore ?? 5) * 10, suggestion: report.improvements?.correctness ?? '' },
+            { name: '⚡ 效率', score: (report.efficiencyScore ?? 5) * 10, suggestion: report.improvements?.efficiency ?? '' },
+            { name: '🗣️ 沟通', score: (report.communicationScore ?? 5) * 10, suggestion: report.improvements?.communication ?? '' },
+            { name: '💻 代码质量', score: (report.codeQualityScore ?? 5) * 10, suggestion: report.improvements?.codeQuality ?? '' },
+          ],
+        };
+        setScoreReport(mapped);
+        setPhase('ended');
+      } catch { /* 解析失败时保留当前状态 */ }
+    });
+
+    // 后端发 INTERVIEW_TIME_WARNING → 时间警告
+    const unsubTimeWarn = subscribe<string>('INTERVIEW_TIME_WARNING', (payload) => {
+      const content = typeof payload === 'string' ? payload : '时间提醒';
+      const warnMsg: ChatMessage = {
+        id: `warn-${Date.now()}`,
+        role: 'interviewer',
+        content,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, warnMsg]);
+      // 如果包含评分报告触发词，切换阶段
+      if (content.includes('评分报告')) setPhase('ended');
+    });
+
+    // 兼容旧路径（保留 INTERVIEW_MESSAGE 和 INTERVIEW_SCORE）
+    const unsubLegacyMsg = subscribe<{ content: string; phase?: InterviewPhase }>(
       'INTERVIEW_MESSAGE',
       (payload) => {
         const newMsg: ChatMessage = {
@@ -310,20 +362,20 @@ function InterviewContent() {
           timestamp: Date.now(),
         };
         setMessages((prev) => [...prev, newMsg]);
-        if (payload.phase) {
-          setPhase(payload.phase);
-        }
+        if (payload.phase) setPhase(payload.phase);
       }
     );
-
-    const unsubScore = subscribe<ScoreReport>('INTERVIEW_SCORE', (payload) => {
+    const unsubLegacyScore = subscribe<ScoreReport>('INTERVIEW_SCORE', (payload) => {
       setScoreReport(payload);
       setPhase('ended');
     });
 
     return () => {
-      unsubInterviewer();
-      unsubScore();
+      unsubAiResponse();
+      unsubReport();
+      unsubTimeWarn();
+      unsubLegacyMsg();
+      unsubLegacyScore();
     };
   }, [subscribe]);
 
@@ -335,9 +387,28 @@ function InterviewContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remaining, isTimerRunning]);
 
-  // 开始面试
-  const handleStart = useCallback(() => {
+  // 开始面试（先 REST 创建 session，再 WS 通信）
+  const handleStart = useCallback(async () => {
     setPhase('thinking');
+    // 创建面试会话
+    let sid = sessionId;
+    if (!sid) {
+      try {
+        const { interviewApi } = await import('@/lib/api');
+        const session = await interviewApi.start(
+          'guest', problemId || 'unknown',
+          config.duration,
+          config.difficulty.toUpperCase(),
+          config.companyStyle === '通用' ? 'GENERAL' : config.companyStyle.toUpperCase()
+        ) as { sessionId?: string; id?: string };
+        sid = (session as any).sessionId || (session as any).id || `interview-${Date.now()}`;
+        setSessionId(sid);
+      } catch {
+        sid = `interview-${Date.now()}`;
+        setSessionId(sid);
+      }
+    }
+
     // 初始面试官消息
     const introMsg: ChatMessage = {
       id: 'msg-intro',
@@ -349,15 +420,17 @@ function InterviewContent() {
 
     // 发送 WebSocket 开始面试消息
     send({
-      type: 'INTERVIEW_START',
-      payload: {
+      type: 'INTERVIEW_CHAT',
+      sessionId: sid,
+      payload: JSON.stringify({
+        action: 'START',
         problemId,
         difficulty: config.difficulty,
         duration: config.duration,
         companyStyle: config.companyStyle,
-      },
-    });
-  }, [config, problemId, send]);
+      }),
+    } as any);
+  }, [config, problemId, send, sessionId]);
 
   // 发送消息
   const handleSend = useCallback(() => {
@@ -373,9 +446,10 @@ function InterviewContent() {
 
     // 通过 WebSocket 发送候选人回答
     send({
-      type: 'INTERVIEW_ANSWER',
-      payload: { content: input.trim(), phase },
-    });
+      type: 'INTERVIEW_CHAT',
+      sessionId,
+      payload: input.trim(),
+    } as any);
 
     setInput('');
   }, [input, isSubmitting, send, phase]);
@@ -395,9 +469,10 @@ function InterviewContent() {
 
     // 发送代码到后端
     send({
-      type: 'INTERVIEW_CODE_SUBMIT',
-      payload: { code, phase },
-    });
+      type: 'INTERVIEW_CHAT',
+      sessionId,
+      payload: `[代码提交]\n${code}`,
+    } as any);
 
     setIsSubmitting(false);
     setPhase('followup');
@@ -406,8 +481,9 @@ function InterviewContent() {
   // 结束面试
   const handleEndInterview = useCallback(() => {
     send({
-      type: 'INTERVIEW_END',
-      payload: { code },
+      type: 'INTERVIEW_CHAT',
+      sessionId,
+      payload: '[INTERVIEW_END]',
     });
 
     // 显示默认评分（WebSocket 可能覆盖）
