@@ -136,8 +136,12 @@ export default function CommentList({
 
       {/* 空状态 */}
       {!isLoading && !error && nestedComments.length === 0 && (
-        <div className="flex items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-          暂无评论，来发表第一条吧
+        <div className="flex flex-col items-center justify-center py-12 gap-2 animate-fade-in-up">
+          <svg className="h-8 w-8 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <p className="text-sm text-gray-400 dark:text-gray-500">暂无评论，来发表第一条吧</p>
         </div>
       )}
 

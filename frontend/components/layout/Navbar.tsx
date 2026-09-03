@@ -127,18 +127,22 @@ export default function Navbar({ className = '' }: NavbarProps) {
         {/* 中间导航链接 - 桌面端 */}
         <div className="hidden items-center gap-1 md:flex">
           {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                    ? 'text-primary-700 dark:text-primary-300'
+                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
                 }`}
               >
                 {item.label}
+                {/* 活跃指示条 */}
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary-500 dark:bg-primary-400" />
+                )}
               </Link>
             );
           })}
@@ -171,7 +175,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 {user?.nickname || '用户'}
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900 animate-fade-in-down">
                   <Link href="/achievements" onClick={() => setUserMenuOpen(false)}
                     className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
                     🏆 我的成就
@@ -206,7 +210,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
       {/* 移动端展开菜单 */}
       {mobileMenuOpen && (
-        <div className="border-b border-gray-200 bg-white px-4 pb-3 pt-2 dark:border-gray-800 dark:bg-gray-950 md:hidden">
+        <div className="border-b border-gray-200 bg-white px-4 pb-3 pt-2 dark:border-gray-800 dark:bg-gray-950 md:hidden animate-fade-in-down">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (

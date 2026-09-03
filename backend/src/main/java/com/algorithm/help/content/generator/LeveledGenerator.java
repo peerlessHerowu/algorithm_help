@@ -112,7 +112,8 @@ public class LeveledGenerator {
             .setRawJson(rawJson);
 
         try {
-            JsonNode root = objectMapper.readTree(rawJson);
+            String jsonStr = extractJson(rawJson);
+            JsonNode root = objectMapper.readTree(jsonStr);
             if (level <= 2) {
                 parseSections(root, content);
             } else {
@@ -214,5 +215,23 @@ public class LeveledGenerator {
     private String textOf(JsonNode parent, String field) {
         JsonNode node = parent.get(field);
         return node != null && !node.isNull() ? node.asText() : null;
+    }
+
+    /**
+     * 从 AI 原始响应中提取 JSON 部分
+     * 兼容 ```json ... ``` markdown 代码块包裹和多余文字前缀
+     */
+    private String extractJson(String raw) {
+        if (raw == null || raw.isBlank()) return raw;
+        // 提取 ```json ... ``` 或 ``` ... ``` 代码块
+        java.util.regex.Pattern codeBlock = java.util.regex.Pattern.compile(
+            "```(?:json)?\\s*\\n?(.*?)\\n?```", java.util.regex.Pattern.DOTALL);
+        java.util.regex.Matcher m = codeBlock.matcher(raw);
+        if (m.find()) return m.group(1).trim();
+        // 兜底：从第一个 { 到最后一个 }
+        int start = raw.indexOf('{');
+        int end   = raw.lastIndexOf('}');
+        if (start >= 0 && end > start) return raw.substring(start, end + 1);
+        return raw.trim();
     }
 }

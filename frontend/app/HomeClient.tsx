@@ -92,8 +92,14 @@ export default function HomeClient() {
 
         {/* 错误状态 */}
         {error && (
-          <div className="mt-12 text-center">
-            <p className="text-sm text-red-500">加载失败，请稍后重试</p>
+          <div className="mt-16 flex flex-col items-center justify-center gap-3 animate-fade-in-up">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+              <svg className="h-7 w-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-red-500">加载失败，请稍后重试</p>
           </div>
         )}
 
@@ -114,9 +120,19 @@ export default function HomeClient() {
 
             {/* 空状态 */}
             {data.content.length === 0 && (
-              <div className="mt-12 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  暂无匹配的题目
+              <div className="mt-16 flex flex-col items-center justify-center gap-3 animate-fade-in-up">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full
+                  bg-gray-100 dark:bg-gray-800">
+                  <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  没有找到匹配的题目
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  尝试换个关键词或取消筛选条件
                 </p>
               </div>
             )}

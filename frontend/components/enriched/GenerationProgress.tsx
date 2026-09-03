@@ -125,26 +125,25 @@ export default function GenerationProgress({
 
   // 正常进度态
   return (
-    <div className={`flex flex-col items-center py-12 px-4 ${className || ''}`}>
-      {/* 状态图标 */}
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full
-        bg-blue-50 dark:bg-blue-900/20"
-      >
-        <svg
-          className="h-6 w-6 text-blue-500 dark:text-blue-400 animate-pulse"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.5}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25
-              12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0
-              003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
-          />
-        </svg>
+    <div className={`flex flex-col items-center py-12 px-4 animate-fade-in-up ${className || ''}`}>
+      {/* 状态图标 - 旋转渐变环 */}
+      <div className="relative mb-4">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full
+          bg-gradient-to-br from-blue-50 to-indigo-100
+          dark:from-blue-900/30 dark:to-indigo-900/30">
+          <svg
+            className="h-7 w-7 text-blue-500 dark:text-blue-400 animate-bounce-subtle"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25
+                12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0
+                003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
+            />
+          </svg>
+        </div>
+        {/* 旋转外环 */}
+        <div className="absolute inset-0 rounded-full border-2 border-blue-200 dark:border-blue-800 border-t-blue-500 animate-spin" style={{ animationDuration: '2s' }} />
       </div>
 
       {/* 标题 */}
@@ -154,16 +153,20 @@ export default function GenerationProgress({
 
       {/* 进度条 */}
       <div className="mb-3 w-full max-w-xs">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
           <div
-            className="h-full rounded-full bg-blue-500 dark:bg-blue-400
-              transition-all duration-500 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500
+              transition-all duration-700 ease-out relative overflow-hidden"
             style={{ width: `${progressPercent}%` }}
-          />
+          >
+            {/* 进度条内部光泽扫描 */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent
+              animate-shimmer bg-[length:200%_100%]" />
+          </div>
         </div>
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
           <span>{progress?.completedSteps || 0} / {progress?.totalSteps || 7} 步</span>
-          <span>{progressPercent}%</span>
+          <span className="font-medium text-blue-500">{progressPercent}%</span>
         </div>
       </div>
 

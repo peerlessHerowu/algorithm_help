@@ -238,21 +238,17 @@ export default function ProblemDetailClient() {
                 </div>
               )}
 
-              {/* 示例 */}
-              {safeArray(problem.examples).length > 0 && (
+              {/* 示例 — 仅当 description HTML 中没有 Example 时才展示（避免重复） */}
+              {safeArray(problem.examples).length > 0 &&
+               !(problem.description || '').includes('Example') &&
+               !(problem.descriptionCn || '').includes('示例') && (
                 <div className="mt-4">
                   <h3 className="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
                     示例
                   </h3>
                   <div className="space-y-2">
                     {safeArray(problem.examples).map((ex, i) => (
-                      <pre
-                        key={i}
-                        className="rounded-lg bg-gray-50 p-3 text-sm text-gray-700
-                                   dark:bg-gray-800 dark:text-gray-300"
-                      >
-                        {ex}
-                      </pre>
+                      <ExampleBlock key={i} index={i} raw={ex} />
                     ))}
                   </div>
                 </div>
@@ -345,9 +341,13 @@ export default function ProblemDetailClient() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    暂无关联题目
-                  </p>
+                  <div className="flex flex-col items-center gap-2 py-4 text-center">
+                    <svg className="h-6 w-6 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">暂无关联题目</p>
+                  </div>
                 )}
               </div>
 
@@ -872,6 +872,55 @@ function ApproachComparisonSection({ sections }: { sections: ContentSection[] })
         解法对比
       </h3>
       <ApproachComparison approaches={allApproaches} />
+    </div>
+  );
+}
+
+/**
+ * ExampleBlock — 示例块组件
+ *
+ * 兼容两种数据格式：
+ * 1. "Input: ...\nOutput: ...\nExplanation: ..." 标准格式
+ * 2. "[2,7,11,15]\n9\n[3,2,4]..." 原始数组拼接格式
+ */
+function ExampleBlock({ index, raw }: { index: number; raw: string }) {
+  // 如果包含 Input/Output 关键词，按结构化方式渲染
+  if (/input:|output:/i.test(raw)) {
+    const lines = raw.split('\n').filter((l) => l.trim());
+    return (
+      <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+          示例 {index + 1}
+        </div>
+        <div className="p-3 space-y-1">
+          {lines.map((line, i) => {
+            const colonIdx = line.indexOf(':');
+            if (colonIdx > 0) {
+              const label = line.slice(0, colonIdx).trim();
+              const value = line.slice(colonIdx + 1).trim();
+              return (
+                <div key={i} className="flex gap-2 text-sm">
+                  <span className="text-gray-400 dark:text-gray-500 shrink-0 font-mono text-xs">{label}:</span>
+                  <code className="text-gray-700 dark:text-gray-300 font-mono text-xs">{value}</code>
+                </div>
+              );
+            }
+            return <p key={i} className="text-xs text-gray-500 dark:text-gray-400">{line}</p>;
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // 原始格式：直接用 pre 但添加标题
+  return (
+    <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+        示例 {index + 1}
+      </div>
+      <pre className="p-3 text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/60 overflow-x-auto whitespace-pre-wrap">
+        {raw}
+      </pre>
     </div>
   );
 }

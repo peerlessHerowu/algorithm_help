@@ -11,6 +11,7 @@
 import { useMemo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
@@ -61,23 +62,45 @@ const sanitizeSchema = {
     span: [...(defaultSchema.attributes?.span || []), 'className', 'style'],
     // 允许 KaTeX 渲染结果的 class
     div: [...(defaultSchema.attributes?.div || []), 'className'],
+    // 允许表格对齐属性
+    th: [...(defaultSchema.attributes?.th || []), 'align', 'scope'],
+    td: [...(defaultSchema.attributes?.td || []), 'align'],
   },
-  // 禁止危险标签
-  tagNames: (defaultSchema.tagNames || []).filter(
-    (tag) => !['script', 'iframe', 'object', 'embed'].includes(tag)
-  ),
+  // 确保表格相关标签被允许
+  tagNames: [
+    ...(defaultSchema.tagNames || []).filter(
+      (tag) => !['script', 'iframe', 'object', 'embed'].includes(tag)
+    ),
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  ].filter((v, i, a) => a.indexOf(v) === i), // 去重
 };
 
 /**
  * 自定义 ReactMarkdown 组件映射
  * - img: 添加 native lazy loading
- * - 数学公式（通过 KaTeX class 识别）通过 LazyRender 包装延迟渲染
+ * - table: 添加水平滚动防溢出
  */
 const markdownComponents: Components = {
   // 图片：添加 loading="lazy" 实现原生懒加载
   img: ({ src, alt, ...props }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt || ''} loading="lazy" {...props} />
+  ),
+  // 表格：添加水平滚动容器，防止宽表格溢出
+  table: ({ children, ...props }) => (
+    <div className="overflow-x-auto my-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full text-sm" {...props}>{children}</table>
+    </div>
+  ),
+  th: ({ children, ...props }) => (
+    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300
+      bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap"
+      {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }) => (
+    <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300
+      border-b border-gray-100 dark:border-gray-800"
+      {...props}>{children}</td>
   ),
 };
 
@@ -120,7 +143,7 @@ export default function MarkdownRenderer({ content, level, className }: Markdown
           <LazyRender key={idx} minHeight="2rem">
             <ReactMarkdown
               key={idx}
-              remarkPlugins={[remarkMath]}
+              remarkPlugins={[remarkMath, remarkGfm]}
               rehypePlugins={[
                 rehypeHighlight,
                 rehypeKatex,

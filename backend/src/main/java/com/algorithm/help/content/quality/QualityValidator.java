@@ -321,11 +321,13 @@ public class QualityValidator {
      * 从 AI 响应中提取 JSON 数组部分（兼容包裹在 markdown 代码块中的情况）
      */
     private String extractJsonArray(String text) {
-        // 尝试提取 ```json ... ``` 中的内容
-        Pattern jsonBlock = Pattern.compile("```json\\s*\\n([\\s\\S]*?)```");
+        // 尝试提取 ```json ... ``` 或 ``` ... ``` 中的内容
+        Pattern jsonBlock = Pattern.compile("```(?:json)?\\s*\\n?([\\s\\S]*?)\\n?```");
         Matcher matcher = jsonBlock.matcher(text);
         if (matcher.find()) {
-            return matcher.group(1).trim();
+            String inner = matcher.group(1).trim();
+            // 确保提取的内容是数组
+            if (inner.startsWith("[")) return inner;
         }
         // 尝试直接找 [ ... ]
         int start = text.indexOf('[');
