@@ -76,6 +76,7 @@ export default function GraphPage() {
           edges: [...prev.edges, ...newData.edges.filter((e) => !existingEdgeIds.has(e.id))],
         };
       });
+    } catch (err) {
       console.error('展开节点数据加载失败:', err);
     }
   }, []);

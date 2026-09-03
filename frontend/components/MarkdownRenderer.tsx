@@ -187,7 +187,7 @@ function simpleSplit(markdown: string): Segment[] {
     }
   }
 
-  // 找连续的编程语言代码块组
+  // 找连续的编程语言代码块组（或单独代码块）
   const groups: { langs: Record<string, string>; firstStart: number; lastEnd: number }[] = [];
   let i = 0;
   while (i < blocks.length) {
@@ -210,9 +210,8 @@ function simpleSplit(markdown: string): Segment[] {
       j++;
     }
 
-    if (Object.keys(group).length > 1) {
-      groups.push({ langs: group, firstStart, lastEnd });
-    }
+    // 单语言代码块也独立渲染（不需要多语言配对）
+    groups.push({ langs: group, firstStart, lastEnd });
     i = j > i + 1 ? j : i + 1;
   }
 
