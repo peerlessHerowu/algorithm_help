@@ -31,10 +31,24 @@ const WalkThroughPlayer = dynamic(
   }
 );
 
-type ContentTab = 'analysis' | 'walkthrough' | 'code';
+// 图解查看器懒加载
+const DiagramViewer = dynamic(
+  () => import('@/components/diagram/DiagramViewer'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+        加载图解组件...
+      </div>
+    ),
+  }
+);
+
+type ContentTab = 'analysis' | 'walkthrough' | 'diagram' | 'code';
 const TAB_CONFIG: { id: ContentTab; label: string; icon: string }[] = [
   { id: 'analysis',    label: '解析',  icon: '📖' },
   { id: 'walkthrough', label: '走流程', icon: '▶' },
+  { id: 'diagram',     label: '图解',  icon: '📊' },
   { id: 'code',        label: '代码',  icon: '💻' },
 ];
 
@@ -339,6 +353,16 @@ export default function CollapsibleCard({
               {activeTab === 'walkthrough' && (
                 <div className="animate-fade-in">
                   <WalkThroughPlayer
+                    problemId={data.problemId ?? data.id}
+                    level={data.level}
+                  />
+                </div>
+              )}
+
+              {/* 📊 图解 Tab */}
+              {activeTab === 'diagram' && (
+                <div className="animate-fade-in">
+                  <DiagramViewer
                     problemId={data.problemId ?? data.id}
                     level={data.level}
                   />
