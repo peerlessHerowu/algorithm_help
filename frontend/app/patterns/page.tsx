@@ -9,5 +9,9 @@ import PatternsClient from './PatternsClient';
 export const dynamic = 'force-static';
 
 export default function PatternsPage() {
-  return <PatternsClient />;
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-6 pb-20 md:pb-6">
+      <PatternsClient />
+    </div>
+  );
 }

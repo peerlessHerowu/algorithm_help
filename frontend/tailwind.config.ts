@@ -77,6 +77,10 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // 深色主题 surface tokens
+        'dark-base':    '#0F1117',
+        'dark-surface': '#141820',
+        'dark-elevated':'#1C2333',
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',

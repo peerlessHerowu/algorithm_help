@@ -40,7 +40,7 @@ export default function RootLayout({
         <AuthInitializer />
         <div className="flex min-h-[calc(100vh-4rem)]">
           <Sidebar />
-          <main className="flex-1 min-w-0 px-4 py-6 pb-20 md:pb-6 mx-auto w-full max-w-7xl animate-fade-in-up"
+          <main className="flex-1 min-w-0 overflow-hidden"
             style={{ animationDuration: '300ms', animationFillMode: 'both' }}
           >
             {children}

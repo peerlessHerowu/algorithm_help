@@ -27,6 +27,12 @@ const sidebarItems: SidebarItem[] = [
   { label: '复习中心', href: '/review', icon: '🔄' },
 ];
 
+const extraItems: SidebarItem[] = [
+  { label: '算法考古', href: '/archaeology', icon: '🏛️' },
+  { label: '论文桥梁', href: '/papers', icon: '🔬' },
+  { label: '我的成就', href: '/achievements', icon: '🏆' },
+];
+
 interface SidebarProps {
   className?: string;
 }
@@ -43,8 +49,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                   ${className}`}
     >
       {/* 导航列表 */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
+      <nav className="flex-1 overflow-y-auto py-4" aria-label="主导航">
+        <ul className="space-y-1 px-2" role="list">
           {sidebarItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -56,6 +62,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
               >
                 <Link
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium
                              transition-colors
                              ${isActive
@@ -63,23 +70,57 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
                              }`}
                 >
-                  {/* 图标：始终显示 */}
-                  <span className="text-lg shrink-0 md:mx-auto lg:mx-0">
+                  <span className="text-lg shrink-0 md:mx-auto lg:mx-0" aria-hidden="true">
                     {item.icon}
                   </span>
-                  {/* 文字标签：仅桌面端显示 */}
-                  <span className="ml-3 hidden lg:inline">
-                    {item.label}
-                  </span>
+                  <span className="ml-3 hidden lg:inline">{item.label}</span>
                 </Link>
-                {/* 平板端 Tooltip：hover 时显示标签 */}
                 {hoveredItem === item.href && (
-                  <div
-                    className="absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2
-                               rounded-md bg-gray-900 px-2.5 py-1 text-xs text-white
-                               shadow-lg dark:bg-gray-700
-                               hidden md:block lg:hidden"
-                  >
+                  <div className="absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2
+                    rounded-md bg-gray-900 px-2.5 py-1 text-xs text-white shadow-lg
+                    hidden md:block lg:hidden" role="tooltip">
+                    {item.label}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* 分隔线 + 扩展导航 */}
+        <div className="mx-3 my-3 border-t border-gray-200 dark:border-gray-800" />
+        <p className="px-4 mb-1 text-[10px] uppercase tracking-widest text-gray-400 hidden lg:block">
+          探索
+        </p>
+        <ul className="space-y-1 px-2" role="list">
+          {extraItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <li
+                key={item.href}
+                onMouseEnter={() => setHoveredItem(item.href)}
+                onMouseLeave={() => setHoveredItem(null)}
+                className="relative"
+              >
+                <Link
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium
+                             transition-colors
+                             ${isActive
+                               ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+                             }`}
+                >
+                  <span className="text-base shrink-0 md:mx-auto lg:mx-0" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span className="ml-3 hidden lg:inline text-xs">{item.label}</span>
+                </Link>
+                {hoveredItem === item.href && (
+                  <div className="absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2
+                    rounded-md bg-gray-900 px-2.5 py-1 text-xs text-white shadow-lg
+                    hidden md:block lg:hidden" role="tooltip">
                     {item.label}
                   </div>
                 )}
