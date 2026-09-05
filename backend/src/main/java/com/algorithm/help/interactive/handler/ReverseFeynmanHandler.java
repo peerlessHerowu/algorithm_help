@@ -138,6 +138,33 @@ public class ReverseFeynmanHandler implements MessageHandler {
         }
     }
 
+    /**
+     * REST 方式评估纠正（供 /validate 端点调用）
+     */
+    public String evaluateCorrectionRest(String sessionId, String paragraphId, String correction) {
+        String contentJson = (String) redisTemplate.opsForValue().get(CONTENT_KEY + sessionId);
+        if (contentJson == null) {
+            return "{\"passed\": false, \"feedback\": \"内容已过期，请重新生成\"}";
+        }
+        try {
+            JsonNode content = objectMapper.readTree(contentJson);
+            JsonNode errorInfo = findErrorForParagraph(content, paragraphId);
+            if (errorInfo == null) {
+                return "{\"passed\": false, \"feedback\": \"这段话是正确的，请仔细找找其他段落\"}";
+            }
+            String result = evaluateCorrection(errorInfo, correction);
+            // 纠错成功时创建复习卡片
+            JsonNode evalNode = objectMapper.readTree(result);
+            if (evalNode.path("passed").asBoolean(false)) {
+                createReviewCardAfterCorrection(sessionId, errorInfo, result);
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("REST 纠错评估失败: sessionId={}", sessionId, e);
+            return "{\"passed\": false, \"feedback\": \"评估暂时不可用，请重试\"}";
+        }
+    }
+
     // ======================== 私有方法 ========================
 
     /**

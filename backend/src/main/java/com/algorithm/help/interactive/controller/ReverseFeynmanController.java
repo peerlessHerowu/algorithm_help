@@ -50,6 +50,37 @@ public class ReverseFeynmanController {
         ));
     }
 
+    /**
+     * REST 方式提交纠错（不依赖 WebSocket）
+     * <p>
+     * 学生通过 HTTP 提交纠正内容，后端 AI 评估后返回结果。
+     */
+    @PostMapping("/{sessionId}/validate")
+    public ApiResponse<java.util.Map<String, Object>> validate(
+            @PathVariable String sessionId,
+            @RequestBody ValidateRequest request) {
+        String result = reverseHandler.evaluateCorrectionRest(sessionId,
+                request.getParagraphId(), request.getCorrection());
+
+        // 解析结果
+        try {
+            com.fasterxml.jackson.databind.JsonNode node =
+                    new com.fasterxml.jackson.databind.ObjectMapper().readTree(result);
+            boolean passed = node.path("passed").asBoolean(false);
+            String feedback = node.path("feedback").asText("");
+            String explanation = node.path("explanation").asText("");
+            return ApiResponse.success(java.util.Map.of(
+                    "passed", passed,
+                    "feedback", feedback,
+                    "explanation", explanation
+            ));
+        } catch (Exception e) {
+            return ApiResponse.success(java.util.Map.of(
+                    "passed", false, "feedback", "评估解析失败，请重试", "explanation", ""
+            ));
+        }
+    }
+
     @Data
     public static class StartRequest {
         private String userId;
@@ -58,5 +89,11 @@ public class ReverseFeynmanController {
         private String problemDescription;
         private Integer errorCount = 1;
         private String difficulty = "MEDIUM";
+    }
+
+    @Data
+    public static class ValidateRequest {
+        private String paragraphId;
+        private String correction;
     }
 }
