@@ -35,4 +35,11 @@ public class PatternService {
         return patternRepo.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("算法模式", id));
     }
+
+    /**
+     * 批量根据 ID 列表查询模式
+     */
+    public List<AlgorithmPattern> findByIds(List<String> ids) {
+        return patternRepo.findAllById(ids);
+    }
 }
