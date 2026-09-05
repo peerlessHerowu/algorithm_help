@@ -40,7 +40,7 @@ public class SpacedRepetitionService {
                 .setProblemId(problemId)
                 .setCardType(type)
                 .setEaseFactor(2.5)
-                .setInterval(0)
+                .setIntervalDays(0)
                 .setRepetitions(0)
                 .setNextReviewAt(System.currentTimeMillis());
         return cardRepo.save(card);
@@ -105,12 +105,12 @@ public class SpacedRepetitionService {
         }
 
         // 计算下次复习时间
-        long nextReview = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(card.getInterval());
+        long nextReview = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(card.getIntervalDays());
         card.setNextReviewAt(nextReview);
         card.setLastReviewAt(System.currentTimeMillis());
 
         log.debug("SM-2 计算完成: cardId={}, quality={}, EF={}, interval={}天",
-                cardId, quality, String.format("%.2f", newEF), card.getInterval());
+                cardId, quality, String.format("%.2f", newEF), card.getIntervalDays());
         return cardRepo.save(card);
     }
 
@@ -136,12 +136,12 @@ public class SpacedRepetitionService {
         int reps = card.getRepetitions() + 1;
         card.setRepetitions(reps);
         if (reps == 1) {
-            card.setInterval(1);
+            card.setIntervalDays(1);
         } else if (reps == 2) {
-            card.setInterval(6);
+            card.setIntervalDays(6);
         } else {
-            int newInterval = (int) Math.round(card.getInterval() * card.getEaseFactor());
-            card.setInterval(newInterval);
+            int newInterval = (int) Math.round(card.getIntervalDays() * card.getEaseFactor());
+            card.setIntervalDays(newInterval);
         }
     }
 
@@ -150,6 +150,6 @@ public class SpacedRepetitionService {
      */
     private void resetForIncorrect(SpacedRepetitionCard card) {
         card.setRepetitions(0);
-        card.setInterval(1);
+        card.setIntervalDays(1);
     }
 }

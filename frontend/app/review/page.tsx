@@ -1,266 +1,426 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAppStore } from '@/store';
-import { reviewApi, analyticsApi } from '@/lib/api';
+import { reviewApi } from '@/lib/api';
 
-type ReviewMode = 'flip'|'pattern-quiz'|'complexity';
-
+// ===== 类型 =====
 interface Card {
-  id: string; problemId: string; problemTitle: string;
-  difficulty: 'EASY'|'MEDIUM'|'HARD'; cardType: string;
-  intervalDays: number; easeFactor: number; nextReviewAt: number;
+  id: string;
+  problemId: string;
+  cardType: string;
+  easeFactor: number;
+  interval: number;
+  repetitions: number;
+  nextReviewAt: number;
+  lastReviewAt?: number;
+  metadata?: string;
 }
 
-const QUALITY_BUTTONS = [
-  { quality: 1, label: '😟 忘了', desc: '明天复习', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800' },
-  { quality: 3, label: '🤔 模糊', desc: '3天后', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800' },
-  { quality: 4, label: '😊 记得', desc: '7天后', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' },
-  { quality: 5, label: '🚀 秒杀', desc: '14天后', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+interface Stats {
+  todayDue: number;
+  total: number;
+  mastered: number;
+  masteryRate: number;
+}
+
+// ===== SM-2 评分配置（0-5 完整范围）=====
+const QUALITY_CONFIG = [
+  { q: 0, label: '完全忘了', emoji: '💀', next: '明天', color: '#EF4444', bg: 'bg-red-900/40',     border: 'border-red-700/60' },
+  { q: 1, label: '很模糊',   emoji: '😟', next: '明天', color: '#F97316', bg: 'bg-orange-900/40', border: 'border-orange-700/60' },
+  { q: 2, label: '想起来了', emoji: '😐', next: '明天', color: '#F59E0B', bg: 'bg-amber-900/40',  border: 'border-amber-700/60' },
+  { q: 3, label: '模糊',     emoji: '🤔', next: '3天',  color: '#EAB308', bg: 'bg-yellow-900/40', border: 'border-yellow-700/60' },
+  { q: 4, label: '记得',     emoji: '😊', next: '7天',  color: '#22C55E', bg: 'bg-emerald-900/40',border: 'border-emerald-600/60' },
+  { q: 5, label: '秒杀',     emoji: '🚀', next: '14天', color: '#6366F1', bg: 'bg-indigo-900/40', border: 'border-indigo-700/60' },
 ];
 
-const DIFF_COLORS: Record<string, string> = {
-  EASY: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  MEDIUM: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  HARD: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+// 卡片类型对应标签
+const CARD_TYPE_LABEL: Record<string, string> = {
+  EXPLAIN:          '📖 口述解题',
+  PATTERN_QUIZ:     '🧩 模式识别',
+  COMPLETE_CODE:    '💻 补全代码',
+  GUESS_ALGO:       '🔍 猜算法',
+  DIAGRAM_GUESS:    '📊 看图猜算法',
+  CODE_REVIEW:      '🐛 代码审查',
+  VARIANT:          '🔀 变体题',
+  COMPLEXITY_GUESS: '⚡ 估复杂度',
 };
 
-// ============ 翻卡复习 ============
-function FlipCard({ card, onRecord }: { card: Card; onRecord: (quality: number) => void }) {
+function guestId() {
+  if (typeof window === 'undefined') return 'guest';
+  let id = localStorage.getItem('review-guest-id');
+  if (!id) { id = `guest-${Date.now()}`; localStorage.setItem('review-guest-id', id); }
+  return id;
+}
+
+// ===== 翻卡组件 =====
+function FlipCard({ card, onRecord }: {
+  card: Card;
+  onRecord: (quality: number) => Promise<void>;
+}) {
   const [flipped, setFlipped] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [selectedQ, setSelectedQ] = useState<number | null>(null);
 
-  const handleRecord = async (quality: number) => {
+  const typeLabel = CARD_TYPE_LABEL[card.cardType] ?? card.cardType;
+  const daysUntilDue = card.interval > 0 ? card.interval : 0;
+  const reps = card.repetitions ?? 0;
+
+  const handleRecord = async (q: number) => {
+    setSelectedQ(q);
     setRecording(true);
-    await onRecord(quality);
+    await onRecord(q);
     setFlipped(false);
+    setSelectedQ(null);
     setRecording(false);
   };
 
   return (
-    <div className="mx-auto max-w-lg">
-      {/* 卡片 */}
-      <div onClick={() => !flipped && setFlipped(true)} className="cursor-pointer">
-        <div className={`relative rounded-2xl border-2 transition-all duration-500 ${
-          flipped ? 'border-green-300 dark:border-green-700' : 'border-gray-200 dark:border-gray-700'
-        } bg-white dark:bg-gray-900 shadow-lg`}>
-          {/* 正面 */}
-          {!flipped && (
-            <div className="p-8 text-center min-h-48 flex flex-col items-center justify-center">
-              <span className={`mb-3 rounded-full px-2 py-0.5 text-xs font-medium ${DIFF_COLORS[card.difficulty]}`}>
-                {card.difficulty}
-              </span>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{card.problemTitle}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {card.cardType === 'EXPLAIN' ? '口述解题思路' : '回忆算法模式'}
-              </p>
-              <p className="mt-4 text-xs text-gray-400">点击翻转查看答案</p>
+    <div className="max-w-lg mx-auto">
+      {/* 卡片主体 */}
+      <div className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden
+        ${flipped ? 'border-indigo-600/60' : 'border-gray-800 cursor-pointer hover:border-gray-600'}`}
+        onClick={() => !flipped && setFlipped(true)}>
+
+        {/* 正面 */}
+        {!flipped ? (
+          <div className="bg-[#141820] p-8 min-h-52 flex flex-col items-center justify-center gap-4 text-center">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-400">
+              {typeLabel}
+            </span>
+            <h3 className="text-xl font-bold text-gray-100">{card.problemId}</h3>
+            <p className="text-sm text-gray-500">
+              {card.cardType === 'EXPLAIN'    ? '口述这道题的解题思路' :
+               card.cardType === 'DIAGRAM_GUESS' ? '根据执行步骤猜测算法' :
+               card.cardType === 'CODE_REVIEW'   ? '找出代码中的问题' :
+               '回忆算法模式和解法'}
+            </p>
+            <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
+              <span>EF: {card.easeFactor?.toFixed(2) ?? '2.50'}</span>
+              <span>·</span>
+              <span>{reps} 次复习</span>
+              {daysUntilDue > 0 && <><span>·</span><span>间隔 {daysUntilDue}d</span></>}
             </div>
-          )}
-          {/* 反面 */}
-          {flipped && (
-            <div className="p-6">
-              <div className="mb-3 text-xs text-green-600 dark:text-green-400 font-medium">✓ 回想起来了？</div>
-              <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4 text-sm text-gray-700 dark:text-gray-300">
-                <p className="font-medium mb-2">{card.problemTitle}</p>
-                <p className="text-gray-500 dark:text-gray-400 text-xs">上次间隔：{card.intervalDays} 天 | 容易度：{card.easeFactor?.toFixed(1)}</p>
+            <p className="text-[10px] text-gray-700 mt-1">点击翻转 ↓</p>
+          </div>
+        ) : (
+          <div className="bg-[#141820]">
+            {/* 反面头部 */}
+            <div className="px-6 pt-5 pb-3 border-b border-gray-800">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-indigo-400 font-medium">{typeLabel}</span>
+                <span className="text-xs text-gray-600">·</span>
+                <Link href={`/problems/${card.problemId}`}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                  onClick={e => e.stopPropagation()}>
+                  查看题目
+                </Link>
               </div>
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {QUALITY_BUTTONS.map(({ quality, label, desc, color }) => (
-                  <button key={quality} onClick={() => handleRecord(quality)} disabled={recording}
-                    className={`rounded-xl border px-2 py-3 text-center transition-colors hover:opacity-80 disabled:opacity-50 ${color}`}>
-                    <div className="text-sm font-medium">{label}</div>
-                    <div className="mt-0.5 text-xs opacity-70">{desc}</div>
+              <h3 className="text-lg font-bold text-gray-100">{card.problemId}</h3>
+            </div>
+
+            {/* SM-2 评分区 */}
+            <div className="px-6 py-5">
+              <p className="text-xs text-gray-500 mb-3">按记忆程度评分（影响下次复习间隔）：</p>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                {QUALITY_CONFIG.slice(0, 3).map(({ q, label, emoji, next, bg, border }) => (
+                  <button key={q} onClick={() => handleRecord(q)}
+                    disabled={recording}
+                    className={`rounded-xl border py-3 px-2 text-center transition-all
+                      hover:opacity-90 disabled:opacity-40
+                      ${selectedQ === q ? 'ring-2 ring-white/30 scale-95' : ''}
+                      ${bg} ${border}`}>
+                    <div className="text-xl mb-1">{emoji}</div>
+                    <div className="text-xs font-medium text-gray-200">{label}</div>
+                    <div className="text-[10px] text-gray-500 mt-0.5">{next}后</div>
                   </button>
                 ))}
               </div>
+              <div className="grid grid-cols-3 gap-2">
+                {QUALITY_CONFIG.slice(3).map(({ q, label, emoji, next, bg, border }) => (
+                  <button key={q} onClick={() => handleRecord(q)}
+                    disabled={recording}
+                    className={`rounded-xl border py-3 px-2 text-center transition-all
+                      hover:opacity-90 disabled:opacity-40
+                      ${selectedQ === q ? 'ring-2 ring-white/30 scale-95' : ''}
+                      ${bg} ${border}`}>
+                    <div className="text-xl mb-1">{emoji}</div>
+                    <div className="text-xs font-medium text-gray-200">{label}</div>
+                    <div className="text-[10px] text-gray-500 mt-0.5">{next}后</div>
+                  </button>
+                ))}
+              </div>
+              {recording && (
+                <div className="text-center mt-3">
+                  <span className="text-xs text-gray-500">更新间隔中...</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ============ 主页面 ============
-export default function ReviewPage() {
-  const router = useRouter();
-  const { user, isAuthenticated } = useAppStore();
+// ===== SM-2 说明面板 =====
+function SM2Guide() {
+  return (
+    <div className="rounded-2xl border border-indigo-900/50 bg-indigo-900/10 p-4 space-y-2">
+      <p className="text-xs font-medium text-indigo-300">📚 SM-2 间隔复习原理</p>
+      <ul className="space-y-1 text-[10px] text-gray-500">
+        <li>• 评分 0-2：明天再复习（重置间隔）</li>
+        <li>• 评分 3-5：间隔递增（3天→7天→14天...）</li>
+        <li>• 评分越高，EF（难易因子）越大，间隔越长</li>
+        <li>• EF 范围 1.3-2.5，影响间隔增长速度</li>
+      </ul>
+    </div>
+  );
+}
 
-  const [mode, setMode] = useState<ReviewMode>('flip');
-  const [cards, setCards] = useState<Card[]>([]);
+// ===== 主页面 =====
+export default function ReviewPage() {
+  const { user } = useAppStore();
+  const uid = user?.id ?? guestId();
+
+  const [cards, setCards]         = useState<Card[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [stats, setStats] = useState<any>(null);
-  const [plan, setPlan] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats]         = useState<Stats | null>(null);
+  const [loading, setLoading]     = useState(true);
   const [completed, setCompleted] = useState(0);
+  const [activeTab, setActiveTab] = useState<'flip' | 'all'>('flip');
 
   useEffect(() => {
-    if (!user?.id) return;
     Promise.all([
-      reviewApi.today(user.id),
-      reviewApi.stats(user.id),
-      analyticsApi.dailyPlan(user.id),
-    ]).then(([todayCards, reviewStats, dailyPlan]: any[]) => {
-      setCards(Array.isArray(todayCards) ? todayCards : []);
-      setStats(reviewStats);
-      setPlan(dailyPlan);
-    }).catch(() => {
-      setCards([]);
-    }).finally(() => setLoading(false));
-  }, [user]);
+      reviewApi.today(uid),
+      reviewApi.stats(uid),
+    ]).then(([todayCards, reviewStats]) => {
+      setCards(Array.isArray(todayCards) ? todayCards as Card[] : []);
+      setStats(reviewStats as Stats);
+    }).catch(() => { setCards([]); })
+    .finally(() => setLoading(false));
+  }, [uid]);
 
   const handleRecord = useCallback(async (quality: number) => {
     const card = cards[currentIdx];
     if (!card) return;
     await reviewApi.record(card.id, quality).catch(() => {});
     setCompleted(c => c + 1);
-    if (currentIdx < cards.length - 1) {
-      setCurrentIdx(i => i + 1);
-    } else {
-      setCurrentIdx(cards.length); // 完成标记
-    }
+    setCurrentIdx(i => i + 1);
   }, [cards, currentIdx]);
 
-  if (!isAuthenticated) return (
-    <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
-      <p className="text-gray-500">复习中心需要登录</p>
-      <button onClick={() => router.push('/auth/login')} className="rounded-lg bg-blue-600 px-6 py-2 text-sm text-white">去登录</button>
+  const currentCard = cards[currentIdx];
+  const allDone     = !loading && currentIdx >= cards.length && cards.length > 0;
+  const noCards     = !loading && cards.length === 0;
+  const progressPct = cards.length > 0 ? (currentIdx / cards.length) * 100 : 0;
+
+  return (
+    <div className="min-h-screen bg-[#0F1117]">
+      <div className="mx-auto max-w-4xl px-4 py-6">
+        {/* 标题 */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📅</span>
+            <div>
+              <h1 className="text-lg font-bold text-gray-100">复习中心</h1>
+              <p className="text-xs text-gray-500">SM-2 间隔重复算法</p>
+            </div>
+          </div>
+          {stats && (
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>总卡片 <span className="text-gray-200 font-bold">{stats.total}</span></span>
+              <span>掌握率 <span className="text-emerald-400 font-bold">{Math.round(stats.masteryRate)}%</span></span>
+            </div>
+          )}
+        </div>
+
+        {/* 统计格 */}
+        {stats && (
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            {[
+              { label: '今日待复习', value: stats.todayDue, color: 'text-amber-400' },
+              { label: '今日已完成', value: completed,       color: 'text-emerald-400' },
+              { label: '总卡片数',   value: stats.total,     color: 'text-indigo-400' },
+              { label: '已掌握',     value: stats.mastered,  color: 'text-purple-400' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="rounded-2xl border border-gray-800 bg-[#141820] p-3 text-center">
+                <div className={`text-2xl font-bold tabular-nums ${color}`}>{value}</div>
+                <div className="text-[10px] text-gray-600 mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tab */}
+        <div className="flex gap-2 mb-5">
+          {([['flip', '🃏 翻卡复习'], ['all', '📋 所有卡片']] as const).map(([t, l]) => (
+            <button key={t} onClick={() => setActiveTab(t)}
+              className={`px-4 py-2 text-sm rounded-xl transition-all font-medium
+                ${activeTab === t
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-800/60 text-gray-400 hover:text-gray-300'
+                }`}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* 加载中 */}
+        {loading && (
+          <div className="flex h-48 items-center justify-center">
+            <div className="w-8 h-8 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
+          </div>
+        )}
+
+        {/* 翻卡复习 Tab */}
+        {!loading && activeTab === 'flip' && (
+          <>
+            {noCards && (
+              <div className="flex flex-col items-center gap-4 py-16 text-center">
+                <div className="text-5xl">✨</div>
+                <h2 className="text-lg font-bold text-gray-200">今日无待复习卡片</h2>
+                <p className="text-sm text-gray-500">刷完题后，AI 会自动将题目加入复习计划</p>
+                <Link href="/problems"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all">
+                  去刷题
+                </Link>
+              </div>
+            )}
+
+            {allDone && (
+              <div className="flex flex-col items-center gap-5 py-12 text-center">
+                <div className="text-6xl">🎉</div>
+                <h2 className="text-xl font-bold text-gray-100">今日复习完成！</h2>
+                <p className="text-gray-400 text-sm">共复习 {completed} 张卡片，继续保持！</p>
+                <div className="grid grid-cols-3 gap-3 w-full max-w-xs">
+                  {[
+                    { label: '已复习', value: completed,    color: 'text-emerald-400' },
+                    { label: '待明日', value: cards.length - completed, color: 'text-amber-400' },
+                    { label: '总计',   value: cards.length, color: 'text-indigo-400' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="rounded-xl bg-gray-800/60 border border-gray-700 p-3 text-center">
+                      <div className={`text-xl font-bold ${color}`}>{value}</div>
+                      <div className="text-[10px] text-gray-600">{label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => { setCurrentIdx(0); setCompleted(0); }}
+                    className="px-5 py-2 rounded-xl border border-gray-700 text-gray-300 text-sm hover:border-gray-600">
+                    再复习一遍
+                  </button>
+                  <Link href="/problems"
+                    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium">
+                    去刷题
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {!noCards && !allDone && currentCard && (
+              <div className="space-y-5">
+                {/* 进度条 */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-500 tabular-nums shrink-0">
+                    {currentIdx + 1}/{cards.length}
+                  </span>
+                  <div className="flex-1 h-2 rounded-full bg-gray-800 overflow-hidden">
+                    <div className="h-2 rounded-full bg-indigo-500 transition-all duration-500"
+                      style={{ width: `${progressPct}%` }} />
+                  </div>
+                  <span className="text-xs text-gray-600 tabular-nums shrink-0">
+                    {Math.round(progressPct)}%
+                  </span>
+                </div>
+
+                <FlipCard card={currentCard} onRecord={handleRecord} />
+                <SM2Guide />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* 所有卡片 Tab */}
+        {!loading && activeTab === 'all' && (
+          <AllCardsPanel uid={uid} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===== 所有卡片面板 =====
+function AllCardsPanel({ uid }: { uid: string }) {
+  const [cards, setCards]     = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    reviewApi.cards(uid).then((data: unknown) => {
+      setCards(Array.isArray(data) ? data as Card[] : []);
+    }).catch(() => setCards([])).finally(() => setLoading(false));
+  }, [uid]);
+
+  if (loading) return (
+    <div className="flex h-32 items-center justify-center">
+      <div className="w-6 h-6 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
     </div>
   );
 
-  const currentCard = cards[currentIdx];
-  const allDone = currentIdx >= cards.length && cards.length > 0;
+  if (cards.length === 0) return (
+    <div className="text-center py-12 space-y-2">
+      <div className="text-3xl">📭</div>
+      <p className="text-gray-400">暂无复习卡片</p>
+      <p className="text-xs text-gray-600">完成互动学习后会自动创建</p>
+    </div>
+  );
+
+  const now = Date.now();
+  const overdue = cards.filter(c => c.nextReviewAt && c.nextReviewAt <= now);
+  const upcoming = cards.filter(c => c.nextReviewAt && c.nextReviewAt > now);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <h1 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">📅 复习中心</h1>
+    <div className="space-y-5">
+      {overdue.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-amber-400 mb-2">⏰ 待复习（{overdue.length}）</p>
+          <CardList cards={overdue} />
+        </div>
+      )}
+      {upcoming.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-gray-400 mb-2">📅 即将到期（{upcoming.length}）</p>
+          <CardList cards={upcoming} />
+        </div>
+      )}
+    </div>
+  );
+}
 
-      {/* 今日计划卡片 */}
-      {plan && (
-        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-blue-600 dark:text-blue-400 text-lg">📅</span>
-              <div>
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-300">今日学习计划</p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">{plan.recommendation}</p>
-              </div>
+function CardList({ cards }: { cards: Card[] }) {
+  return (
+    <div className="space-y-2">
+      {cards.slice(0, 20).map(c => {
+        const daysLeft = c.nextReviewAt
+          ? Math.ceil((c.nextReviewAt - Date.now()) / 86400000)
+          : 0;
+        return (
+          <div key={c.id}
+            className="flex items-center gap-3 rounded-xl border border-gray-800 bg-[#141820] px-4 py-3">
+            <span className="text-xs text-gray-500 w-6 shrink-0">{CARD_TYPE_LABEL[c.cardType]?.split(' ')[0] ?? '📋'}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-200 truncate">{c.problemId}</p>
+              <p className="text-[10px] text-gray-600">
+                EF {c.easeFactor?.toFixed(2)} · {c.repetitions}次 · 间隔{c.interval}d
+              </p>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{plan.reviewCardCount || 0}</p>
-              <p className="text-xs text-blue-500 dark:text-blue-500">待复习</p>
-            </div>
+            <span className="text-xs tabular-nums shrink-0"
+              style={{ color: daysLeft <= 0 ? '#F59E0B' : '#6B7280' }}>
+              {daysLeft <= 0 ? '待复习' : `${daysLeft}d后`}
+            </span>
           </div>
-        </div>
-      )}
-
-      {/* 统计格子 */}
-      {stats && (
-        <div className="mb-4 grid grid-cols-4 gap-3">
-          {[
-            { label: '今日待复习', val: stats.todayDue, color: 'text-orange-600' },
-            { label: '已完成今日', val: completed, color: 'text-green-600' },
-            { label: '总卡片', val: stats.total, color: 'text-blue-600' },
-            { label: '已掌握', val: stats.mastered, color: 'text-purple-600' },
-          ].map(({ label, val, color }) => (
-            <div key={label} className="rounded-xl border border-gray-200 bg-white p-3 text-center dark:border-gray-700 dark:bg-gray-900">
-              <div className={`text-2xl font-bold ${color}`}>{val}</div>
-              <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 复习方式 Tab */}
-      <div className="mb-4 flex gap-2 overflow-x-auto">
-        {([
-          ['flip', '🃏 翻卡复习'],
-          ['pattern-quiz', '🧩 模式识别'],
-          ['complexity', '⚡ 复杂度训练'],
-        ] as const).map(([m, label]) => (
-          <button key={m} onClick={() => setMode(m)}
-            className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              mode === m ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400'
-            }`}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* 主内容区 */}
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        </div>
-      ) : mode === 'flip' && (
-        <>
-          {allDone ? (
-            <div className="flex flex-col items-center gap-4 py-12 text-center">
-              <div className="text-5xl">🎉</div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">今日复习完成！</h2>
-              <p className="text-gray-500 dark:text-gray-400">共复习 {completed} 张卡片，继续保持！</p>
-              <div className="flex gap-3 mt-2">
-                <button onClick={() => { setCurrentIdx(0); setCompleted(0); }}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                  再复习一遍
-                </button>
-                <button onClick={() => router.push('/problems')}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800">
-                  去刷题
-                </button>
-              </div>
-            </div>
-          ) : cards.length === 0 ? (
-            <div className="flex flex-col items-center gap-4 py-12 text-center">
-              <div className="text-5xl">✨</div>
-              <h2 className="text-lg font-bold text-gray-700 dark:text-gray-300">今日无待复习卡片</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">继续刷题，学完的题目会自动加入复习计划</p>
-              <button onClick={() => router.push('/problems')}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                去刷题
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* 进度 */}
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500 dark:text-gray-400">{currentIdx + 1} / {cards.length}</span>
-                <div className="flex-1 h-2 rounded-full bg-gray-100 dark:bg-gray-700">
-                  <div className="h-2 rounded-full bg-blue-500 transition-all"
-                    style={{ width: `${(currentIdx/cards.length)*100}%` }} />
-                </div>
-              </div>
-              <FlipCard card={currentCard} onRecord={handleRecord} />
-            </div>
-          )}
-        </>
-      )}
-
-      {mode === 'pattern-quiz' && (
-        <div className="flex flex-col items-center gap-4 py-12 text-center rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-          <div className="text-4xl">🧩</div>
-          <h3 className="font-medium text-gray-700 dark:text-gray-300">模式识别训练</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">根据 Mermaid 图或题目描述，猜测算法模式</p>
-          <button onClick={() => router.push('/training')}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
-            前往训练页面
-          </button>
-        </div>
-      )}
-
-      {mode === 'complexity' && (
-        <div className="flex flex-col items-center gap-4 py-12 text-center rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-          <div className="text-4xl">⚡</div>
-          <h3 className="font-medium text-gray-700 dark:text-gray-300">复杂度直觉训练</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">看数据范围猜算法 / 看代码估复杂度</p>
-          <button onClick={() => router.push('/training?mode=complexity')}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
-            开始训练
-          </button>
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 }

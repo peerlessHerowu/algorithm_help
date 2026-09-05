@@ -37,8 +37,8 @@ public class SpacedRepetitionCard {
     private Double easeFactor = 2.5;
 
     /** 当前间隔天数 */
-    @Column(nullable = false)
-    private Integer interval = 0;
+    @Column(name = "interval_days", nullable = false)
+    private Integer intervalDays = 0;
 
     /** 连续正确次数 */
     @Column(nullable = false)

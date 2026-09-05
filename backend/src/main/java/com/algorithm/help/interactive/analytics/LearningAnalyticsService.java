@@ -242,7 +242,7 @@ public class LearningAnalyticsService {
         if (card.getLastReviewAt() == null) return 50.0;
         long daysSinceReview = (System.currentTimeMillis() - card.getLastReviewAt())
                 / (24 * 60 * 60 * 1000L);
-        double intervalDays = Math.max(card.getInterval(), 1);
+        double intervalDays = Math.max(card.getIntervalDays(), 1);
         // 按实际间隔比例估算衰减
         double ratio = daysSinceReview / intervalDays;
         double strength = 100 * Math.exp(-ratio);

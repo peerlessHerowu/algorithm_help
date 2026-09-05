@@ -399,6 +399,8 @@ export const reviewApi = {
       method: 'POST',
       body: JSON.stringify({ userId, problemId, cardType }),
     }),
+  cards: (userId: string) =>
+    interactiveRequest(`/api/v1/review/cards?userId=${userId}`),
   stats: (userId: string) =>
     interactiveRequest(`/api/v1/review/stats?userId=${userId}`),
 };
