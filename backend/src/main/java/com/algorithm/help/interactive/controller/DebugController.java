@@ -65,6 +65,44 @@ public class DebugController {
     }
 
     /**
+     * AI 语义验证 — REST 方式（不依赖 WebSocket）
+     * <p>
+     * 学生通过 HTTP 提交修复描述，后端调用 AI 评估并返回结果。
+     * 同时记录训练数据到 debug_training_records 表。
+     */
+    @PostMapping("/{sessionId}/verify")
+    public ApiResponse<java.util.Map<String, Object>> verify(
+            @PathVariable String sessionId,
+            @RequestBody VerifyRequest request) {
+        // 从 Redis 取挑战信息（由 /challenge 端点写入）
+        String evaluation = debugHandler.evaluateFixRest(sessionId, request.getUserFix());
+
+        // 解析评估结果
+        com.fasterxml.jackson.databind.JsonNode node;
+        try {
+            node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(evaluation);
+        } catch (Exception e) {
+            return ApiResponse.success(java.util.Map.of(
+                    "allFound", false, "score", 0,
+                    "overallFeedback", "评估解析失败，请重试"
+            ));
+        }
+
+        boolean allFound = node.path("allFound").asBoolean(false);
+        int score = node.path("score").asInt(0);
+        String feedback = node.path("overallFeedback").asText("");
+
+        return ApiResponse.success(java.util.Map.of(
+                "allFound", allFound,
+                "score", score,
+                "overallFeedback", feedback,
+                "foundBugs", node.has("foundBugs") ? node.get("foundBugs") : java.util.List.of(),
+                "missedBugs", node.has("missedBugs") ? node.get("missedBugs") : java.util.List.of(),
+                "raw", evaluation
+        ));
+    }
+
+    /**
      * 获取薄弱 Bug 类型统计
      *
      * @param userId 用户 ID
@@ -105,5 +143,10 @@ public class DebugController {
         private String problemDescription;
         private String difficulty = "EASY";
         private String language = "python";
+    }
+
+    @Data
+    public static class VerifyRequest {
+        private String userFix;
     }
 }

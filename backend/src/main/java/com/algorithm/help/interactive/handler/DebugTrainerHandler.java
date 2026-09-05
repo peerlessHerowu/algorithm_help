@@ -131,6 +131,19 @@ public class DebugTrainerHandler implements MessageHandler {
         }
     }
 
+    /**
+     * REST 方式评估学生修复（供 DebugController /verify 端点调用）
+     */
+    public String evaluateFixRest(String sessionId, String userFix) {
+        String challengeJson = (String) redisTemplate.opsForValue().get(CHALLENGE_KEY + sessionId);
+        if (challengeJson == null) {
+            return "{\"allFound\": false, \"score\": 0, \"overallFeedback\": \"挑战已过期，请重新生成\"}";
+        }
+        String evaluation = evaluateFix(challengeJson, userFix);
+        recordTraining(sessionId, challengeJson, evaluation);
+        return evaluation;
+    }
+
     // ======================== 私有方法 ========================
 
     private String evaluateFix(String challengeJson, String userFix) {
