@@ -87,6 +87,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll();
 
+        // 知识图谱 API — 游客只读访问
+        auth
+                .requestMatchers(HttpMethod.GET, "/api/graph/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/graph/**").permitAll()
+                // 用户进度图谱 — 凭借 X-User-Id header 访问，未登录返回演示数据
+                .requestMatchers(HttpMethod.GET, "/api/v1/user/progress/graph").permitAll();
+
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
                 .requestMatchers(HttpMethod.GET, "/api/v1/enriched/**").permitAll()
