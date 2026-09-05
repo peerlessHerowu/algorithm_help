@@ -111,7 +111,10 @@ public class SecurityConfig {
                 // 复习中心 — 游客可读写
                 .requestMatchers("/api/v1/review/**").permitAll()
                 // 学习分析（热力图等）— 游客可读
-                .requestMatchers(HttpMethod.GET, "/api/v1/analytics/**").permitAll();
+                .requestMatchers(HttpMethod.GET, "/api/v1/analytics/**").permitAll()
+                // 成就系统 — 游客可读，check 需认证
+                .requestMatchers(HttpMethod.GET, "/api/v1/achievements/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/achievements/check").permitAll();
 
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
