@@ -485,6 +485,11 @@ async def save_solutions_to_db(
 ) -> int:
     """批量写入 crawled_solutions 表，已存在则跳过（按 content_hash 去重）
 
+    策略：
+    1. 先查 problems 表，找到 slug 对应的真实 problem_id（可能是 lc-XXX 或 slug 本身）
+    2. 用真实 problem_id 存入，确保 Pipeline 能通过 problemId 查到素材
+    3. 同时记录 source_url 中包含 slug 信息，便于溯源
+
     Returns:
         实际写入数量
     """
@@ -493,7 +498,49 @@ async def save_solutions_to_db(
     saved = 0
     async with aiomysql.connect(**db_config) as conn:
         async with conn.cursor() as cur:
+
+            # 批量查询 slug → real problem_id 的映射
+            # problems 表里 id 可能是 'lc-1' 或 'two-sum'，title 匹配 slug
+            slug_to_pid: dict[str, str] = {}
+            if solutions:
+                slugs = list({s["problem_id"] for s in solutions})
+                # 先尝试直接用 slug 作为 id 查
+                for slug in slugs:
+                    await cur.execute(
+                        "SELECT id FROM problems WHERE id = %s LIMIT 1", (slug,)
+                    )
+                    row = await cur.fetchone()
+                    if row:
+                        slug_to_pid[slug] = row[0]
+                        continue
+                    # 再尝试用 title 匹配（slug 转 title 格式）
+                    # slug: "container-with-most-water" → title: "Container With Most Water"
+                    title_from_slug = " ".join(w.capitalize() for w in slug.replace("-", " ").split())
+                    await cur.execute(
+                        "SELECT id FROM problems WHERE title = %s LIMIT 1",
+                        (title_from_slug,)
+                    )
+                    row = await cur.fetchone()
+                    if row:
+                        slug_to_pid[slug] = row[0]
+                        continue
+                    # 再尝试用 title_slug 方式查（platform_mappings）
+                    await cur.execute(
+                        """SELECT pm.problem_id FROM platform_mappings pm
+                           WHERE pm.platform_id = %s LIMIT 1""",
+                        (slug,)
+                    )
+                    row = await cur.fetchone()
+                    if row:
+                        slug_to_pid[slug] = row[0]
+                    else:
+                        # 找不到映射，直接用 slug 本身（兜底）
+                        slug_to_pid[slug] = slug
+
             for s in solutions:
+                # 使用真实 problem_id
+                real_pid = slug_to_pid.get(s["problem_id"], s["problem_id"])
+
                 # 按 content_hash 去重
                 await cur.execute(
                     "SELECT id FROM crawled_solutions WHERE content_hash = %s LIMIT 1",
@@ -511,7 +558,7 @@ async def save_solutions_to_db(
                        VALUES
                        (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                     (
-                        s["id"], s["problem_id"], s["topic_id"], s["title"],
+                        s["id"], real_pid, s["topic_id"], s["title"],
                         s["content"], s["author"], s["vote_count"], s["view_count"],
                         s["comment_count"], s["source"], s["platform"],
                         s["source_url"], s["crawl_quality"], s["content_hash"],

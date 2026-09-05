@@ -69,12 +69,12 @@ public class EnrichedSolution {
     @Column(columnDefinition = "json")
     private String tags;
 
-    /** 时间复杂度，如 "O(n)" */
-    @Column(length = 32)
+    /** 时间复杂度，如 "O(n)" 或带推导说明 */
+    @Column(length = 200)
     private String timeComplexity;
 
-    /** 空间复杂度，如 "O(n)" */
-    @Column(length = 32)
+    /** 空间复杂度，如 "O(n)" 或带推导说明 */
+    @Column(length = 200)
     private String spaceComplexity;
 
     // ===== AI 处理元数据 =====
