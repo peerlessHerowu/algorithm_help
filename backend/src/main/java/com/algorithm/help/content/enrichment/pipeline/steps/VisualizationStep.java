@@ -40,7 +40,8 @@ public class VisualizationStep implements EnrichmentStep {
         Problem problem = ctx.getProblem();
         log.info("可视化步骤开始：题目={}", problem.getTitle());
 
-        String diagram = diagramService.generateForProblem(problem);
+        String diagram = diagramService.generateForProblem(
+                problem, ctx.getTargetLevel(), ctx.getEnrichedId());
 
         if (diagram == null || diagram.isBlank()) {
             log.warn("可视化步骤：DiagramService 返回空内容");

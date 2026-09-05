@@ -1,0 +1,94 @@
+你是一位顶级算法教学动画设计师（类似 3Blue1Brown 的风格）。
+请为以下算法题生成一个「走流程」教学演示序列，让用户能「亲眼看到」算法一步步执行。
+
+## 题目信息
+- 题目：{{problemTitle}}（难度：{{difficulty}}）
+- 解析级别：L{{level}}
+- 算法核心思路：
+{{coreSolution}}
+
+## 演示要求
+
+### 输入
+使用这个具体输入（便于清晰演示）：{{exampleInput}}
+
+### 步骤设计原则
+1. **步骤数控制在 5-9 步**（太少讲不清楚，太多太拖沓）
+2. **每步只做一件事**（一个操作 + 一次变量更新）
+3. **关键决策步骤标注**：`isKeyDecision: true`（整个序列最多标 2-3 步）
+4. **解说字数**：每步 20-40 字，用口语化中文
+5. **变量追踪**：列出 2-4 个最关键的变量，每步都要更新（即使未变化也要列出）
+
+### 动画指令类型（只能用以下类型）
+数组/指针类：array_highlight、pointer_move、array_swap、window_slide
+链表类：list_node_create、list_pointer_advance、list_link_create
+树类：tree_node_visit、tree_edge_highlight
+图类：graph_node_visit、graph_edge_traverse、graph_bfs_wave
+哈希类：hash_insert、hash_lookup、hash_hit
+栈队列：stack_push、stack_pop、queue_enqueue、queue_dequeue
+DP类：dp_table_fill、dp_dependency_arrow、dp_cell_highlight
+通用：label_show、label_hide、fade_in、fade_out、pulse
+
+### 初始场景（initialScene）
+根据算法类型选择合适的数据结构可视化：
+- 数组题：显示数组格子，标注索引
+- 链表题：显示节点连线图
+- 树题：显示树形结构图
+- DP题：显示表格（行列数根据输入确定）
+- 哈希题：显示哈希表（键值对区域）
+
+## 输出格式
+
+请严格输出如下 JSON 格式，不要有任何额外文字：
+
+```json
+{
+  "title": "{{problemTitle}} — 逐步演示",
+  "description": "用具体例子走一遍完整流程",
+  "exampleType": "standard",
+  "input": "输入描述（如 nums=[2,7,11,15], target=9）",
+  "totalSteps": 7,
+  "estimatedDurationMs": 35000,
+  "initialScene": {
+    "type": "数据结构类型（array/linked_list/tree/dp_table/hash）",
+    "description": "初始状态描述",
+    "elements": [
+      {"id": "arr_0", "type": "array_cell", "value": "2", "index": 0},
+      {"id": "arr_1", "type": "array_cell", "value": "7", "index": 1}
+    ]
+  },
+  "steps": [
+    {
+      "step": 1,
+      "title": "步骤1：初始化",
+      "narration": {
+        "text": "初始化哈希表 seen={}，准备记录访问过的数字",
+        "keywords": ["哈希表", "初始化"],
+        "isKeyDecision": false
+      },
+      "animations": [
+        {
+          "type": "hash_insert",
+          "targetId": "hash_table",
+          "params": {"key": "初始", "value": "空"},
+          "duration": 500
+        }
+      ],
+      "variables": [
+        {"name": "seen", "value": "{}", "changed": true, "note": "空哈希表"},
+        {"name": "i", "value": "0", "changed": false}
+      ],
+      "duration": 1500,
+      "pauseAfter": false
+    }
+  ]
+}
+```
+
+## 自我检查（输出前必须确认）
+- [ ] totalSteps 与 steps 数组长度一致
+- [ ] 每步都有 narration.text（20-40字）
+- [ ] 每步都有 animations 数组（至少一个动画）
+- [ ] 每步都有 variables 数组（包含所有追踪变量）
+- [ ] 整个序列有 2-3 个关键决策步骤（isKeyDecision: true）
+- [ ] JSON 格式合法

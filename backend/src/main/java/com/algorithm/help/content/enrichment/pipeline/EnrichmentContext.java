@@ -56,4 +56,7 @@ public class EnrichmentContext {
 
     /** 管线执行过程中的警告信息 */
     private List<String> warnings = new ArrayList<>();
+
+    /** 已生成的 enriched solution id（pipeline 执行完成后由外部设置） */
+    private String enrichedId;
 }

@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 图解类型枚举（13 种）
+ * 图解类型枚举（18 种）
  */
 @Getter
 @AllArgsConstructor
 public enum DiagramType {
+    // 原有类型
     POINTER_ANIMATION("指针移动动画"),
     NODE_LINK("节点连线图"),
     TREE_GRAPH("树形结构图"),
@@ -21,7 +22,13 @@ public enum DiagramType {
     TREE_ARRAY_DUAL("树+数组对照"),
     FOREST("森林图"),
     CHAR_ALIGNMENT("字符对齐图"),
-    FLOWCHART("通用流程图");
+    FLOWCHART("通用流程图"),
+    // 新增类型
+    ARRAY_POINTER("数组/指针图"),
+    HASH_BUCKET("哈希桶结构"),
+    DP_TABLE("DP表格"),
+    STACK_STATE("栈状态图"),
+    SORT_BAR("排序条形图");
 
     private final String description;
 }
