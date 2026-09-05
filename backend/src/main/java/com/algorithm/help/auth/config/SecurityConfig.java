@@ -97,7 +97,9 @@ public class SecurityConfig {
         // 训练 API — 游客可访问（用户ID通过请求体/路径传递）
         auth
                 .requestMatchers("/api/training/**").permitAll()
-                .requestMatchers("/api/v1/training/**").permitAll();
+                .requestMatchers("/api/v1/training/**").permitAll()
+                // 题目推荐 API — 游客可读
+                .requestMatchers(HttpMethod.GET, "/api/v1/problems/*/recommend").permitAll();
 
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth

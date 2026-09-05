@@ -45,6 +45,7 @@ import GenerationProgress from '@/components/enriched/GenerationProgress';
 import { AIAnalysisSkeleton } from '@/components/enriched/SkeletonLoader';
 import { useEnrichmentTask } from '@/hooks/useEnrichmentTask';
 import { enrichedApi } from '@/lib/enriched-api';
+import NextProblems from '@/components/recommend/NextProblems';
 
 /** 校验 tab query 参数是否有效 */
 function isValidTabKey(value: string | null): value is MainTabKey {
@@ -361,6 +362,9 @@ export default function ProblemDetailClient() {
                   year={problem.relatedArchaeology.year}
                 />
               )}
+
+              {/* 做完这题还应做：图谱推荐 */}
+              <NextProblems problemId={id} />
             </div>
           </aside>
         </div>
