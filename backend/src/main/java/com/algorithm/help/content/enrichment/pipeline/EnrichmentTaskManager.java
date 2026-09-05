@@ -94,7 +94,11 @@ public class EnrichmentTaskManager {
     /**
      * 启动异步任务执行（便捷方法）
      * 从 problemId 和 level 构建上下文并调用管线
+     * <p>
+     * 注意：必须由 Spring 代理调用（从 Controller 等外部组件调用），
+     * 不可在同类内部直接调用，否则 @Async 不生效。
      */
+    @Async("enrichmentExecutor")
     public void executeTask(String taskId, String problemId, int level) {
         // 构建管线上下文
         EnrichmentContext ctx = new EnrichmentContext()
@@ -521,11 +525,24 @@ public class EnrichmentTaskManager {
     /**
      * 根据质量评分步骤的自动审核结果决定状态
      */
+    /**
+     * 根据 QualityScore 步骤的自动审核结果决定状态
+     * <p>
+     * 逻辑：
+     * 1. QualityScoreStep 打分 >= 0.6 → warnings 里有 "auto-review:PUBLISHED" → PUBLISHED
+     * 2. QualityScoreStep 未运行（score=0.0）→ 兜底发布，开发阶段有内容即可展示
+     * 3. QualityScoreStep 打分 < 0.6 且 > 0 → PENDING_REVIEW（人工审核）
+     */
     private EnrichedStatus determineStatus(EnrichmentContext ctx) {
         for (String warning : ctx.getWarnings()) {
             if (warning.contains("auto-review:PUBLISHED")) {
                 return EnrichedStatus.PUBLISHED;
             }
+        }
+        // 兜底：评分步骤未运行时 score=0.0f，直接发布
+        // 避免有效内容因评分步骤跳过/失败而永远卡在 PENDING_REVIEW
+        if (ctx.getQualityScore() == 0.0f) {
+            return EnrichedStatus.PUBLISHED;
         }
         return EnrichedStatus.PENDING_REVIEW;
     }

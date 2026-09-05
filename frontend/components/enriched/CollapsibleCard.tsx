@@ -22,8 +22,9 @@ import SourceBadge, { type SourceType } from './SourceBadge';
 import ComplexityInfo from './ComplexityInfo';
 import ActionBar, { type VoteState } from './ActionBar';
 import { DetailSkeleton } from './SkeletonLoader';
-import { sanitizeHtml } from '@/lib/sanitize';
 import CodeBlock from '@/components/CodeBlock';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /** 卡片数据接口 */
 export interface EnrichedCardData {
@@ -263,14 +264,19 @@ export default function CollapsibleCard({
           {/* 展开内容 */}
           {!loading && detail && (
             <div className="space-y-3">
-              {/* Markdown 正文（DOMPurify sanitize） */}
+              {/* Markdown 正文 */}
               {detail.content && (
-              <div
-                className="prose prose-sm prose-gray dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(detail.content || ''),
-                }}
-              />
+                <div className="prose prose-sm prose-gray dark:prose-invert max-w-none
+                  prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100
+                  prose-code:before:content-none prose-code:after:content-none
+                  prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+                  prose-code:px-1 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
+                  prose-pre:bg-gray-900 prose-pre:rounded-lg prose-pre:p-4
+                  prose-blockquote:border-blue-400 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {detail.content}
+                  </ReactMarkdown>
+                </div>
               )}
 
               {/* 代码实现（codeImplementations JSON） */}

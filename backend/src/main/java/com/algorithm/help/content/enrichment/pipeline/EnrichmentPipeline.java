@@ -29,9 +29,10 @@ public class EnrichmentPipeline {
      * 非核心步骤失败时降级跳过并记录警告；核心步骤失败则整体失败。
      */
     public EnrichmentPipelineResult execute(EnrichmentContext ctx) {
-        log.info("开始执行 enrichment 管线, problemId={}, level={}",
+        log.info("开始执行 enrichment 管线, problemId={}, level={}, 步骤数={}",
                 ctx.getProblem() != null ? ctx.getProblem().getId() : "null",
-                ctx.getTargetLevel());
+                ctx.getTargetLevel(),
+                steps.size());
 
         for (EnrichmentStep step : steps) {
             if (!config.isStepEnabled(step.getName())) {

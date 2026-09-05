@@ -35,6 +35,17 @@ public class PromptTemplateEngine {
     private final ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     /**
+     * 检查模板文件是否存在
+     *
+     * @param templatePath 模板相对路径
+     * @return 是否存在
+     */
+    public boolean exists(String templatePath) {
+        Path filePath = resolveTemplatePath(templatePath);
+        return filePath != null && Files.exists(filePath);
+    }
+
+    /**
      * 渲染模板：加载模板文件并替换变量占位符
      *
      * @param templatePath 模板相对路径，如 "explain/deep-analysis.txt"

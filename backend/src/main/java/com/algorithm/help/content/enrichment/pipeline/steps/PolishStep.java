@@ -54,18 +54,30 @@ public class PolishStep implements EnrichmentStep {
 
     @Override
     public boolean isApplicable(EnrichmentContext ctx) {
-        // 有筛选后的素材才能润色
-        return ctx.getFilteredSources() != null && !ctx.getFilteredSources().isEmpty();
+        // 始终适用：有素材时基于素材润色，无素材时 AI 自主创作
+        return ctx.getProblem() != null;
     }
 
     @Override
     public EnrichmentResult process(EnrichmentContext ctx) {
         int level = ctx.getTargetLevel();
-        String sourcesText = buildFilteredSourcesText(ctx.getFilteredSources());
+        boolean hasSources = ctx.getFilteredSources() != null && !ctx.getFilteredSources().isEmpty();
         String problemInfo = buildProblemInfo(ctx);
 
-        // 加载对应级别的 Prompt 模板
-        String templatePath = TEMPLATE_PREFIX + level + TEMPLATE_SUFFIX;
+        // 根据是否有素材选择不同的 Prompt 模板
+        // 无素材时优先用 polish-L{n}-nosource.txt，不存在则回退到标准模板
+        String templatePath;
+        if (!hasSources) {
+            String noSourcePath = TEMPLATE_PREFIX + level + "-nosource" + TEMPLATE_SUFFIX;
+            templatePath = templateEngine.exists(noSourcePath)
+                    ? noSourcePath
+                    : TEMPLATE_PREFIX + level + TEMPLATE_SUFFIX;
+            log.info("无素材，AI 自主创作模式, template={}", templatePath);
+        } else {
+            templatePath = TEMPLATE_PREFIX + level + TEMPLATE_SUFFIX;
+        }
+
+        String sourcesText = hasSources ? buildFilteredSourcesText(ctx.getFilteredSources()) : "";
         String prompt = templateEngine.render(templatePath, Map.of(
                 "problemTitle", problemInfo,
                 "sourcesContent", sourcesText
@@ -87,8 +99,8 @@ public class PolishStep implements EnrichmentStep {
         // 解析并设置结果
         parseAndSetResult(ctx, aiOutput);
 
-        log.info("润色步骤完成, level=L{}, provider={}, outputLength={}",
-                level, response.getProvider(), aiOutput.length());
+        log.info("润色步骤完成, level=L{}, hasSources={}, provider={}, outputLength={}",
+                level, hasSources, response.getProvider(), aiOutput.length());
         return EnrichmentResult.ok();
     }
 
