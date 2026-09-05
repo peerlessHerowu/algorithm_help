@@ -116,7 +116,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/achievements/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/achievements/check").permitAll()
                 // 跨域映射 API — 游客可读
-                .requestMatchers(HttpMethod.GET, "/api/patterns/**").permitAll();
+                .requestMatchers(HttpMethod.GET, "/api/patterns/**").permitAll()
+                // 算法考古 API — 游客可读
+                .requestMatchers(HttpMethod.GET, "/api/archaeology/**").permitAll();
 
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
