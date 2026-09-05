@@ -4,674 +4,473 @@ import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWebSocket } from '@/hooks/useWebSocket';
 
-// ============ 类型定义 ============
+// ===== 类型 =====
+type Phase = 'config' | 'thinking' | 'coding' | 'followup' | 'ended';
 
-/** 面试阶段 */
-type InterviewPhase = 'config' | 'thinking' | 'coding' | 'followup' | 'ended';
-
-/** 面试配置 */
-interface InterviewConfig {
-  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Random';
+interface Config {
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   duration: 25 | 45 | 60;
-  companyStyle: 'Google' | 'Meta' | 'Amazon' | '字节' | '通用';
+  company: string;
 }
 
-/** 对话消息 */
-interface ChatMessage {
-  id: string;
-  role: 'interviewer' | 'candidate';
-  content: string;
-  timestamp: number;
-}
+interface Msg { id: string; role: 'interviewer' | 'candidate' | 'system'; content: string; ts: number; }
 
-/** 评分维度 */
-interface ScoreDimension {
-  name: string;
-  score: number; // 0-100
-  suggestion: string;
-}
-
-/** 面试评分报告 */
-interface ScoreReport {
-  dimensions: ScoreDimension[];
+interface ScoreDim { name: string; score: number; suggestion: string; }
+interface Report {
   overallScore: number;
   summary: string;
+  strengths: string[];
+  improvements: string[];
+  dimensions: ScoreDim[];
 }
 
-// ============ 阶段配置 ============
+// ===== 公司配置 =====
+const COMPANIES = [
+  { key: 'GENERAL',  label: '通用',   emoji: '🎤', desc: '标准面试风格' },
+  { key: 'GOOGLE',   label: 'Google', emoji: '🔍', desc: '追问细节，算法最优解' },
+  { key: 'META',     label: 'Meta',   emoji: '📘', desc: '系统设计，代码整洁' },
+  { key: 'AMAZON',   label: 'Amazon', emoji: '📦', desc: 'Leadership Principles' },
+  { key: 'BYTEDANCE',label: '字节',   emoji: '🎯', desc: '高强度追问，边界测试' },
+  { key: 'MICROSOFT',label: '微软',   emoji: '🪟', desc: '解题过程，思路清晰' },
+];
 
-const PHASE_LABELS: Record<InterviewPhase, string> = {
-  config: '准备中',
-  thinking: '🧠 思路阐述',
-  coding: '💻 编码实现',
-  followup: '🎯 追问环节',
-  ended: '面试结束',
-};
+function guestId() {
+  if (typeof window === 'undefined') return 'guest';
+  let id = localStorage.getItem('interview-guest-id');
+  if (!id) { id = `guest-${Date.now()}`; localStorage.setItem('interview-guest-id', id); }
+  return id;
+}
 
-const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard', 'Random'] as const;
-const DURATION_OPTIONS = [25, 45, 60] as const;
-const COMPANY_OPTIONS = ['Google', 'Meta', 'Amazon', '字节', '通用'] as const;
-
-// ============ 倒计时 Hook ============
-
-function useCountdown(initialSeconds: number, isRunning: boolean) {
-  const [remaining, setRemaining] = useState(initialSeconds);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+// ===== 倒计时 =====
+function useCountdown(totalSec: number, running: boolean) {
+  const [rem, setRem] = useState(totalSec);
+  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => { setRem(totalSec); }, [totalSec]);
   useEffect(() => {
-    setRemaining(initialSeconds);
-  }, [initialSeconds]);
-
-  useEffect(() => {
-    if (!isRunning || remaining <= 0) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
-
-    intervalRef.current = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isRunning, remaining]);
-
-  const minutes = Math.floor(remaining / 60);
-  const seconds = remaining % 60;
-  const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  const percentage = initialSeconds > 0 ? (remaining / initialSeconds) * 100 : 0;
-
-  return { remaining, formatted, percentage };
+    if (!running || rem <= 0) { if (ref.current) clearInterval(ref.current); return; }
+    ref.current = setInterval(() => setRem(p => p <= 1 ? (clearInterval(ref.current!), 0) : p - 1), 1000);
+    return () => { if (ref.current) clearInterval(ref.current); };
+  }, [running, rem]);
+  const m = Math.floor(rem / 60), s = rem % 60;
+  return { rem, display: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`, pct: totalSec > 0 ? (rem / totalSec) * 100 : 0 };
 }
 
-// ============ 配置面板组件 ============
+// ===== 配置面板 =====
+function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
+  const [cfg, setCfg] = useState<Config>({ difficulty: 'MEDIUM', duration: 45, company: 'GENERAL' });
 
-function ConfigPanel({
-  config,
-  onConfigChange,
-  onStart,
-}: {
-  config: InterviewConfig;
-  onConfigChange: (config: InterviewConfig) => void;
-  onStart: () => void;
-}) {
   return (
-    <div className="mx-auto max-w-lg space-y-6 rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          🎤 面试模拟配置
-        </h2>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          选择面试参数后开始模拟
-        </p>
-      </div>
-
-      {/* 难度选择 */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          难度
-        </label>
-        <div className="grid grid-cols-4 gap-2">
-          {DIFFICULTY_OPTIONS.map((d) => (
-            <button
-              key={d}
-              onClick={() => onConfigChange({ ...config, difficulty: d })}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                config.difficulty === d
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              {d}
-            </button>
-          ))}
+    <div className="min-h-screen bg-[#0F1117] flex items-center justify-center px-4">
+      <div className="w-full max-w-lg space-y-6 rounded-2xl border border-gray-800 bg-[#141820] p-8">
+        {/* 标题 */}
+        <div className="text-center">
+          <div className="text-4xl mb-3">🎤</div>
+          <h2 className="text-2xl font-black text-gray-100">面试模拟</h2>
+          <p className="mt-1.5 text-sm text-gray-500">配置面试参数，开始真实感模拟</p>
         </div>
-      </div>
 
-      {/* 时长选择 */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          时长（分钟）
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {DURATION_OPTIONS.map((d) => (
-            <button
-              key={d}
-              onClick={() => onConfigChange({ ...config, duration: d })}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                config.duration === d
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              {d} 分钟
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 公司风格 */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          公司风格
-        </label>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {COMPANY_OPTIONS.map((c) => (
-            <button
-              key={c}
-              onClick={() => onConfigChange({ ...config, companyStyle: c })}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                config.companyStyle === c
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 开始按钮 */}
-      <button
-        onClick={onStart}
-        className="w-full rounded-lg bg-primary-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors"
-      >
-        开始面试 🚀
-      </button>
-    </div>
-  );
-}
-
-// ============ 评分报告组件 ============
-
-function ScoreReportPanel({ report }: { report: ScoreReport }) {
-  return (
-    <div className="mx-auto max-w-2xl space-y-6 rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          📊 面试评分报告
-        </h2>
-        <div className="mt-3">
-          <span className="text-4xl font-bold text-primary-600">{report.overallScore}</span>
-          <span className="ml-1 text-lg text-gray-500">/100</span>
-        </div>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{report.summary}</p>
-      </div>
-
-      {/* 四维评分条形图 */}
-      <div className="space-y-4">
-        {report.dimensions.map((dim) => (
-          <div key={dim.name} className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {dim.name}
-              </span>
-              <span className={`text-sm font-semibold ${
-                dim.score >= 80 ? 'text-green-600' :
-                dim.score >= 60 ? 'text-yellow-600' : 'text-red-600'
-              }`}>
-                {dim.score}
-              </span>
-            </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  dim.score >= 80 ? 'bg-green-500' :
-                  dim.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${dim.score}%` }}
-              />
-            </div>
-            {/* 低分维度展示改进建议 (R12.11) */}
-            {dim.score < 70 && dim.suggestion && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                💡 {dim.suggestion}
-              </p>
-            )}
+        {/* 难度 */}
+        <div>
+          <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">难度</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(['EASY','MEDIUM','HARD'] as const).map(d => (
+              <button key={d} onClick={() => setCfg(c => ({ ...c, difficulty: d }))}
+                className={`py-2 rounded-xl border text-sm font-medium transition-all
+                  ${cfg.difficulty === d
+                    ? d === 'EASY' ? 'border-emerald-600/60 bg-emerald-900/30 text-emerald-300'
+                    : d === 'MEDIUM' ? 'border-amber-600/60 bg-amber-900/30 text-amber-300'
+                    : 'border-red-600/60 bg-red-900/30 text-red-300'
+                    : 'border-gray-800 text-gray-500 hover:border-gray-700'
+                  }`}>
+                {d === 'EASY' ? '简单' : d === 'MEDIUM' ? '中等' : '困难'}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* 操作按钮 */}
-      <div className="flex gap-3 pt-4">
-        <button
-          onClick={() => window.location.reload()}
-          className="flex-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
-        >
-          再来一次
+        {/* 时长 */}
+        <div>
+          <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">时长</p>
+          <div className="grid grid-cols-3 gap-2">
+            {([25,45,60] as const).map(d => (
+              <button key={d} onClick={() => setCfg(c => ({ ...c, duration: d }))}
+                className={`py-2 rounded-xl border text-sm font-medium transition-all
+                  ${cfg.duration === d
+                    ? 'border-indigo-600/60 bg-indigo-900/30 text-indigo-300'
+                    : 'border-gray-800 text-gray-500 hover:border-gray-700'
+                  }`}>
+                {d} 分钟
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 公司风格 */}
+        <div>
+          <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">公司风格</p>
+          <div className="grid grid-cols-2 gap-2">
+            {COMPANIES.map(c => (
+              <button key={c.key} onClick={() => setCfg(p => ({ ...p, company: c.key }))}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all
+                  ${cfg.company === c.key
+                    ? 'border-indigo-600/60 bg-indigo-900/20'
+                    : 'border-gray-800 hover:border-gray-700'
+                  }`}>
+                <span className="text-xl shrink-0">{c.emoji}</span>
+                <div>
+                  <p className={`text-xs font-semibold ${cfg.company === c.key ? 'text-indigo-300' : 'text-gray-300'}`}>{c.label}</p>
+                  <p className="text-[10px] text-gray-600">{c.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 开始 */}
+        <button onClick={() => onStart(cfg)}
+          className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500
+            text-white font-bold text-base transition-all shadow-lg shadow-indigo-900/30">
+          开始面试 🚀
         </button>
-        <a
-          href="/training"
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
-        >
-          查看历史评分趋势
-        </a>
       </div>
     </div>
   );
 }
 
-// ============ 面试主体内容组件 ============
+// ===== 评分报告 =====
+function ReportPanel({ report, onRestart }: { report: Report; onRestart: () => void }) {
+  const emoji = report.overallScore >= 85 ? '🏆' : report.overallScore >= 70 ? '👍' : '💪';
+  const color = report.overallScore >= 85 ? '#10B981' : report.overallScore >= 70 ? '#6366F1' : '#F59E0B';
 
+  return (
+    <div className="min-h-screen bg-[#0F1117] flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-lg space-y-5 rounded-2xl border border-gray-800 bg-[#141820] p-7">
+        {/* 总分 */}
+        <div className="text-center space-y-2">
+          <div className="text-5xl">{emoji}</div>
+          <h2 className="text-xl font-black text-gray-100">面试评分报告</h2>
+          <div className="text-5xl font-black tabular-nums" style={{ color }}>
+            {report.overallScore}
+            <span className="text-lg text-gray-500 ml-1">/100</span>
+          </div>
+          <p className="text-sm text-gray-400 leading-relaxed">{report.summary}</p>
+        </div>
+
+        {/* 维度得分 */}
+        <div className="space-y-3">
+          {report.dimensions.map(dim => {
+            const c = dim.score >= 80 ? '#10B981' : dim.score >= 60 ? '#6366F1' : '#EF4444';
+            return (
+              <div key={dim.name}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium text-gray-300">{dim.name}</span>
+                  <span className="text-xs font-bold tabular-nums" style={{ color: c }}>{dim.score}</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-gray-800 overflow-hidden">
+                  <div className="h-2 rounded-full transition-all duration-700"
+                    style={{ width: `${dim.score}%`, backgroundColor: c }} />
+                </div>
+                {dim.score < 70 && dim.suggestion && (
+                  <p className="text-[10px] text-gray-600 mt-1">💡 {dim.suggestion}</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 亮点/改进 */}
+        {report.strengths?.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-emerald-400 mb-2">✅ 表现亮点</p>
+            <ul className="space-y-1">
+              {report.strengths.map((s, i) => (
+                <li key={i} className="text-xs text-gray-400 flex gap-1.5"><span className="text-emerald-500 shrink-0">•</span>{s}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {report.improvements?.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-amber-400 mb-2">💪 提升建议</p>
+            <ul className="space-y-1">
+              {report.improvements.map((imp, i) => (
+                <li key={i} className="text-xs text-gray-400 flex gap-1.5"><span className="text-amber-500 shrink-0">•</span>{imp}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 操作 */}
+        <div className="flex gap-3 pt-1">
+          <button onClick={onRestart}
+            className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all">
+            再来一次
+          </button>
+          <a href="/training"
+            className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 text-sm text-center hover:border-gray-600 transition-all">
+            训练中心
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 面试主界面 =====
 function InterviewContent() {
   const searchParams = useSearchParams();
   const problemId = searchParams.get('problemId') || '';
 
-  // 面试状态
-  const [phase, setPhase] = useState<InterviewPhase>('config');
-  const [config, setConfig] = useState<InterviewConfig>({
-    difficulty: 'Medium',
-    duration: 45,
-    companyStyle: '通用',
-  });
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [code, setCode] = useState('// 在这里编写代码...\n');
-  const [scoreReport, setScoreReport] = useState<ScoreReport | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // 会话 ID（通过 REST 创建，WS 通信时携带）
+  const [phase, setPhase]       = useState<Phase>('config');
+  const [cfg, setCfg]           = useState<Config | null>(null);
+  const [msgs, setMsgs]         = useState<Msg[]>([]);
+  const [input, setInput]       = useState('');
+  const [code, setCode]         = useState('# 在这里编写代码\n');
+  const [report, setReport]     = useState<Report | null>(null);
   const [sessionId, setSessionId] = useState('');
 
-  // 消息列表自动滚动
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const endRef  = useRef<HTMLDivElement>(null);
+  const { state: wsState, send, subscribe } = useWebSocket({ autoConnect: false });
 
-  // WebSocket 连接
-  const { state: wsState, send, subscribe } = useWebSocket({
-    autoConnect: false,
-  });
-
-  // 倒计时
-  const isTimerRunning = phase !== 'config' && phase !== 'ended';
-  const { formatted: timeDisplay, remaining, percentage } = useCountdown(
-    config.duration * 60,
-    isTimerRunning
+  const { display: timeDisplay, pct: timePct, rem: timeRem } = useCountdown(
+    (cfg?.duration ?? 45) * 60,
+    phase !== 'config' && phase !== 'ended'
   );
 
-  // 自动滚动到消息底部
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
-  // 订阅 WebSocket 面试消息（对齐后端实际消息类型）
+  // WS 订阅
   useEffect(() => {
-    // 后端发 AI_RESPONSE → 面试官回复
-    const unsubAiResponse = subscribe<{ content: string } | string>(
-      'AI_RESPONSE',
-      (payload) => {
-        const content = typeof payload === 'string' ? payload : payload.content;
-        const newMsg: ChatMessage = {
-          id: `msg-${Date.now()}`,
-          role: 'interviewer',
-          content,
-          timestamp: Date.now(),
-        };
-        setMessages((prev) => [...prev, newMsg]);
-      }
-    );
-
-    // 后端发 INTERVIEW_REPORT → 评分报告
-    const unsubReport = subscribe<ScoreReport | string>('INTERVIEW_REPORT', (payload) => {
+    const u1 = subscribe('AI_RESPONSE', (p: unknown) => {
+      const content = typeof p === 'string' ? p : (p as { content?: string })?.content ?? '';
+      addMsg('interviewer', content);
+    });
+    const u2 = subscribe('INTERVIEW_REPORT', (p: unknown) => {
       try {
-        const report = typeof payload === 'string' ? JSON.parse(payload) : payload;
-        // 映射后端字段到前端 ScoreReport
-        const mapped: ScoreReport = {
-          overallScore: report.totalScore ?? report.overallScore ?? 0,
-          summary: report.summary ?? '',
-          dimensions: [
-            { name: '🧠 正确性', score: (report.correctnessScore ?? 5) * 10, suggestion: report.improvements?.correctness ?? '' },
-            { name: '⚡ 效率', score: (report.efficiencyScore ?? 5) * 10, suggestion: report.improvements?.efficiency ?? '' },
-            { name: '🗣️ 沟通', score: (report.communicationScore ?? 5) * 10, suggestion: report.improvements?.communication ?? '' },
-            { name: '💻 代码质量', score: (report.codeQualityScore ?? 5) * 10, suggestion: report.improvements?.codeQuality ?? '' },
-          ],
-        };
-        setScoreReport(mapped);
+        const raw = typeof p === 'string' ? JSON.parse(p) : p as Record<string, unknown>;
+        setReport(buildReport(raw));
         setPhase('ended');
-      } catch { /* 解析失败时保留当前状态 */ }
+      } catch { /* 忽略 */ }
     });
-
-    // 后端发 INTERVIEW_TIME_WARNING → 时间警告
-    const unsubTimeWarn = subscribe<string>('INTERVIEW_TIME_WARNING', (payload) => {
-      const content = typeof payload === 'string' ? payload : '时间提醒';
-      const warnMsg: ChatMessage = {
-        id: `warn-${Date.now()}`,
-        role: 'interviewer',
-        content,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, warnMsg]);
-      // 如果包含评分报告触发词，切换阶段
-      if (content.includes('评分报告')) setPhase('ended');
+    const u3 = subscribe('INTERVIEW_TIME_WARNING', (p: unknown) => {
+      addMsg('system', typeof p === 'string' ? p : '⏰ 时间提醒');
     });
-
-    // 兼容旧路径（保留 INTERVIEW_MESSAGE 和 INTERVIEW_SCORE）
-    const unsubLegacyMsg = subscribe<{ content: string; phase?: InterviewPhase }>(
-      'INTERVIEW_MESSAGE',
-      (payload) => {
-        const newMsg: ChatMessage = {
-          id: `msg-${Date.now()}`,
-          role: 'interviewer',
-          content: payload.content,
-          timestamp: Date.now(),
-        };
-        setMessages((prev) => [...prev, newMsg]);
-        if (payload.phase) setPhase(payload.phase);
-      }
-    );
-    const unsubLegacyScore = subscribe<ScoreReport>('INTERVIEW_SCORE', (payload) => {
-      setScoreReport(payload);
-      setPhase('ended');
-    });
-
-    return () => {
-      unsubAiResponse();
-      unsubReport();
-      unsubTimeWarn();
-      unsubLegacyMsg();
-      unsubLegacyScore();
-    };
+    return () => { u1(); u2(); u3(); };
   }, [subscribe]);
 
-  // 时间到自动结束面试
+  // 时间到自动结束
   useEffect(() => {
-    if (remaining === 0 && isTimerRunning) {
-      handleEndInterview();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remaining, isTimerRunning]);
+    if (timeRem === 0 && phase !== 'config' && phase !== 'ended') handleEnd();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRem, phase]);
 
-  // 开始面试（先 REST 创建 session，再 WS 通信）
-  const handleStart = useCallback(async () => {
+  function addMsg(role: Msg['role'], content: string) {
+    setMsgs(p => [...p, { id: `${role}-${Date.now()}-${Math.random()}`, role, content, ts: Date.now() }]);
+  }
+
+  function buildReport(raw: Record<string, unknown>): Report {
+    return {
+      overallScore: (raw.totalScore ?? raw.overallScore ?? 72) as number,
+      summary:      (raw.summary ?? '整体表现良好，思路清晰。') as string,
+      strengths:    (raw.strengths ?? []) as string[],
+      improvements: (raw.improvements ?? []) as string[],
+      dimensions: [
+        { name: '🧠 思路清晰度', score: ((raw.correctnessScore  as number ?? 7) * 10), suggestion: '' },
+        { name: '💻 代码质量',   score: ((raw.codeQualityScore  as number ?? 7) * 10), suggestion: '注意边界条件处理' },
+        { name: '🗣️ 沟通能力',  score: ((raw.communicationScore as number ?? 7) * 10), suggestion: '' },
+        { name: '⚡ 时间管理',   score: ((raw.efficiencyScore   as number ?? 7) * 10), suggestion: '' },
+      ],
+    };
+  }
+
+  const handleStart = useCallback(async (c: Config) => {
+    setCfg(c);
     setPhase('thinking');
-    // 创建面试会话
+    const uid = guestId();
     let sid = sessionId;
     if (!sid) {
       try {
         const { interviewApi } = await import('@/lib/api');
-        const session = await interviewApi.start(
-          'guest', problemId || 'unknown',
-          config.duration,
-          config.difficulty.toUpperCase(),
-          config.companyStyle === '通用' ? 'GENERAL' : config.companyStyle.toUpperCase()
-        ) as { sessionId?: string; id?: string };
-        sid = (session as any).sessionId || (session as any).id || `interview-${Date.now()}`;
-        setSessionId(sid);
+        const s = await interviewApi.start(uid, problemId || 'unknown', c.duration, c.difficulty, c.company) as { sessionId?: string; id?: string };
+        sid = (s as Record<string, string>).sessionId ?? (s as Record<string, string>).id ?? `iv-${Date.now()}`;
       } catch {
-        sid = `interview-${Date.now()}`;
-        setSessionId(sid);
+        sid = `iv-${Date.now()}`;
       }
+      setSessionId(sid);
     }
+    addMsg('system', `面试已开始 · ${COMPANIES.find(x => x.key === c.company)?.label ?? c.company} 风格 · ${c.difficulty} · ${c.duration}min`);
+    addMsg('interviewer', `你好！欢迎参加${COMPANIES.find(x => x.key === c.company)?.label ?? c.company}风格的算法面试。时间限制 ${c.duration} 分钟，难度 ${c.difficulty}。请先介绍一下你的解题思路。`);
+    send({ type: 'INTERVIEW_CHAT', sessionId: sid, payload: JSON.stringify({ action: 'START', problemId, ...c }) } as unknown as Parameters<typeof send>[0]);
+  }, [sessionId, problemId, send]);
 
-    // 初始面试官消息
-    const introMsg: ChatMessage = {
-      id: 'msg-intro',
-      role: 'interviewer',
-      content: `你好！欢迎参加${config.companyStyle}风格的算法面试。难度为 ${config.difficulty}，时间限制 ${config.duration} 分钟。请先描述一下你的解题思路，然后开始编写代码。`,
-      timestamp: Date.now(),
-    };
-    setMessages([introMsg]);
-
-    // 发送 WebSocket 开始面试消息
-    send({
-      type: 'INTERVIEW_CHAT',
-      sessionId: sid,
-      payload: JSON.stringify({
-        action: 'START',
-        problemId,
-        difficulty: config.difficulty,
-        duration: config.duration,
-        companyStyle: config.companyStyle,
-      }),
-    } as any);
-  }, [config, problemId, send, sessionId]);
-
-  // 发送消息
   const handleSend = useCallback(() => {
-    if (!input.trim() || isSubmitting) return;
-
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: 'candidate',
-      content: input.trim(),
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-
-    // 通过 WebSocket 发送候选人回答
-    send({
-      type: 'INTERVIEW_CHAT',
-      sessionId,
-      payload: input.trim(),
-    } as any);
-
+    if (!input.trim()) return;
+    addMsg('candidate', input.trim());
+    send({ type: 'INTERVIEW_CHAT', sessionId, payload: input.trim() } as unknown as Parameters<typeof send>[0]);
     setInput('');
-  }, [input, isSubmitting, send, phase]);
+  }, [input, sessionId, send]);
 
-  // 提交代码
   const handleSubmitCode = useCallback(() => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
-    const codeMsg: ChatMessage = {
-      id: `msg-code-${Date.now()}`,
-      role: 'candidate',
-      content: `[代码提交]\n\`\`\`\n${code}\n\`\`\``,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, codeMsg]);
-
-    // 发送代码到后端
-    send({
-      type: 'INTERVIEW_CHAT',
-      sessionId,
-      payload: `[代码提交]\n${code}`,
-    } as any);
-
-    setIsSubmitting(false);
+    addMsg('candidate', `[代码提交]\n\`\`\`\n${code}\n\`\`\``);
+    send({ type: 'INTERVIEW_CHAT', sessionId, payload: `[代码提交]\n${code}` } as unknown as Parameters<typeof send>[0]);
     setPhase('followup');
-  }, [code, isSubmitting, send, phase]);
+  }, [code, sessionId, send]);
 
-  // 结束面试
-  const handleEndInterview = useCallback(() => {
-    send({
-      type: 'INTERVIEW_CHAT',
-      sessionId,
-      payload: '[INTERVIEW_END]',
-    });
-
-    // 显示默认评分（WebSocket 可能覆盖）
-    if (!scoreReport) {
-      setScoreReport({
-        overallScore: 72,
-        summary: '整体表现良好，思路清晰，代码实现需加强边界处理。',
-        dimensions: [
-          { name: '🧠 思路清晰度', score: 78, suggestion: '' },
-          { name: '💻 代码质量', score: 65, suggestion: '注意处理边界条件，建议先写测试用例再编码。' },
-          { name: '🗣️ 沟通能力', score: 80, suggestion: '' },
-          { name: '⏱️ 时间管理', score: 68, suggestion: '建议先用5分钟理清思路，再开始编码。' },
-        ],
-      });
+  const handleEnd = useCallback(() => {
+    send({ type: 'INTERVIEW_CHAT', sessionId, payload: '[INTERVIEW_END]' } as unknown as Parameters<typeof send>[0]);
+    if (!report) {
+      setReport(buildReport({ totalScore: 72 }));
     }
     setPhase('ended');
-  }, [code, send, scoreReport]);
+  }, [sessionId, send, report]);
 
-  // 配置阶段
-  if (phase === 'config') {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <ConfigPanel config={config} onConfigChange={setConfig} onStart={handleStart} />
-      </div>
-    );
-  }
+  // ===== 渲染 =====
+  if (phase === 'config') return <ConfigPanel onStart={handleStart} />;
+  if (phase === 'ended' && report) return <ReportPanel report={report} onRestart={() => { setPhase('config'); setCfg(null); setMsgs([]); setReport(null); setSessionId(''); setCode('# 在这里编写代码\n'); }} />;
 
-  // 面试结束 - 展示评分报告
-  if (phase === 'ended' && scoreReport) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-8">
-        <ScoreReportPanel report={scoreReport} />
-      </div>
-    );
-  }
+  const timeColor = timePct <= 20 ? '#EF4444' : timePct <= 40 ? '#F59E0B' : '#10B981';
 
-  // 面试进行中
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      {/* 顶部：计时器 + 阶段提示 */}
-      <div className="mb-4 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        {/* 阶段提示 */}
+    <div className="h-[calc(100vh-4rem)] bg-[#0F1117] flex flex-col">
+      {/* 顶栏 */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 bg-[#141820] shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {PHASE_LABELS[phase]}
+          <span className={`text-xs px-2.5 py-1 rounded-xl border font-medium
+            ${phase === 'thinking' ? 'border-indigo-700/50 bg-indigo-900/20 text-indigo-300'
+            : phase === 'coding'   ? 'border-emerald-700/50 bg-emerald-900/20 text-emerald-300'
+            : 'border-amber-700/50 bg-amber-900/20 text-amber-300'}`}>
+            {phase === 'thinking' ? '🧠 思路阶段' : phase === 'coding' ? '💻 编码阶段' : '🎯 追问阶段'}
           </span>
-          {/* 阶段进度点 */}
-          <div className="flex gap-1">
-            {(['thinking', 'coding', 'followup'] as InterviewPhase[]).map((p) => (
-              <div
-                key={p}
-                className={`h-2 w-2 rounded-full ${
-                  p === phase
-                    ? 'bg-primary-600 animate-pulse'
-                    : phase === 'followup' || (phase === 'coding' && p === 'thinking')
-                    ? 'bg-primary-400'
-                    : 'bg-gray-300 dark:bg-gray-600'
-                }`}
-              />
-            ))}
-          </div>
+          {cfg && (
+            <span className="text-xs text-gray-500">
+              {COMPANIES.find(x => x.key === cfg.company)?.label} · {cfg.difficulty} · {cfg.duration}min
+            </span>
+          )}
         </div>
-
-        {/* 计时器 */}
         <div className="flex items-center gap-3">
-          {/* WebSocket 连接状态 */}
-          <span
-            className={`h-2 w-2 rounded-full ${
-              wsState === 'connected' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
-            }`}
-            title={wsState === 'connected' ? '已连接' : '连接中...'}
-          />
-          {/* 倒计时 */}
-          <div
-            className={`rounded-lg px-4 py-1.5 font-mono text-lg font-semibold ${
-              percentage <= 20
-                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-            }`}
-          >
+          {/* WS 状态 */}
+          <span className={`h-1.5 w-1.5 rounded-full ${wsState === 'connected' ? 'bg-emerald-500' : 'bg-yellow-500 animate-pulse'}`} />
+          {/* 计时器 */}
+          <div className="px-3 py-1 rounded-xl border text-sm font-mono font-bold tabular-nums"
+            style={{ color: timeColor, borderColor: timeColor + '50', backgroundColor: timeColor + '15' }}>
             {timeDisplay}
           </div>
+          <div className="w-20 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+            <div className="h-1.5 rounded-full transition-all duration-1000"
+              style={{ width: `${timePct}%`, backgroundColor: timeColor }} />
+          </div>
+          <button onClick={() => setPhase('coding')}
+            className="px-2.5 py-1 text-xs rounded-xl border border-emerald-700/50 bg-emerald-900/20 text-emerald-300 hover:bg-emerald-900/40 transition-colors">
+            → 开始编码
+          </button>
+          <button onClick={handleEnd}
+            className="px-2.5 py-1 text-xs rounded-xl border border-red-700/50 bg-red-900/20 text-red-300 hover:bg-red-900/40 transition-colors">
+            结束
+          </button>
         </div>
       </div>
 
-      {/* 主体：对话区域 + 代码编辑器 */}
-      <div className="grid h-[calc(100vh-16rem)] gap-4 lg:grid-cols-2">
-        {/* 对话区域 */}
-        <div className="flex flex-col rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="border-b border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
-            面试对话
+      {/* 双栏主体 */}
+      <div className="flex flex-1 overflow-hidden gap-0">
+        {/* 左：对话区 */}
+        <div className="flex flex-col border-r border-gray-800 min-w-0" style={{ width: '45%' }}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {msgs.map(m => {
+              if (m.role === 'system') return (
+                <div key={m.id} className="flex justify-center">
+                  <span className="text-[10px] text-gray-600 bg-gray-800/60 px-3 py-1 rounded-full">
+                    {m.content}
+                  </span>
+                </div>
+              );
+              const isAI = m.role === 'interviewer';
+              return (
+                <div key={m.id} className={`flex gap-2.5 ${isAI ? '' : 'flex-row-reverse'}`}>
+                  <div className={`h-7 w-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0
+                    ${isAI ? 'bg-indigo-600 text-white' : 'bg-emerald-700 text-white'}`}>
+                    {isAI ? 'AI' : '我'}
+                  </div>
+                  <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed
+                    ${isAI
+                      ? 'bg-gray-800 border border-indigo-700/30 text-gray-200 rounded-tl-none'
+                      : 'bg-emerald-900/30 border border-emerald-700/30 text-gray-200 rounded-tr-none'
+                    }`}>
+                    <p className="whitespace-pre-wrap">{m.content}</p>
+                    <p className="text-[10px] text-gray-600 mt-1">
+                      {new Date(m.ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={endRef} />
           </div>
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`rounded-lg p-3 text-sm ${
-                  msg.role === 'interviewer'
-                    ? 'bg-primary-50 text-primary-800 dark:bg-primary-900/20 dark:text-primary-300'
-                    : 'ml-8 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                }`}
-              >
-                <span className="mb-1 block text-xs font-medium opacity-70">
-                  {msg.role === 'interviewer' ? '面试官' : '你'}
-                </span>
-                <span className="whitespace-pre-wrap">{msg.content}</span>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          {/* 输入区 */}
-          <div className="border-t border-gray-200 p-3 dark:border-gray-700">
+          {/* 输入 */}
+          <div className="border-t border-gray-800 p-3 shrink-0">
             <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                placeholder="输入你的回答..."
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              <input type="text" value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder="描述你的思路... (Enter 发送)"
+                className="flex-1 rounded-xl border border-gray-700 bg-gray-800/60
+                  px-3 py-2 text-sm text-gray-200 placeholder:text-gray-600
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button
-                onClick={handleSend}
-                disabled={!input.trim()}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
+              <button onClick={handleSend} disabled={!input.trim()}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all disabled:opacity-40">
                 发送
               </button>
             </div>
           </div>
         </div>
 
-        {/* 代码编辑区 */}
-        <div className="flex flex-col rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-700">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              代码编辑器
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">Monospace</span>
+        {/* 右：代码编辑器 */}
+        <div className="flex flex-col min-w-0 flex-1">
+          {/* 编辑器标题栏 */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900/50 shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400 font-mono">solution.py</span>
+              <div className="flex gap-1">
+                {['#FF5F56','#FFBD2E','#27C93F'].map(c => (
+                  <div key={c} className="w-3 h-3 rounded-full" style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+            <button onClick={handleSubmitCode}
+              className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg
+                bg-emerald-700/40 border border-emerald-600/50 text-emerald-300
+                hover:bg-emerald-700/60 transition-colors font-medium">
+              ✅ 提交代码
+            </button>
           </div>
+          {/* 编辑区 */}
           <textarea
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={e => setCode(e.target.value)}
             spellCheck={false}
-            className="flex-1 resize-none bg-gray-50 p-4 font-mono text-sm leading-relaxed focus:outline-none dark:bg-gray-900 dark:text-gray-100"
-            placeholder="// 在这里编写代码..."
+            className="flex-1 resize-none bg-[#0D1117] px-5 py-4 font-mono text-sm leading-relaxed
+              text-gray-200 focus:outline-none placeholder:text-gray-700"
+            placeholder="# 在这里编写代码..."
           />
+          {/* 底部：快捷提示 */}
+          <div className="px-4 py-2 border-t border-gray-800 bg-gray-900/30 shrink-0">
+            <p className="text-[10px] text-gray-700">
+              提示：先描述思路，再开始编码 · 提交代码后进入追问环节
+            </p>
+          </div>
         </div>
-      </div>
-
-      {/* 底部：操作按钮 */}
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex gap-2">
-          <button
-            onClick={handleSubmitCode}
-            disabled={isSubmitting || code.trim() === '// 在这里编写代码...'}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            ✅ 提交代码
-          </button>
-        </div>
-        <button
-          onClick={handleEndInterview}
-          className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
-        >
-          结束面试
-        </button>
       </div>
     </div>
   );
 }
 
-// ============ 页面导出 ============
-
-/**
- * 面试模拟页面
- *
- * 功能：
- * - 面试前：配置面板（难度/时长/公司风格）
- * - 面试中：倒计时 + 阶段提示 + 对话区域 + 代码编辑器 + 提交/结束按钮
- * - 面试后：四维评分报告（思路清晰度/代码质量/沟通能力/时间管理）
- * - WebSocket 实时通信（INTERVIEW_START/ANSWER/CODE_SUBMIT/END）
- *
- * Requirements: 12.3, 12.10, 12.11
- */
 export default function InterviewPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-500">加载中...</div>}>
+    <Suspense fallback={
+      <div className="flex h-[60vh] items-center justify-center bg-[#0F1117]">
+        <div className="w-8 h-8 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
+      </div>
+    }>
       <InterviewContent />
     </Suspense>
   );
