@@ -108,6 +108,41 @@ public class FeynmanController {
     }
 
     /**
+     * 导出费曼学习记录为 Markdown 格式
+     *
+     * @param sessionId 会话 ID
+     * @return Markdown 文本内容
+     */
+    @GetMapping("/{sessionId}/export")
+    public ApiResponse<String> export(@PathVariable String sessionId) {
+        log.info("导出费曼记录: sessionId={}", sessionId);
+
+        // 获取会话信息
+        String problemTitle = sessionManager.getSession(sessionId)
+                .map(s -> s.getProblemId() != null ? s.getProblemId() : "算法题")
+                .orElse("算法题");
+
+        // 获取对话历史
+        List<Map<String, String>> context = sessionManager.getContext(sessionId);
+        int rounds = (int) context.stream().filter(m -> "user".equals(m.get("role"))).count();
+
+        // 构建 Markdown
+        StringBuilder md = new StringBuilder();
+        md.append("# 费曼学习记录 · ").append(problemTitle).append("\n\n");
+        md.append("> 生成时间：").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date())).append("\n");
+        md.append("> 对话轮次：").append(rounds).append(" 轮\n\n");
+        md.append("---\n\n");
+        md.append("## 对话记录\n\n");
+
+        context.forEach(msg -> {
+            String role = "user".equals(msg.get("role")) ? "**你**" : "**AI 教练**";
+            md.append(role).append("：").append(msg.get("content")).append("\n\n");
+        });
+
+        return ApiResponse.success(md.toString());
+    }
+
+    /**
      * 获取完整对话历史
      *
      * @param sessionId 会话 ID
