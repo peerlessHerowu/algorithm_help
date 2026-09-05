@@ -5,6 +5,8 @@ import useSWR from 'swr';
 import Link from 'next/link';
 import { useState } from 'react';
 import { fetcher } from '@/lib/fetcher';
+import CrossDomainTable from '@/components/patterns/CrossDomainTable';
+import type { CrossDomainMapping } from '@/lib/types';
 
 // ===== 类型定义 =====
 
@@ -79,7 +81,10 @@ export default function PatternDetailClient() {
   const id = params.id as string;
   const [activeLang, setActiveLang] = useState<string>('python');
 
-  const { data: pattern, error, isLoading } = useSWR<PatternDetail>(
+  const { data: crossDomain } = useSWR<CrossDomainMapping | null>(
+    id ? `/api/patterns/pattern:${id}/cross-domain-table` : null,
+    fetcher
+  );
     id ? `/api/v1/patterns/${encodeURIComponent(id)}/detail` : null,
     fetcher
   );
@@ -248,6 +253,22 @@ export default function PatternDetailClient() {
                 </Link>
               ))}
             </div>
+          </Section>
+        )}
+
+        {/* 跨域迁移映射表 */}
+        {crossDomain && (
+          <Section title="🔄 跨域迁移映射" subtitle="同一算法思想在不同领域的应用对应关系">
+            <CrossDomainTable
+              mappings={[{
+                id: crossDomain.id ?? '',
+                leetcode: (crossDomain as unknown as { leetcodeScene?: string }).leetcodeScene ?? '',
+                work:   (crossDomain as unknown as { workScene?: string }).workScene ?? '',
+                aiMl:   (crossDomain as unknown as { aiScene?: string }).aiScene ?? '',
+                daily:  (crossDomain as unknown as { lifeScene?: string }).lifeScene ?? '',
+              }]}
+              patternName={pattern.name}
+            />
           </Section>
         )}
       </div>
