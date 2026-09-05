@@ -52,6 +52,31 @@ public class SocraticController {
     }
 
     /**
+     * 自主得分与引导模式对比
+     * <p>
+     * 返回用户在不同提示级别下的得分，便于前端展示独立性对比图
+     */
+    @GetMapping("/{sessionId}/compare")
+    public ApiResponse<java.util.Map<String, Object>> compare(@PathVariable String sessionId) {
+        int hintLevel = socraticHandler.getCurrentHintLevel(sessionId);
+        int actual = socraticHandler.calculateScore(sessionId);
+        return ApiResponse.success(java.util.Map.of(
+                "hintLevel", hintLevel,
+                "actualScore", actual,
+                "maxScore", 100,
+                "autonomyPercent", actual,  // 同 score，含义：自主完成度百分比
+                "guidePercent", 100 - actual,
+                "label", getScoreDesc(actual),
+                "breakdown", java.util.List.of(
+                        java.util.Map.of("level", 1, "label", "自主推导", "score", 100, "achieved", hintLevel == 1),
+                        java.util.Map.of("level", 2, "label", "少量提示", "score", 75,  "achieved", hintLevel == 2),
+                        java.util.Map.of("level", 3, "label", "适量引导", "score", 50,  "achieved", hintLevel == 3),
+                        java.util.Map.of("level", 4, "label", "深度引导", "score", 25,  "achieved", hintLevel == 4)
+                )
+        ));
+    }
+
+    /**
      * 手动触发总结
      */
     @PostMapping("/{sessionId}/summarize")
