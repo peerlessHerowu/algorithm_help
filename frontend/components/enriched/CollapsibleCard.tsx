@@ -4,17 +4,8 @@
  * CollapsibleCard - 解析卡片组件（收起/展开）
  *
  * 收起态：标题、摘要(max 2行)、SourceBadge、标签、★热度、quality_score、箭头▶
- * 展开态：完整 Markdown 内容、代码 Tab、复杂度、操作栏、箭头▼
+ * 展开态：Tab（📖 解析 / ▶ 走流程 / 📊 图解 / 💻 代码）、复杂度、操作栏
  * 加载态：骨架屏
- *
- * 交互：
- * - 展开/收起 350ms spring 高度动画
- * - 箭头 250ms 旋转动画
- * - hover: shadow-md + scale(1.005)
- * - active: scale(0.98) + opacity(0.9)
- * - 推荐卡片：金色边框 border-amber-400
- * - COMMUNITY 来源：底部版权标注
- * - DOMPurify sanitize 渲染内容
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,10 +16,32 @@ import { DetailSkeleton } from './SkeletonLoader';
 import CodeBlock from '@/components/CodeBlock';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import dynamic from 'next/dynamic';
+
+// 走流程播放器懒加载（避免 SSR 问题）
+const WalkThroughPlayer = dynamic(
+  () => import('@/components/walkthrough/WalkThroughPlayer'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+        加载走流程组件...
+      </div>
+    ),
+  }
+);
+
+type ContentTab = 'analysis' | 'walkthrough' | 'code';
+const TAB_CONFIG: { id: ContentTab; label: string; icon: string }[] = [
+  { id: 'analysis',    label: '解析',  icon: '📖' },
+  { id: 'walkthrough', label: '走流程', icon: '▶' },
+  { id: 'code',        label: '代码',  icon: '💻' },
+];
 
 /** 卡片数据接口 */
 export interface EnrichedCardData {
   id: string;
+  problemId?: string;   // 题目 ID（用于走流程、图解 API）
   title: string;
   summary?: string;
   content?: string;
@@ -107,6 +120,7 @@ export default function CollapsibleCard({
   const [detail, setDetail] = useState<EnrichedCardData | null>(
     data.content ? data : null
   );
+  const [activeTab, setActiveTab] = useState<ContentTab>('analysis');
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
 
@@ -264,34 +278,81 @@ export default function CollapsibleCard({
           {/* 展开内容 */}
           {!loading && detail && (
             <div className="space-y-3">
-              {/* Markdown 正文 */}
-              {detail.content && (
-                <div className="prose prose-sm prose-gray dark:prose-invert max-w-none
-                  prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100
-                  prose-code:before:content-none prose-code:after:content-none
-                  prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
-                  prose-code:px-1 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
-                  prose-pre:bg-gray-900 prose-pre:rounded-lg prose-pre:p-4
-                  prose-blockquote:border-blue-400 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {detail.content}
-                  </ReactMarkdown>
+              {/* ── Tab 导航 ── */}
+              <div className="flex gap-1 border-b border-gray-100 dark:border-gray-800 -mx-1 px-1">
+                {TAB_CONFIG.map(tab => {
+                  // 代码 tab 仅在有 codeImplementations 时显示
+                  if (tab.id === 'code' && !detail.codeImplementations) return null;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={[
+                        'flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-t-md',
+                        'transition-colors duration-150 focus:outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-blue-400',
+                        activeTab === tab.id
+                          ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 -mb-px bg-white dark:bg-gray-900'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                      ].join(' ')}
+                      aria-selected={activeTab === tab.id}
+                      role="tab"
+                    >
+                      <span>{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* ── Tab 内容区 ── */}
+
+              {/* 📖 解析 Tab */}
+              {activeTab === 'analysis' && (
+                <div className="animate-fade-in">
+                  {detail.content && (
+                    <div className="prose prose-sm prose-gray dark:prose-invert max-w-none
+                      prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100
+                      prose-code:before:content-none prose-code:after:content-none
+                      prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+                      prose-code:px-1 prose-code:py-0.5 prose-code:text-sm prose-code:font-mono
+                      prose-pre:bg-gray-900 prose-pre:rounded-lg prose-pre:p-4
+                      prose-blockquote:border-blue-400 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {detail.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                  {!detail.content && detail.codeImplementations && (
+                    <CodeImplBlock raw={detail.codeImplementations} />
+                  )}
+                  <ComplexityInfo
+                    timeComplexity={detail.timeComplexity}
+                    spaceComplexity={detail.spaceComplexity}
+                    className="mt-3"
+                  />
                 </div>
               )}
 
-              {/* 代码实现（codeImplementations JSON） */}
-              {!detail.content && detail.codeImplementations && (
-                <CodeImplBlock raw={detail.codeImplementations} />
+              {/* ▶ 走流程 Tab */}
+              {activeTab === 'walkthrough' && (
+                <div className="animate-fade-in">
+                  <WalkThroughPlayer
+                    problemId={data.problemId ?? data.id}
+                    level={data.level}
+                  />
+                </div>
               )}
 
-              {/* 复杂度标注区 */}
-              <ComplexityInfo
-                timeComplexity={detail.timeComplexity}
-                spaceComplexity={detail.spaceComplexity}
-                className="mt-3"
-              />
+              {/* 💻 代码 Tab */}
+              {activeTab === 'code' && detail.codeImplementations && (
+                <div className="animate-fade-in">
+                  <CodeImplBlock raw={detail.codeImplementations} />
+                </div>
+              )}
 
-              {/* 操作栏 */}
+              {/* 操作栏（所有 Tab 都显示） */}
               <ActionBar
                 upvoteCount={detail.upvoteCount}
                 downvoteCount={detail.downvoteCount}
