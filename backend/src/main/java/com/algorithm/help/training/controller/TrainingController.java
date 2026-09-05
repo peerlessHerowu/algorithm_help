@@ -24,7 +24,7 @@ import java.util.Set;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/training")
+@RequestMapping("/api/v1/training")
 @RequiredArgsConstructor
 public class TrainingController {
 

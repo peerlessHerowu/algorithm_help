@@ -94,6 +94,11 @@ public class SecurityConfig {
                 // 用户进度图谱 — 凭借 X-User-Id header 访问，未登录返回演示数据
                 .requestMatchers(HttpMethod.GET, "/api/v1/user/progress/graph").permitAll();
 
+        // 训练 API — 游客可访问（用户ID通过请求体/路径传递）
+        auth
+                .requestMatchers("/api/training/**").permitAll()
+                .requestMatchers("/api/v1/training/**").permitAll();
+
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
                 .requestMatchers(HttpMethod.GET, "/api/v1/enriched/**").permitAll()

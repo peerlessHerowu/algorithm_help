@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-// ===== 类型定义 =====
+// ===== 类型 =====
 
-interface QuizOption {
-  patternId: string;
-  patternName: string;
-}
+interface QuizOption { patternId: string; patternName: string; }
 
 interface QuizQuestion {
   problemId: string;
@@ -18,9 +15,7 @@ interface QuizQuestion {
   correctAnswer: string;
 }
 
-interface Quiz {
-  questions: QuizQuestion[];
-}
+interface Quiz { questions: QuizQuestion[]; }
 
 interface QuizResult {
   correct: boolean;
@@ -40,27 +35,67 @@ interface PatternStat {
 // ===== 常量 =====
 
 const QUESTION_COUNT = 10;
+const TIME_LIMIT_SEC = 30; // 每题限时秒数
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-// ===== 主页面组件 =====
+const OPTION_LABELS = ['A', 'B', 'C', 'D'];
+
+// 训练模式卡片配置
+const TRAINING_MODES = [
+  {
+    id: 'pattern',
+    icon: '🧩',
+    title: '模式识别',
+    desc: '题目描述（隐藏标签），判断该用哪种算法模式。',
+    accent: 'indigo',
+    action: null as null, // 在主页启动
+  },
+  {
+    id: 'debug',
+    icon: '🐛',
+    title: 'Debug 训练',
+    desc: 'AI 生成有 Bug 的代码，找出错误并修复。',
+    accent: 'blue',
+    action: '/training/debug',
+  },
+  {
+    id: 'reverse-feynman',
+    icon: '🔄',
+    title: '反向费曼',
+    desc: 'AI 故意讲错，你来纠正，加深对正确解法的记忆。',
+    accent: 'purple',
+    action: '/training/reverse-feynman',
+  },
+  {
+    id: 'socratic',
+    icon: '🦉',
+    title: '苏格拉底追问',
+    desc: 'AI 通过渐进式问题引导你自己推导解法。',
+    accent: 'emerald',
+    action: '/socratic',
+  },
+];
+
+// ===== 主页面 =====
 
 export default function TrainingPage() {
-  const { token, isAuthenticated, user } = useAppStore();
-  const router = useRouter();
+  const { token, user } = useAppStore();
 
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [quiz, setQuiz]       = useState<Quiz | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [result, setResult] = useState<QuizResult | null>(null);
-  const [completed, setCompleted] = useState(false);
+  const [submitted, setSubmitted]   = useState(false);
+  const [result, setResult]         = useState<QuizResult | null>(null);
+  const [completed, setCompleted]   = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
-  const [answers, setAnswers] = useState<{ correct: boolean; patternName: string }[]>([]);
-  const [stats, setStats] = useState<PatternStat[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [answers, setAnswers]       = useState<{ correct: boolean; patternName: string }[]>([]);
+  const [stats, setStats]           = useState<PatternStat[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+  const [timeLeft, setTimeLeft]     = useState(TIME_LIMIT_SEC);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 统一 API 请求（携带 token）
+  // API 请求
   const apiRequest = useCallback(async (path: string, options: RequestInit = {}) => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -68,25 +103,50 @@ export default function TrainingPage() {
     };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    if (res.status === 401) {
-      router.push('/auth/login');
-      throw new Error('请先登录');
-    }
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body?.message || `请求失败 (${res.status})`);
     }
     const json = await res.json();
     return json?.data ?? json;
-  }, [token, router]);
+  }, [token]);
 
-  // ===== 开始训练 =====
-
-  const startTraining = useCallback(async () => {
-    if (!isAuthenticated) {
-      router.push('/auth/login');
+  // 计时器
+  useEffect(() => {
+    if (!quiz || submitted || completed) {
+      if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
+    setTimeLeft(TIME_LIMIT_SEC);
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // 超时自动提交空答案
+          handleTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quiz, currentIndex, submitted, completed]);
+
+  // 超时处理
+  const handleTimeUp = useCallback(() => {
+    if (submitted) return;
+    setSubmitted(true);
+    setResult({
+      correct: false,
+      correctAnswer: quiz?.questions[currentIndex]?.correctAnswer ?? '',
+      correctPatternName: '超时未答',
+      explanation: '时间到！下次记得在限时内作答。',
+    });
+    setAnswers(prev => [...prev, { correct: false, patternName: '超时' }]);
+  }, [submitted, quiz, currentIndex]);
+
+  // 开始训练
+  const startTraining = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -106,47 +166,41 @@ export default function TrainingPage() {
       setCorrectCount(0);
       setAnswers([]);
       setStats([]);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '获取测验失败，请重试';
-      setError(msg);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败，请重试');
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, apiRequest, user, router]);
+  }, [apiRequest, user]);
 
-  // ===== 提交答案 =====
-
+  // 提交答案
   const submitAnswer = useCallback(async () => {
-    if (!quiz || !selectedAnswer) return;
+    if (!quiz || (!selectedAnswer && timeLeft > 0)) return;
+    if (timerRef.current) clearInterval(timerRef.current);
     setLoading(true);
     setError(null);
     try {
-      const currentQuestion = quiz.questions[currentIndex];
+      const q = quiz.questions[currentIndex];
       const data = await apiRequest('/api/v1/training/submit', {
         method: 'POST',
         body: JSON.stringify({
           userId: user?.id ?? 'guest',
-          problemId: currentQuestion.problemId,
-          answer: selectedAnswer,
+          problemId: q.problemId,
+          answer: selectedAnswer ?? '__timeout__',
         }),
       });
       setResult(data);
       setSubmitted(true);
-      if (data.correct) setCorrectCount((prev) => prev + 1);
-      setAnswers((prev) => [
-        ...prev,
-        { correct: data.correct, patternName: data.correctPatternName },
-      ]);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '提交失败，请重试';
-      setError(msg);
+      if (data.correct) setCorrectCount(p => p + 1);
+      setAnswers(p => [...p, { correct: data.correct, patternName: data.correctPatternName }]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '提交失败');
     } finally {
       setLoading(false);
     }
-  }, [quiz, selectedAnswer, currentIndex, apiRequest, user]);
+  }, [quiz, selectedAnswer, currentIndex, apiRequest, user, timeLeft]);
 
-  // ===== 下一题 =====
-
+  // 下一题
   const nextQuestion = useCallback(async () => {
     if (!quiz) return;
     if (currentIndex + 1 >= quiz.questions.length) {
@@ -154,90 +208,22 @@ export default function TrainingPage() {
       try {
         const data = await apiRequest(`/api/v1/training/stats/${user?.id ?? 'guest'}`);
         setStats(Array.isArray(data) ? data : []);
-      } catch { /* 统计加载失败不阻断流程 */ }
+      } catch { /* 忽略 */ }
     } else {
-      setCurrentIndex((prev) => prev + 1);
+      setCurrentIndex(p => p + 1);
       setSelectedAnswer(null);
       setSubmitted(false);
       setResult(null);
     }
   }, [quiz, currentIndex, apiRequest, user]);
 
-  // ===== 渲染：开始画面 =====
+  // ===== 渲染：首页 =====
 
   if (!quiz) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-start justify-center p-4 pt-8">
-        <div className="max-w-2xl w-full space-y-4">
-          {/* 页面标题 */}
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">🏋️ 训练中心</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">选择训练方式，针对性提升算法能力</p>
-
-          {/* 错误提示 */}
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-              ⚠️ {error}
-            </div>
-          )}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* 模式识别 */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
-              <div className="text-3xl mb-3">🧩</div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">模式识别训练</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                给出题目描述（隐藏标签），判断该用哪种算法模式。
-              </p>
-              <button onClick={startTraining} disabled={loading}
-                className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-                {loading ? '加载中...' : '开始训练'}
-              </button>
-            </div>
-
-            {/* Debug 训练 */}
-            <a href="/training/debug"
-              className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900 cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors block">
-              <div className="text-3xl mb-3">🐛</div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">Debug 训练</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                AI 生成有 Bug 的代码，找出错误并修复。提升代码审查能力。
-              </p>
-              <div className="w-full rounded-lg border border-blue-300 py-2 text-sm text-center font-medium text-blue-600 dark:border-blue-700 dark:text-blue-400">
-                前往 Debug 训练 →
-              </div>
-            </a>
-
-            {/* 反向费曼 */}
-            <a href="/training/reverse-feynman"
-              className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900 cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 transition-colors block">
-              <div className="text-3xl mb-3">🔄</div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">反向费曼法</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                AI 故意讲错，你来找出错误并纠正。通过纠错加深对正确解法的记忆。
-              </p>
-              <div className="w-full rounded-lg border border-purple-300 py-2 text-sm text-center font-medium text-purple-600 dark:border-purple-700 dark:text-purple-400">
-                前往反向费曼 →
-              </div>
-            </a>
-
-            {/* 苏格拉底追问 */}
-            <a href="/socratic"
-              className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900 cursor-pointer hover:border-green-300 dark:hover:border-green-700 transition-colors block">
-              <div className="text-3xl mb-3">🦉</div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">苏格拉底追问</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                AI 不直接给答案，通过渐进式问题引导你自己推导解法。
-              </p>
-              <div className="w-full rounded-lg border border-green-300 py-2 text-sm text-center font-medium text-green-600 dark:border-green-700 dark:text-green-400">
-                前往苏格拉底 →
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-    );
+    return <HomePage stats={stats} loading={loading} error={error} onStart={startTraining} />;
   }
 
-  // ===== 渲染：训练结束统计 =====
+  // ===== 渲染：完成 =====
 
   if (completed) {
     return (
@@ -251,227 +237,453 @@ export default function TrainingPage() {
     );
   }
 
-  // ===== 渲染：答题画面 =====
+  // ===== 渲染：答题 =====
 
-  const currentQuestion = quiz.questions[currentIndex];
+  const q = quiz.questions[currentIndex];
+  const timerPct = (timeLeft / TIME_LIMIT_SEC) * 100;
+  const timerColor = timeLeft > 15 ? '#10B981' : timeLeft > 7 ? '#F59E0B' : '#EF4444';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 pt-8">
-      {/* 进度指示器 */}
-      <ProgressBar current={currentIndex + 1} total={quiz.questions.length} />
+    <div className="min-h-screen bg-[#0F1117] flex flex-col items-center px-4 pt-6 pb-12">
+      {/* 顶部进度 + 计时器 */}
+      <div className="max-w-2xl w-full mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400">
+              {currentIndex + 1} <span className="text-gray-600">/</span> {quiz.questions.length}
+            </span>
+            <div className="flex gap-1">
+              {quiz.questions.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 w-6 rounded-full transition-colors ${
+                    i < currentIndex ? 'bg-indigo-500'
+                    : i === currentIndex ? 'bg-indigo-400'
+                    : 'bg-gray-700'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          {/* 计时器 */}
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 -rotate-90" viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#1F2937" strokeWidth="3" />
+              <circle cx="16" cy="16" r="13" fill="none"
+                stroke={timerColor} strokeWidth="3"
+                strokeDasharray={`${2 * Math.PI * 13}`}
+                strokeDashoffset={`${2 * Math.PI * 13 * (1 - timerPct / 100)}`}
+                style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s' }}
+              />
+            </svg>
+            <span className="text-sm font-mono font-bold tabular-nums"
+              style={{ color: timerColor }}>
+              {timeLeft}s
+            </span>
+          </div>
+        </div>
+        {/* 总体进度条 */}
+        <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+            style={{ width: `${((currentIndex) / quiz.questions.length) * 100}%` }}
+          />
+        </div>
+      </div>
 
       {/* 题目卡片 */}
-      <div className="max-w-2xl w-full mt-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          {/* 题目描述 */}
-          <div className="mb-6">
-            <h2 className="text-sm font-medium text-gray-400 mb-2">题目描述</h2>
-            <p className="text-gray-800 leading-relaxed text-sm whitespace-pre-wrap">
-              {currentQuestion.problemDescription}
-            </p>
+      <div className="max-w-2xl w-full">
+        <div className="rounded-2xl border border-gray-800 bg-[#141820] p-6 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-gray-500 uppercase tracking-wider">题目描述</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-400">
+              识别算法模式
+            </span>
           </div>
+          <p className="text-gray-200 leading-relaxed text-sm whitespace-pre-wrap">
+            {q.problemDescription}
+          </p>
+        </div>
 
-          {/* 选项 */}
-          <div className="space-y-3 mb-6">
-            <h3 className="text-sm font-medium text-gray-400">选择算法模式</h3>
-            {currentQuestion.options.map((option) => (
-              <OptionButton
+        {/* 选项 */}
+        <div className="space-y-2.5 mb-5">
+          {q.options.map((option, idx) => {
+            const label = OPTION_LABELS[idx] ?? String(idx + 1);
+            const isSelected = selectedAnswer === option.patternId;
+            const isCorrect = result?.correctAnswer === option.patternId;
+            const isWrong = submitted && isSelected && !isCorrect;
+
+            return (
+              <button
                 key={option.patternId}
-                option={option}
-                selected={selectedAnswer === option.patternId}
-                submitted={submitted}
-                isCorrect={result?.correctAnswer === option.patternId}
-                onClick={() => {
-                  if (!submitted) setSelectedAnswer(option.patternId);
-                }}
-              />
-            ))}
-          </div>
+                onClick={() => { if (!submitted) setSelectedAnswer(option.patternId); }}
+                disabled={submitted}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl border
+                  text-left transition-all duration-200 disabled:cursor-default
+                  ${!submitted
+                    ? isSelected
+                      ? 'border-indigo-500 bg-indigo-900/20 shadow-indigo-900/30 shadow-sm'
+                      : 'border-gray-700 bg-gray-800/30 hover:border-gray-600 hover:bg-gray-800/60'
+                    : isCorrect
+                      ? 'border-emerald-500 bg-emerald-900/20'
+                      : isWrong
+                        ? 'border-red-500 bg-red-900/20'
+                        : 'border-gray-800 bg-gray-900/20 opacity-40'
+                  }`}
+              >
+                {/* 字母标签 */}
+                <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0
+                  ${!submitted
+                    ? isSelected ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-400'
+                    : isCorrect ? 'bg-emerald-600 text-white'
+                    : isWrong ? 'bg-red-600 text-white'
+                    : 'bg-gray-800 text-gray-600'
+                  }`}>
+                  {label}
+                </span>
+                <span className={`flex-1 text-sm font-medium ${
+                  !submitted ? (isSelected ? 'text-indigo-200' : 'text-gray-300')
+                  : isCorrect ? 'text-emerald-200'
+                  : isWrong ? 'text-red-200'
+                  : 'text-gray-500'
+                }`}>
+                  {option.patternName}
+                </span>
+                {/* 结果图标 */}
+                {submitted && isCorrect && (
+                  <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {submitted && isWrong && (
+                  <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-          {/* 提交结果展示 */}
-          {submitted && result && (
-            <ResultBanner result={result} />
+        {/* 结果解析 */}
+        {submitted && result && (
+          <div className={`rounded-xl border p-4 mb-5 transition-all
+            ${result.correct
+              ? 'border-emerald-700/50 bg-emerald-900/20'
+              : 'border-amber-700/50 bg-amber-900/20'
+            }`}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base">{result.correct ? '🎉' : '💡'}</span>
+              <span className={`text-sm font-semibold ${result.correct ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {result.correct ? '回答正确！' : `正确答案：${result.correctPatternName}`}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">{result.explanation}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 text-sm text-red-400 bg-red-900/20 border border-red-800/50 rounded-xl px-4 py-3">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* 操作按钮 */}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => { setCompleted(true); }}
+            className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+          >
+            结束本轮
+          </button>
+          {!submitted ? (
+            <button
+              onClick={submitAnswer}
+              disabled={!selectedAnswer || loading}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl
+                transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {loading ? '提交中...' : '确认提交'}
+            </button>
+          ) : (
+            <button
+              onClick={nextQuestion}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-all"
+            >
+              {currentIndex + 1 >= quiz.questions.length ? '查看结果 →' : '下一题 →'}
+            </button>
           )}
-
-          {/* 操作按钮 */}
-          <div className="flex justify-end gap-3 mt-4">
-            {!submitted ? (
-              <button
-                onClick={submitAnswer}
-                disabled={!selectedAnswer || loading}
-                className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg
-                           hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed
-                           transition-colors"
-              >
-                {loading ? '提交中...' : '提交'}
-              </button>
-            ) : (
-              <button
-                onClick={nextQuestion}
-                className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg
-                           hover:bg-indigo-700 transition-colors"
-              >
-                {currentIndex + 1 >= quiz.questions.length ? '查看结果' : '下一题'}
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ===== 进度条组件 =====
+// ===== 首页：训练模式选择 =====
 
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  const percentage = (current / total) * 100;
+function HomePage({ stats, loading, error, onStart }: {
+  stats: PatternStat[];
+  loading: boolean;
+  error: string | null;
+  onStart: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<'modes' | 'stats'>('modes');
+
   return (
-    <div className="max-w-2xl w-full">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-600">
-          题目 {current}/{total}
-        </span>
-        <span className="text-xs text-gray-400">{Math.round(percentage)}%</span>
-      </div>
-      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-          style={{ width: `${percentage}%` }}
-        />
+    <div className="min-h-screen bg-[#0F1117] px-4 pt-6 pb-12">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* 标题区 */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-100">训练中心</h1>
+          <p className="text-sm text-gray-500 mt-1">针对性提升算法模式识别能力</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-800/60 rounded-xl p-1 w-fit">
+          {([['modes', '🏋️ 训练模式'], ['stats', '📊 薄弱分析']] as const).map(([t, label]) => (
+            <button
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className={`px-4 py-1.5 text-sm rounded-lg transition-all font-medium
+                ${activeTab === t
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-400 hover:text-gray-200'
+                }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="text-sm text-red-400 bg-red-900/20 border border-red-800/50 rounded-xl px-4 py-3">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {activeTab === 'modes' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {TRAINING_MODES.map(mode => (
+              <TrainingModeCard
+                key={mode.id}
+                mode={mode}
+                loading={loading && mode.id === 'pattern'}
+                onStart={mode.action ? undefined : onStart}
+              />
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'stats' && (
+          <WeakStatsPanel stats={stats} onStartTraining={onStart} />
+        )}
       </div>
     </div>
   );
 }
 
-// ===== 选项按钮组件 =====
+// ===== 训练模式卡片 =====
 
-interface OptionButtonProps {
-  option: QuizOption;
-  selected: boolean;
-  submitted: boolean;
-  isCorrect: boolean;
-  onClick: () => void;
-}
-
-function OptionButton({ option, selected, submitted, isCorrect, onClick }: OptionButtonProps) {
-  const getStyle = () => {
-    if (!submitted) {
-      return selected
-        ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200'
-        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50';
-    }
-    // 已提交后的样式
-    if (isCorrect) {
-      return 'border-green-500 bg-green-50 ring-2 ring-green-200';
-    }
-    if (selected && !isCorrect) {
-      return 'border-red-500 bg-red-50 ring-2 ring-red-200';
-    }
-    return 'border-gray-200 opacity-50';
+function TrainingModeCard({ mode, loading, onStart }: {
+  mode: typeof TRAINING_MODES[0];
+  loading?: boolean;
+  onStart?: () => void;
+}) {
+  const accentClasses: Record<string, { border: string; hover: string; btn: string }> = {
+    indigo:  { border: 'border-indigo-700/40', hover: 'hover:border-indigo-600/70', btn: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
+    blue:    { border: 'border-blue-700/40',   hover: 'hover:border-blue-600/70',   btn: 'border border-blue-600 text-blue-400 hover:bg-blue-900/30' },
+    purple:  { border: 'border-purple-700/40', hover: 'hover:border-purple-600/70', btn: 'border border-purple-600 text-purple-400 hover:bg-purple-900/30' },
+    emerald: { border: 'border-emerald-700/40',hover: 'hover:border-emerald-600/70',btn: 'border border-emerald-600 text-emerald-400 hover:bg-emerald-900/30' },
   };
+  const a = accentClasses[mode.accent] ?? accentClasses.indigo;
 
-  const getIcon = () => {
-    if (!submitted) return null;
-    if (isCorrect) return <span className="text-green-600 text-lg">✅</span>;
-    if (selected && !isCorrect) return <span className="text-red-600 text-lg">❌</span>;
-    return null;
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={submitted}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left
-                  transition-all duration-200 disabled:cursor-default ${getStyle()}`}
-    >
-      <span className="flex-1 text-sm text-gray-800 font-medium">
-        {option.patternName}
-      </span>
-      {getIcon()}
-    </button>
+  const content = (
+    <div className={`rounded-2xl border ${a.border} ${a.hover} bg-gray-900/60
+      transition-all duration-200 p-5 h-full flex flex-col`}>
+      <div className="text-3xl mb-3">{mode.icon}</div>
+      <h3 className="font-semibold text-gray-100 mb-1.5">{mode.title}</h3>
+      <p className="text-sm text-gray-500 leading-relaxed flex-1">{mode.desc}</p>
+      <div className="mt-4">
+        {onStart ? (
+          <button
+            onClick={onStart}
+            disabled={loading}
+            className={`w-full py-2 rounded-xl text-sm font-medium transition-all ${a.btn}
+              disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full border border-white/40 border-t-white animate-spin" />
+                加载中...
+              </span>
+            ) : '开始训练 →'}
+          </button>
+        ) : (
+          <div className={`w-full py-2 rounded-xl text-sm font-medium text-center ${a.btn}`}>
+            前往训练 →
+          </div>
+        )}
+      </div>
+    </div>
   );
+
+  if (mode.action) {
+    return <Link href={mode.action} className="block h-full">{content}</Link>;
+  }
+  return <div>{content}</div>;
 }
 
-// ===== 结果提示横幅 =====
+// ===== 薄弱点统计面板 =====
 
-function ResultBanner({ result }: { result: QuizResult }) {
-  return (
-    <div
-      className={`rounded-xl p-4 ${
-        result.correct
-          ? 'bg-green-50 border border-green-200'
-          : 'bg-red-50 border border-red-200'
-      }`}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">{result.correct ? '🎉' : '💡'}</span>
-        <span
-          className={`text-sm font-semibold ${
-            result.correct ? 'text-green-700' : 'text-red-700'
-          }`}
+function WeakStatsPanel({ stats, onStartTraining }: {
+  stats: PatternStat[];
+  onStartTraining: () => void;
+}) {
+  const sorted = [...stats].sort((a, b) => a.accuracy - b.accuracy);
+  const weakPatterns = sorted.filter(s => s.accuracy < 0.6);
+
+  if (stats.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-gray-700 p-10 text-center">
+        <div className="text-4xl mb-3">📊</div>
+        <p className="text-gray-400 mb-4">完成训练后，这里会显示你的薄弱点分析</p>
+        <button
+          onClick={onStartTraining}
+          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-xl transition-all"
         >
-          {result.correct ? '回答正确！' : `正确答案：${result.correctPatternName}`}
-        </span>
+          开始第一轮训练
+        </button>
       </div>
-      <p className="text-xs text-gray-600 leading-relaxed">{result.explanation}</p>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* 摘要 */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: '已训练模式', value: stats.length, color: 'text-indigo-400' },
+          { label: '薄弱模式数', value: weakPatterns.length, color: 'text-amber-400' },
+          { label: '整体正确率', value: stats.length > 0
+            ? `${Math.round(stats.reduce((s,x) => s + x.accuracy, 0) / stats.length * 100)}%`
+            : '-', color: 'text-emerald-400' },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="rounded-xl bg-gray-800/60 border border-gray-700 p-3 text-center">
+            <div className={`text-xl font-bold ${color}`}>{value}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* 柱状图 */}
+      <div className="rounded-2xl border border-gray-800 bg-gray-900/60 p-5">
+        <h3 className="text-sm font-medium text-gray-300 mb-4">各模式正确率</h3>
+        <div className="space-y-3">
+          {sorted.map(stat => {
+            const pct = Math.round(stat.accuracy * 100);
+            const color = pct >= 80 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444';
+            return (
+              <div key={stat.patternId} className="flex items-center gap-3">
+                <span className="text-xs text-gray-400 w-20 truncate shrink-0" title={stat.patternName}>
+                  {stat.patternName}
+                </span>
+                <div className="flex-1 h-3 rounded-full bg-gray-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, backgroundColor: color }}
+                  />
+                </div>
+                <span className="text-xs font-mono tabular-nums w-8 text-right shrink-0"
+                  style={{ color }}>{pct}%</span>
+                <span className="text-xs text-gray-600 w-12 text-right shrink-0">
+                  {stat.correctCount}/{stat.totalAttempts}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 薄弱模式重点练习 */}
+      {weakPatterns.length > 0 && (
+        <div className="rounded-2xl border border-amber-800/40 bg-amber-900/10 p-5">
+          <h3 className="text-sm font-medium text-amber-300 mb-3">⚠️ 需要重点练习的模式</h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {weakPatterns.map(wp => (
+              <Link
+                key={wp.patternId}
+                href={`/patterns/${wp.patternId.replace('pattern:', '')}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl
+                  bg-amber-900/30 border border-amber-700/50 text-amber-300
+                  hover:border-amber-500 transition-colors"
+              >
+                <span>{wp.patternName}</span>
+                <span className="opacity-60">{Math.round(wp.accuracy * 100)}%</span>
+              </Link>
+            ))}
+          </div>
+          <button
+            onClick={onStartTraining}
+            className="w-full py-2 text-sm font-medium rounded-xl
+              bg-amber-600/20 border border-amber-600/40 text-amber-300
+              hover:bg-amber-600/30 transition-all"
+          >
+            针对薄弱点重新训练
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-// ===== 训练完成统计视图 =====
+// ===== 训练完成统计 =====
 
-interface CompletionViewProps {
+function CompletionView({ totalQuestions, correctCount, answers, stats, onRestart }: {
   totalQuestions: number;
   correctCount: number;
   answers: { correct: boolean; patternName: string }[];
   stats: PatternStat[];
   onRestart: () => void;
-}
-
-function CompletionView({
-  totalQuestions,
-  correctCount,
-  answers,
-  stats,
-  onRestart,
-}: CompletionViewProps) {
+}) {
   const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
-
-  // 薄弱模式：正确率 < 60%
-  const weakPatterns = stats.filter((s) => s.accuracy < 0.6);
+  const emoji = accuracy >= 80 ? '🏆' : accuracy >= 60 ? '👍' : '💪';
+  const weakPatterns = stats.filter(s => s.accuracy < 0.6);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 pt-8">
-      <div className="max-w-2xl w-full space-y-6">
+    <div className="min-h-screen bg-[#0F1117] px-4 pt-6 pb-12">
+      <div className="max-w-2xl mx-auto space-y-5">
         {/* 总结卡片 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center">
-          <div className="text-4xl mb-3">
-            {accuracy >= 80 ? '🏆' : accuracy >= 60 ? '👍' : '💪'}
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">训练完成！</h2>
-          <p className="text-gray-500 text-sm mb-4">以下是本次训练表现</p>
-
-          {/* 统计数字 */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <StatCard label="总题数" value={`${totalQuestions}`} />
-            <StatCard label="正确数" value={`${correctCount}`} color="text-green-600" />
-            <StatCard label="正确率" value={`${accuracy}%`} color={accuracy >= 80 ? 'text-green-600' : accuracy >= 60 ? 'text-yellow-600' : 'text-red-600'} />
+        <div className="rounded-2xl border border-gray-800 bg-[#141820] p-6 text-center">
+          <div className="text-5xl mb-3">{emoji}</div>
+          <h2 className="text-xl font-bold text-gray-100 mb-1">训练完成！</h2>
+          <p className="text-gray-500 text-sm mb-5">本次训练结果</p>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: '总题数',  value: totalQuestions,  color: 'text-gray-200' },
+              { label: '正确数',  value: correctCount,    color: 'text-emerald-400' },
+              { label: '正确率',  value: `${accuracy}%`,
+                color: accuracy >= 80 ? 'text-emerald-400' : accuracy >= 60 ? 'text-amber-400' : 'text-red-400' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="bg-gray-800/60 rounded-xl p-3">
+                <div className={`text-2xl font-bold tabular-nums ${color}`}>{value}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 每题回答记录 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">答题记录</h3>
-          <div className="grid grid-cols-5 gap-2">
+        {/* 答题轨迹 */}
+        <div className="rounded-2xl border border-gray-800 bg-[#141820] p-5">
+          <h3 className="text-sm font-medium text-gray-400 mb-3">答题轨迹</h3>
+          <div className="flex flex-wrap gap-2">
             {answers.map((a, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-center h-10 rounded-lg text-xs font-medium
-                  ${a.correct
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-red-50 text-red-700 border border-red-200'
-                  }`}
+              <div key={i}
                 title={`第${i + 1}题：${a.patternName}`}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold
+                  ${a.correct
+                    ? 'bg-emerald-900/40 border border-emerald-700/50 text-emerald-400'
+                    : 'bg-red-900/40 border border-red-700/50 text-red-400'
+                  }`}
               >
                 {a.correct ? '✓' : '✗'}
               </div>
@@ -481,94 +693,62 @@ function CompletionView({
 
         {/* 各模式正确率 */}
         {stats.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">各模式正确率</h3>
-            <div className="space-y-3">
-              {stats.map((stat) => (
-                <PatternAccuracyBar key={stat.patternId} stat={stat} />
-              ))}
+          <div className="rounded-2xl border border-gray-800 bg-[#141820] p-5">
+            <h3 className="text-sm font-medium text-gray-400 mb-4">各模式正确率</h3>
+            <div className="space-y-2.5">
+              {[...stats].sort((a, b) => a.accuracy - b.accuracy).map(stat => {
+                const pct = Math.round(stat.accuracy * 100);
+                const color = pct >= 80 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444';
+                return (
+                  <div key={stat.patternId} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-20 truncate shrink-0">{stat.patternName}</span>
+                    <div className="flex-1 h-2.5 rounded-full bg-gray-800 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                    <span className="text-xs font-mono w-8 text-right shrink-0" style={{ color }}>{pct}%</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* 薄弱模式提示 */}
         {weakPatterns.length > 0 && (
-          <div className="bg-yellow-50 rounded-2xl border border-yellow-200 p-6">
-            <h3 className="text-sm font-semibold text-yellow-800 mb-2">
-              ⚠️ 需要加强的模式
-            </h3>
+          <div className="rounded-2xl border border-amber-800/40 bg-amber-900/10 p-5">
+            <h3 className="text-sm font-semibold text-amber-300 mb-2">⚠️ 需要加强的模式</h3>
             <div className="flex flex-wrap gap-2">
-              {weakPatterns.map((wp) => (
-                <span
+              {weakPatterns.map(wp => (
+                <Link
                   key={wp.patternId}
-                  className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full
-                             border border-yellow-300"
+                  href={`/patterns/${wp.patternId.replace('pattern:', '')}`}
+                  className="px-3 py-1 text-xs rounded-xl bg-amber-900/30 border border-amber-700/50
+                    text-amber-300 hover:border-amber-500 transition-colors"
                 >
                   {wp.patternName}（{Math.round(wp.accuracy * 100)}%）
-                </span>
+                </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* 再来一次按钮 */}
-        <div className="text-center pb-8">
+        {/* 操作 */}
+        <div className="flex gap-3 justify-center pb-4">
+          <Link href="/training"
+            className="px-5 py-2.5 rounded-xl border border-gray-700 text-gray-300
+              text-sm hover:border-gray-500 transition-all">
+            返回首页
+          </Link>
           <button
             onClick={onRestart}
-            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg
-                       hover:bg-indigo-700 transition-colors text-sm"
+            className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white
+              text-sm font-medium transition-all"
           >
             再来一轮
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ===== 统计数字卡片 =====
-
-function StatCard({
-  label,
-  value,
-  color = 'text-gray-900',
-}: {
-  label: string;
-  value: string;
-  color?: string;
-}) {
-  return (
-    <div className="bg-gray-50 rounded-xl p-3">
-      <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <div className="text-xs text-gray-500 mt-1">{label}</div>
-    </div>
-  );
-}
-
-// ===== 模式正确率柱状条 =====
-
-function PatternAccuracyBar({ stat }: { stat: PatternStat }) {
-  const percentage = Math.round(stat.accuracy * 100);
-  const barColor =
-    percentage >= 80 ? 'bg-green-500' : percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500';
-
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-700 w-24 truncate" title={stat.patternName}>
-        {stat.patternName}
-      </span>
-      <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <span className="text-xs text-gray-500 w-12 text-right">
-        {percentage}%
-      </span>
-      <span className="text-xs text-gray-400 w-16 text-right">
-        {stat.correctCount}/{stat.totalAttempts}
-      </span>
     </div>
   );
 }
