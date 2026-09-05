@@ -47,4 +47,16 @@ public class AnalyticsController {
     public ApiResponse<Map<String, Object>> interviewTrend(@RequestParam String userId) {
         return ApiResponse.success(analyticsService.getInterviewTrend(userId));
     }
+
+    /**
+     * 获取学习热力图数据（过去一年，按日聚合活动计数）
+     * <p>
+     * 数据来源：interactive_sessions（完成的会话数）+
+     *           spaced_repetition_cards（按 lastReviewAt 聚合复习次数）+
+     *           debug_training_records（训练次数）
+     */
+    @GetMapping("/heatmap")
+    public ApiResponse<java.util.List<Map<String, Object>>> heatmap(@RequestParam String userId) {
+        return ApiResponse.success(analyticsService.getHeatmapData(userId));
+    }
 }

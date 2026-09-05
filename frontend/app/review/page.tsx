@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/store';
 import { reviewApi } from '@/lib/api';
+import dynamic from 'next/dynamic';
+
+const ActivityHeatmap = dynamic(() => import('@/components/heatmap/ActivityHeatmap'), { ssr: false });
 
 // ===== 类型 =====
 interface Card {
@@ -252,9 +255,14 @@ export default function ReviewPage() {
           </div>
         )}
 
+        {/* 学习热力图 */}
+        <div className="rounded-2xl border border-gray-800 bg-[#141820] p-4 mb-5">
+          <p className="text-xs font-medium text-gray-400 mb-3">📅 学习活跃热力图</p>
+          <ActivityHeatmap userId={uid} />
+        </div>
+
         {/* Tab */}
-        <div className="flex gap-2 mb-5">
-          {([['flip', '🃏 翻卡复习'], ['all', '📋 所有卡片']] as const).map(([t, l]) => (
+        <div className="flex gap-2 mb-5">          {([['flip', '🃏 翻卡复习'], ['all', '📋 所有卡片']] as const).map(([t, l]) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`px-4 py-2 text-sm rounded-xl transition-all font-medium
                 ${activeTab === t

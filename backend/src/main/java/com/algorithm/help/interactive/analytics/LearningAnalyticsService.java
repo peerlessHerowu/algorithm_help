@@ -216,6 +216,80 @@ public class LearningAnalyticsService {
     }
 
     /**
+     * 获取热力图数据（过去一年，按日聚合活动总数）
+     * <p>
+     * 返回格式：[{date: "2026-09-05", count: 3, sessions: 1, reviews: 2}]
+     * count = sessions + reviews + trainingCount
+     */
+    public List<Map<String, Object>> getHeatmapData(String userId) {
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate yearAgo = today.minusYears(1);
+
+        // 1. 从完成会话中聚合（按日）
+        Map<String, Integer> sessionByDay = sessionRepo
+                .findByUserIdAndStatusOrderByCreatedAtDesc(userId, SessionStatus.COMPLETED)
+                .stream()
+                .filter(s -> s.getCreatedAt() != null)
+                .collect(Collectors.toMap(
+                        s -> Instant.ofEpochMilli(s.getCreatedAt())
+                                .atZone(ZoneOffset.UTC).toLocalDate().toString(),
+                        s -> 1,
+                        Integer::sum
+                ));
+
+        // 2. 从复习卡片聚合（按 lastReviewAt）
+        Map<String, Integer> reviewByDay = cardRepo.findByUserId(userId)
+                .stream()
+                .filter(c -> c.getLastReviewAt() != null)
+                .collect(Collectors.toMap(
+                        c -> Instant.ofEpochMilli(c.getLastReviewAt())
+                                .atZone(ZoneOffset.UTC).toLocalDate().toString(),
+                        c -> 1,
+                        Integer::sum
+                ));
+
+        // 3. 从 debug 训练记录聚合（按 createdAt）
+        Map<String, Integer> debugByDay = debugRepo.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .filter(r -> r.getCreatedAt() != null)
+                .collect(Collectors.toMap(
+                        r -> Instant.ofEpochMilli(r.getCreatedAt())
+                                .atZone(ZoneOffset.UTC).toLocalDate().toString(),
+                        r -> 1,
+                        Integer::sum
+                ));
+
+        // 4. 合并所有日期
+        Set<String> allDates = new LinkedHashSet<>();
+        allDates.addAll(sessionByDay.keySet());
+        allDates.addAll(reviewByDay.keySet());
+        allDates.addAll(debugByDay.keySet());
+
+        // 5. 只返回过去一年的数据，按日期升序
+        return allDates.stream()
+                .filter(d -> {
+                    try {
+                        LocalDate date = LocalDate.parse(d);
+                        return !date.isBefore(yearAgo) && !date.isAfter(today);
+                    } catch (Exception e) { return false; }
+                })
+                .sorted()
+                .map(d -> {
+                    int s = sessionByDay.getOrDefault(d, 0);
+                    int r = reviewByDay.getOrDefault(d, 0);
+                    int t = debugByDay.getOrDefault(d, 0);
+                    Map<String, Object> entry = new java.util.LinkedHashMap<>();
+                    entry.put("date", d);
+                    entry.put("count", s + r + t);
+                    entry.put("sessions", s);
+                    entry.put("reviews", r);
+                    entry.put("training", t);
+                    return entry;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 获取面试得分趋势（最近 10 次）
      * <p>
      * 由 InterviewScoreService 完成，这里只做分析封装

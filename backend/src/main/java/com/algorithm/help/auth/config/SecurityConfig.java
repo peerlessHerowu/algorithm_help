@@ -109,7 +109,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/interview/**").permitAll()
                 .requestMatchers("/api/v1/reverse-feynman/**").permitAll()
                 // 复习中心 — 游客可读写
-                .requestMatchers("/api/v1/review/**").permitAll();
+                .requestMatchers("/api/v1/review/**").permitAll()
+                // 学习分析（热力图等）— 游客可读
+                .requestMatchers(HttpMethod.GET, "/api/v1/analytics/**").permitAll();
 
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
