@@ -99,7 +99,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/training/**").permitAll()
                 .requestMatchers("/api/v1/training/**").permitAll()
                 // 题目推荐 API — 游客可读
-                .requestMatchers(HttpMethod.GET, "/api/v1/problems/*/recommend").permitAll();
+                .requestMatchers(HttpMethod.GET, "/api/v1/problems/*/recommend").permitAll()
+                // 交互会话 API — 游客可访问（userId 通过请求体传递）
+                .requestMatchers("/api/v1/sessions/**").permitAll()
+                // 各 interactive 模式 — 游客可访问
+                .requestMatchers("/api/v1/feynman/**").permitAll()
+                .requestMatchers("/api/v1/socratic/**").permitAll()
+                .requestMatchers("/api/v1/debug/**").permitAll()
+                .requestMatchers("/api/v1/interview/**").permitAll()
+                .requestMatchers("/api/v1/reverse-feynman/**").permitAll();
 
         // Enriched 公开 API — 游客只读访问（列表/详情/标签/进度）
         auth
