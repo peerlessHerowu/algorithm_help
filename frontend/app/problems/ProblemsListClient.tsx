@@ -57,7 +57,7 @@ export default function ProblemsListClient() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* 页面标题 */}
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+      <h1 className="text-2xl font-bold text-gray-100 mb-6">
         全部题目
         {totalElements > 0 && (
           <span className="ml-2 text-base font-normal text-gray-500">
@@ -75,9 +75,9 @@ export default function ProblemsListClient() {
             value={keyword}
             onChange={(e) => { setKeyword(e.target.value); setPage(0); }}
             placeholder="搜索题目标题..."
-            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm
+            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm text-gray-200
                        placeholder-gray-400 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400
-                       dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
+                       placeholder-gray-500"
           />
         </form>
 
@@ -90,7 +90,7 @@ export default function ProblemsListClient() {
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 difficulty === d.value
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               {d.label}
@@ -103,7 +103,7 @@ export default function ProblemsListClient() {
       {isLoading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse rounded-xl border border-gray-200 p-5 dark:border-gray-700">
+            <div key={i} className="animate-pulse rounded-xl border border-gray-800 p-5">
               <div className="h-5 w-2/3 rounded bg-gray-200 dark:bg-gray-700" />
               <div className="mt-3 h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
             </div>
@@ -136,7 +136,7 @@ export default function ProblemsListClient() {
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 disabled:opacity-40"
           >
             ← 上一页
           </button>
@@ -146,7 +146,7 @@ export default function ProblemsListClient() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 disabled:opacity-40"
           >
             下一页 →
           </button>

@@ -85,6 +85,8 @@ export default function PatternDetailClient() {
     id ? `/api/patterns/pattern:${id}/cross-domain-table` : null,
     fetcher
   );
+
+  const { data: pattern, error, isLoading } = useSWR<PatternDetail>(
     id ? `/api/v1/patterns/${encodeURIComponent(id)}/detail` : null,
     fetcher
   );

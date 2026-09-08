@@ -155,13 +155,13 @@ export default function SettingsPage() {
   }, [logout]);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 pb-16">
-      <h1 className="text-2xl font-bold">设置</h1>
+    <div className="mx-auto max-w-2xl space-y-8 pb-16 px-4 py-8">
+      <h1 className="text-2xl font-bold text-gray-100">设置</h1>
 
       {/* 默认解析级别 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">默认解析级别</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">默认解析级别</h2>
+        <p className="mb-4 text-sm text-gray-400">
           选择查看题目解析时的默认深度级别
         </p>
         <div className="flex gap-3">
@@ -172,7 +172,7 @@ export default function SettingsPage() {
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 currentLevel === level
                   ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               L{level}
@@ -182,9 +182,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 默认代码语言 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">默认代码语言</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">默认代码语言</h2>
+        <p className="mb-4 text-sm text-gray-400">
           查看解法代码时优先展示的编程语言
         </p>
         <div className="flex flex-wrap gap-3">
@@ -195,7 +195,7 @@ export default function SettingsPage() {
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 preferredLanguage === lang
                   ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               {LANGUAGE_LABELS[lang] || lang}
@@ -205,9 +205,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 主题偏好 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">主题偏好</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">主题偏好</h2>
+        <p className="mb-4 text-sm text-gray-400">
           选择界面的显示主题
         </p>
         <div className="flex gap-3">
@@ -218,7 +218,7 @@ export default function SettingsPage() {
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 theme === opt.value
                   ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
               {opt.label}
@@ -250,9 +250,9 @@ export default function SettingsPage() {
       </div>
 
       {/* 🔔 通知设置 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">🔔 通知设置</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">🔔 通知设置</h2>
+        <p className="mb-4 text-sm text-gray-400">
           按类型控制接收哪些通知
         </p>
         <div className="space-y-4">
@@ -262,7 +262,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {item.label}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-400">
                   {item.description}
                 </p>
               </div>
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   notificationPrefs[item.key]
                     ? 'bg-primary-600'
-                    : 'bg-gray-200 dark:bg-gray-700'
+                    : 'bg-gray-700'
                 }`}
               >
                 <span
@@ -289,9 +289,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 📥 数据管理 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">📥 数据管理</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">📥 数据管理</h2>
+        <p className="mb-4 text-sm text-gray-400">
           导出你的学习数据（收藏、进度、复习记录）
         </p>
         <button
@@ -312,9 +312,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 🎯 学习水平自测 */}
-      <section className="rounded-lg border border-gray-200 p-6 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">🎯 学习水平自测</h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+        <h2 className="mb-1 text-lg font-semibold text-gray-100">🎯 学习水平自测</h2>
+        <p className="mb-4 text-sm text-gray-400">
           通过 5 道快速判断题评估你的算法水平，自动推荐默认解析级别
         </p>
         <a
@@ -327,17 +327,17 @@ export default function SettingsPage() {
       </section>
 
       {/* ⚠️ 危险区域 */}
-      <section className="rounded-lg border border-red-200 p-6 dark:border-red-900">
+      <section className="rounded-2xl border border-red-900/50 bg-red-950/20 p-6">
         <h2 className="mb-1 text-lg font-semibold text-red-700 dark:text-red-400">
           ⚠️ 危险区域
         </h2>
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mb-4 text-sm text-gray-400">
           以下操作不可逆，请谨慎操作
         </p>
         <button
           onClick={() => setShowDeleteConfirm(true)}
           disabled={!isAuthenticated}
-          className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+          className="rounded-lg border border-red-800 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           删除我的账户
         </button>

@@ -63,6 +63,10 @@ interface EnrichedSolutionListProps {
   initialLevel?: number;
   /** 隐藏内部 LevelTabs（由父组件管理级别时使用） */
   hideLevelTabs?: boolean;
+  /** 数据源变化通知父组件（'enriched' | 'legacy' | ''） */
+  onSourceChange?: (source: 'enriched' | 'legacy' | '', loading: boolean) => void;
+  /** 级别变化通知父组件 */
+  onLevelChange?: (level: number) => void;
   /** 自定义类名 */
   className?: string;
 }
@@ -95,6 +99,8 @@ export default function EnrichedSolutionList({
   onLoginRequired,
   initialLevel,
   hideLevelTabs = false,
+  onSourceChange,
+  onLevelChange,
   className,
 }: EnrichedSolutionListProps) {
   // 智能默认级别
@@ -134,10 +140,12 @@ export default function EnrichedSolutionList({
         setCurrentSource(cached.source);
         setCurrentTags(cached.tags);
         setLoading(false);
+        onSourceChange?.(cached.source, false);
         return;
       }
 
       setLoading(true);
+      onSourceChange?.('', true);
       try {
         const [listRes, tagsRes] = await Promise.all([
           fetchList(problemId, level),
@@ -160,15 +168,17 @@ export default function EnrichedSolutionList({
         setCurrentData(Array.isArray(items) ? items : []);
         setCurrentSource(source);
         setCurrentTags(Array.isArray(tagsRes) ? tagsRes : (tagsRes as any)?.tags ?? []);
+        onSourceChange?.(source, false);
       } catch (err) {
         console.error('加载解析列表失败:', err);
         setCurrentData([]);
         setCurrentTags([]);
+        onSourceChange?.('', false);
       } finally {
         setLoading(false);
       }
     },
-    [problemId, fetchList, fetchTags, getCachedData]
+    [problemId, fetchList, fetchTags, getCachedData, onSourceChange]
   );
 
   // 初始加载 + 级别切换时加载
@@ -182,7 +192,8 @@ export default function EnrichedSolutionList({
     setSelectedTags([]);
     setExpandedIds(new Set());
     setAllExpanded(false);
-  }, []);
+    onLevelChange?.(level);
+  }, [onLevelChange]);
 
   /** 标签筛选变更 */
   const handleTagsChange = useCallback((tags: string[]) => {

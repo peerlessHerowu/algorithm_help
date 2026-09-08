@@ -20,7 +20,6 @@ import { fetcher } from '@/lib/fetcher';
 import { useAppStore } from '@/store';
 import { safeArray } from '@/lib/safeArray';
 import type { Problem, Explanation, RelatedProblem, Difficulty, Approach, ContentSection, MathFoundation } from '@/lib/types';
-import LevelTabs from '@/components/LevelTabs';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import MermaidRendererDynamic from '@/components/MermaidRendererDynamic';
 import CodeBlock from '@/components/CodeBlock';
@@ -392,11 +391,10 @@ export default function ProblemDetailClient() {
 /**
  * EnrichedAITab - v2 AI 深度解析 Tab 内容
  *
- * 优先从 enriched API 获取数据，根据 source 字段决定渲染方式：
- * - source='enriched' → EnrichedSolutionList
- * - source='legacy' → 旧版 ExplanationContent
- * - 空数据 → EmptyState + 生成按钮
- * - 管理员可见 "🔄 重新生成" 按钮
+ * 数据流：
+ * - EnrichedSolutionList 内部管理数据加载和 5 分钟缓存，level 切换走缓存无需重新 fetch
+ * - 通过 onSourceChange 回调获知当前 source，决定是否叠加 legacy/empty/error 覆盖层
+ * - problemId 变化时通过 key prop 重建整个组件（含 EnrichedSolutionList 缓存），同时 resetTask
  */
 function EnrichedAITab({
   problemId,
@@ -420,12 +418,10 @@ function EnrichedAITab({
   const { user, isAuthenticated } = useAppStore();
   const isAdmin = user?.role === 'ADMIN';
 
-  // enriched 数据加载状态
-  const [enrichedLoading, setEnrichedLoading] = useState(true);
-  const [enrichedSource, setEnrichedSource] = useState<'enriched' | 'legacy' | ''>('');
-  const [enrichedItems, setEnrichedItems] = useState<unknown[]>([]);
-  const [enrichedError, setEnrichedError] = useState<boolean>(false);
   const [regenerating, setRegenerating] = useState(false);
+  // source + loading 状态由 EnrichedSolutionList 通过回调上报
+  const [enrichedSource, setEnrichedSource] = useState<'enriched' | 'legacy' | ''>('');
+  const [enrichedLoading, setEnrichedLoading] = useState(true);
 
   // 任务管理 hook
   const {
@@ -439,8 +435,6 @@ function EnrichedAITab({
     reset: resetTask,
   } = useEnrichmentTask({
     onCompleted: () => {
-      // 任务完成，刷新数据
-      loadEnrichedData();
       mutateExplanation();
     },
     onFailed: (err) => {
@@ -448,43 +442,32 @@ function EnrichedAITab({
     },
   });
 
-  /** 是否正在生成中 */
-  const isGenerating = ['creating', 'pending', 'processing'].includes(taskStatus);
-
-  /** 加载 enriched 数据 */
-  const loadEnrichedData = useCallback(async () => {
-    setEnrichedLoading(true);
-    setEnrichedError(false);
-    try {
-      const res = await enrichedApi.getList(problemId, level) as any;
-      // 后端返回: { source: 'enriched'|'legacy', enrichedList: [...] | null, legacy: {...} | null }
-      const source = res?.source || '';
-      setEnrichedSource(source);
-      if (source === 'enriched' && Array.isArray(res?.enrichedList)) {
-        setEnrichedItems(res.enrichedList);
-      } else {
-        setEnrichedItems([]);
-      }
-    } catch {
-      setEnrichedSource('');
-      setEnrichedItems([]);
-      setEnrichedError(true);
-    } finally {
-      setEnrichedLoading(false);
-    }
-  }, [problemId, level]);
-
-  // 级别或题目变化时重新加载
+  /** 题目切换时重置任务状态 */
   useEffect(() => {
     resetTask();
-    loadEnrichedData();
-  }, [problemId, level, loadEnrichedData, resetTask]);
+    setEnrichedSource('');
+    setEnrichedLoading(true);
+  // ponytail: 只在 problemId 变化时重置，level 切换由 EnrichedSolutionList 内部缓存处理
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [problemId]);
+
+  /** EnrichedSolutionList 数据源变化回调 */
+  const handleSourceChange = useCallback(
+    (source: 'enriched' | 'legacy' | '', loading: boolean) => {
+      setEnrichedSource(source);
+      setEnrichedLoading(loading);
+    },
+    []
+  );
+
+  const isGenerating = ['creating', 'pending', 'processing'].includes(taskStatus);
+  const hasEnrichedContent = enrichedSource === 'enriched';
+  const isLegacyFallback = enrichedSource === 'legacy';
+  const isEmpty = !enrichedLoading && enrichedSource === '' && !isGenerating;
 
   /** 触发生成（首次或重新生成） */
   const handleGenerate = useCallback(async (force = false) => {
-    if (force) {
-      setRegenerating(true);
-    }
+    if (force) setRegenerating(true);
     try {
       await createTask(problemId, level);
     } finally {
@@ -497,17 +480,12 @@ function EnrichedAITab({
     // TODO: 跳转登录或弹窗
   }, []);
 
-  // 判断数据状态
-  const hasEnrichedContent = enrichedSource === 'enriched' && enrichedItems.length > 0;
-  const isLegacyFallback = enrichedSource === 'legacy';
-  const isEmpty = !enrichedLoading && !enrichedError && !hasEnrichedContent && !isLegacyFallback;
-
   return (
     <div>
       {/* 标题栏 + 管理员重新生成按钮 */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          分级解析
+          AI 解析
         </h2>
         {isAdmin && (hasEnrichedContent || isLegacyFallback) && !isGenerating && (
           <button
@@ -521,22 +499,14 @@ function EnrichedAITab({
               transition-colors duration-150
               focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           >
-            🔄 重新生成
+            重新生成
           </button>
         )}
       </div>
 
-      {/* 级别切换标签 */}
-      <LevelTabs
-        activeLevel={level}
-        onLevelChange={onLevelChange}
-        loading={enrichedLoading}
-      />
-
-      {/* 内容区域 */}
-      <div className="mt-6">
-        {/* 生成进度态 */}
-        {isGenerating && (
+      {/* 生成进度（覆盖在 EnrichedSolutionList 上方） */}
+      {isGenerating && (
+        <div className="mb-4">
           <GenerationProgress
             status={taskStatus}
             progress={taskProgress}
@@ -545,113 +515,86 @@ function EnrichedAITab({
             onCancel={cancelTask}
             onRetry={retryTask}
           />
-        )}
+        </div>
+      )}
 
-        {/* 加载中（非生成态） */}
-        {enrichedLoading && !isGenerating && (
-          <AIAnalysisSkeleton />
-        )}
-
-        {/* enriched 丰富内容 */}
-        {!enrichedLoading && !isGenerating && hasEnrichedContent && (
-          <div className="animate-fade-in-up">
-          <EnrichedSolutionList
-            problemId={problemId}
-            levelCounts={{ [level]: enrichedItems.length }}
-            fetchList={enrichedApi.getList}
-            fetchTags={enrichedApi.getTags}
-            fetchDetail={async (id) => {
-              const detail = await enrichedApi.getDetail(id);
-              return detail as unknown as import('@/components/enriched/CollapsibleCard').EnrichedCardData;
-            }}
-            isLoggedIn={isAuthenticated}
-            isAdmin={isAdmin}
-            onLoginRequired={handleLoginRequired}
-            initialLevel={level}
-            hideLevelTabs={true}
-          />
-          </div>
-        )}
-
-        {/* legacy 回退：使用旧版 ExplanationContent */}
-        {!enrichedLoading && !isGenerating && isLegacyFallback && (
-          <div>
-            {explanationLoading && !explanation && (
-              <AIAnalysisSkeleton />
-            )}
-            {explanationError && (
-              <GenerationStatus
-                problemId={problemId}
-                level={level}
-                onComplete={() => mutateExplanation()}
-              />
-            )}
-            {explanation && (
-              <ExplanationContent
-                explanation={explanation}
-                problemId={problemId}
-                level={level as 1 | 2 | 3 | 4 | 5}
-                mathFoundation={mathFoundation}
-                onGenerationComplete={() => mutateExplanation()}
-              />
-            )}
-            {!explanationLoading && !explanation && !explanationError && (
-              <GenerationStatus
-                problemId={problemId}
-                level={level}
-                onComplete={() => mutateExplanation()}
-              />
-            )}
-          </div>
-        )}
-
-        {/* 空状态：无任何内容 */}
-        {!enrichedLoading && !isGenerating && isEmpty && (
-          <EmptyState
-            isLoggedIn={isAuthenticated}
-            isCreating={taskStatus === 'creating'}
-            onGenerate={() => handleGenerate(false)}
-            onLoginRequired={handleLoginRequired}
-          />
-        )}
-
-        {/* enriched API 错误回退到旧版 */}
-        {!enrichedLoading && !isGenerating && enrichedError && (
-          <div>
-            {explanationLoading && !explanation && (
-              <AIAnalysisSkeleton />
-            )}
-            {explanation && (
-              <ExplanationContent
-                explanation={explanation}
-                problemId={problemId}
-                level={level as 1 | 2 | 3 | 4 | 5}
-                mathFoundation={mathFoundation}
-                onGenerationComplete={() => mutateExplanation()}
-              />
-            )}
-            {!explanationLoading && !explanation && (
-              <GenerationStatus
-                problemId={problemId}
-                level={level}
-                onComplete={() => mutateExplanation()}
-              />
-            )}
-          </div>
-        )}
-
-        {/* 任务失败态（非进度组件内） */}
-        {taskStatus === 'failed' && !isGenerating && (
-          <GenerationProgress
-            status={taskStatus}
-            progress={taskProgress}
-            estimatedRemaining={estimatedRemaining}
-            error={taskError}
-            onCancel={cancelTask}
-            onRetry={retryTask}
-          />
-        )}
+      {/*
+       * EnrichedSolutionList 始终挂载（mount-once 缓存生效）
+       * - 内部自己管理 LevelTabs、loading 骨架屏、缓存
+       * - source/loading 通过 onSourceChange 上报给父组件
+       * - hideLevelTabs=false：让 enriched/LevelTabs（完整版带滑块+计数气泡）接管
+       */}
+      <div className={isGenerating ? 'opacity-50 pointer-events-none' : ''}>
+        <EnrichedSolutionList
+          problemId={problemId}
+          levelCounts={{}}
+          fetchList={enrichedApi.getList}
+          fetchTags={enrichedApi.getTags}
+          fetchDetail={async (id) => {
+            const detail = await enrichedApi.getDetail(id);
+            return detail as unknown as import('@/components/enriched/CollapsibleCard').EnrichedCardData;
+          }}
+          isLoggedIn={isAuthenticated}
+          isAdmin={isAdmin}
+          onLoginRequired={handleLoginRequired}
+          initialLevel={level}
+          hideLevelTabs={false}
+          onSourceChange={handleSourceChange}
+          onLevelChange={onLevelChange}
+        />
       </div>
+
+      {/* legacy 回退：叠加旧版 ExplanationContent */}
+      {!enrichedLoading && !isGenerating && isLegacyFallback && (
+        <div className="mt-6">
+          {explanationLoading && !explanation && <AIAnalysisSkeleton />}
+          {explanationError && (
+            <GenerationStatus
+              problemId={problemId}
+              level={level}
+              onComplete={() => mutateExplanation()}
+            />
+          )}
+          {explanation && (
+            <ExplanationContent
+              explanation={explanation}
+              problemId={problemId}
+              level={level as 1 | 2 | 3 | 4 | 5}
+              mathFoundation={mathFoundation}
+              onGenerationComplete={() => mutateExplanation()}
+            />
+          )}
+          {!explanationLoading && !explanation && !explanationError && (
+            <GenerationStatus
+              problemId={problemId}
+              level={level}
+              onComplete={() => mutateExplanation()}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 空状态 */}
+      {!enrichedLoading && !isGenerating && isEmpty && (
+        <EmptyState
+          isLoggedIn={isAuthenticated}
+          isCreating={taskStatus === 'creating'}
+          onGenerate={() => handleGenerate(false)}
+          onLoginRequired={handleLoginRequired}
+        />
+      )}
+
+      {/* 任务失败态 */}
+      {taskStatus === 'failed' && !isGenerating && (
+        <GenerationProgress
+          status={taskStatus}
+          progress={taskProgress}
+          estimatedRemaining={estimatedRemaining}
+          error={taskError}
+          onCancel={cancelTask}
+          onRetry={retryTask}
+        />
+      )}
     </div>
   );
 }

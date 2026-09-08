@@ -138,9 +138,9 @@ export default function MobileNav({ className = '' }: MobileNavProps) {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200
-                  bg-white/95 backdrop-blur-sm dark:border-gray-800
-                  dark:bg-gray-950/95 md:hidden ${className}`}
+      className={`fixed bottom-0 left-0 right-0 z-50 border-t border-gray-800
+                  bg-[#0F1117]/95 backdrop-blur-sm
+                   md:hidden ${className}`}
       aria-label="移动端底部导航"
     >
       <div className="flex items-center justify-around px-2 py-2">
@@ -153,8 +153,8 @@ export default function MobileNav({ className = '' }: MobileNavProps) {
               className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5
                          transition-colors ${
                            active
-                             ? 'text-blue-600 dark:text-blue-400'
-                             : 'text-gray-500 dark:text-gray-400'
+                             ? 'text-indigo-400'
+                             : 'text-gray-500'
                          }`}
             >
               {/* 根据激活状态渲染不同图标 */}

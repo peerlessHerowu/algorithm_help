@@ -43,8 +43,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
 
   return (
     <aside
-      className={`hidden md:flex flex-col border-r border-gray-200 bg-white
-                  dark:border-gray-800 dark:bg-gray-900
+      className={`hidden md:flex flex-col border-r border-gray-800 bg-[#0F1117]
                   md:w-16 lg:w-56 transition-all duration-200
                   ${className}`}
     >
@@ -66,8 +65,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                   className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium
                              transition-colors
                              ${isActive
-                               ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+                               ? 'bg-indigo-900/30 text-indigo-300'
+                               : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
                              }`}
                 >
                   <span className="text-lg shrink-0 md:mx-auto lg:mx-0" aria-hidden="true">
@@ -88,7 +87,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         </ul>
 
         {/* 分隔线 + 扩展导航 */}
-        <div className="mx-3 my-3 border-t border-gray-200 dark:border-gray-800" />
+        <div className="mx-3 my-3 border-t border-gray-800" />
         <p className="px-4 mb-1 text-[10px] uppercase tracking-widest text-gray-400 hidden lg:block">
           探索
         </p>
@@ -108,8 +107,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                   className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium
                              transition-colors
                              ${isActive
-                               ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+                               ? 'bg-indigo-900/30 text-indigo-300'
+                               : 'text-gray-500 hover:bg-gray-800 hover:text-gray-200'
                              }`}
                 >
                   <span className="text-base shrink-0 md:mx-auto lg:mx-0" aria-hidden="true">

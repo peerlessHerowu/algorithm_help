@@ -26,12 +26,12 @@ interface PaperBridge {
 }
 
 const DOMAIN_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  NLP:            { label: 'NLP',            color: '#6366F1', bg: 'bg-indigo-900/30', border: 'border-indigo-700/50' },
-  CV:             { label: 'CV',             color: '#10B981', bg: 'bg-emerald-900/30',border: 'border-emerald-700/50' },
-  RECOMMENDATION: { label: '推荐系统',       color: '#F59E0B', bg: 'bg-amber-900/30',  border: 'border-amber-700/50' },
-  BIOINFORMATICS: { label: '生物信息学',     color: '#8B5CF6', bg: 'bg-purple-900/30', border: 'border-purple-700/50' },
-  QUANTUM:        { label: '量子计算',       color: '#06B6D4', bg: 'bg-cyan-900/30',   border: 'border-cyan-700/50' },
-  ROBOTICS:       { label: '机器人学',       color: '#EF4444', bg: 'bg-red-900/30',    border: 'border-red-700/50' },
+  NLP:            { label: '自然语言处理', color: '#6366F1', bg: 'bg-indigo-900/30', border: 'border-indigo-700/50' },
+  CV:             { label: '计算机视觉',   color: '#10B981', bg: 'bg-emerald-900/30',border: 'border-emerald-700/50' },
+  RECOMMENDATION: { label: '推荐系统',     color: '#F59E0B', bg: 'bg-amber-900/30',  border: 'border-amber-700/50' },
+  BIOINFORMATICS: { label: '生物信息学',   color: '#8B5CF6', bg: 'bg-purple-900/30', border: 'border-purple-700/50' },
+  QUANTUM:        { label: '量子计算',     color: '#06B6D4', bg: 'bg-cyan-900/30',   border: 'border-cyan-700/50' },
+  ROBOTICS:       { label: '机器人学',     color: '#EF4444', bg: 'bg-red-900/30',    border: 'border-red-700/50' },
 };
 
 function getDomainConf(domain: string) {

@@ -4,7 +4,7 @@
  * MainTabBar - 题目详情页顶部 4 Tab 导航栏
  *
  * 功能：
- * - 4 个主 Tab：📖 AI深度解析 / 📋 原始题解 / 📝 用户题解 / 💬 评论
+ * - 4 个主 Tab：AI 解析 / 原始题解 / 用户题解 / 评论
  * - 蓝色底部指示条动画（250ms spring 滑动）
  * - URL query 参数直达（?tab=ai|raw|user|comment）
  * - Tab 切换回调
@@ -21,15 +21,14 @@ export type MainTabKey = 'ai' | 'raw' | 'user' | 'comment';
 export interface MainTabConfig {
   key: MainTabKey;
   label: string;
-  icon: string;
 }
 
 /** 4 个主 Tab 配置 */
 export const MAIN_TABS: MainTabConfig[] = [
-  { key: 'ai', label: 'AI深度解析', icon: '📖' },
-  { key: 'raw', label: '原始题解', icon: '📋' },
-  { key: 'user', label: '用户题解', icon: '📝' },
-  { key: 'comment', label: '评论', icon: '💬' },
+  { key: 'ai',      label: 'AI 解析' },
+  { key: 'raw',     label: '原始题解' },
+  { key: 'user',    label: '用户题解' },
+  { key: 'comment', label: '评论' },
 ];
 
 interface MainTabBarProps {
@@ -86,7 +85,7 @@ export default function MainTabBar({ activeTab, onTabChange }: MainTabBarProps) 
             key={tab.key}
             ref={(el) => setTabRef(tab.key, el)}
             onClick={() => onTabChange(tab.key)}
-            className={`relative flex items-center gap-1.5 px-5 py-3 text-sm font-medium transition-colors
+            className={`relative px-5 py-3 text-sm font-medium transition-colors
               ${activeTab === tab.key
                 ? 'text-blue-600 dark:text-blue-400'
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
@@ -94,8 +93,7 @@ export default function MainTabBar({ activeTab, onTabChange }: MainTabBarProps) 
             aria-selected={activeTab === tab.key}
             role="tab"
           >
-            <span>{tab.icon}</span>
-            <span>{tab.label}</span>
+            {tab.label}
           </button>
         ))}
       </div>

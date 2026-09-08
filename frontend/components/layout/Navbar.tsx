@@ -113,13 +113,13 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
   return (
     <nav
-      className={`sticky top-0 z-50 h-16 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80 ${className}`}
+      className={`sticky top-0 z-50 h-16 border-b border-gray-800 bg-[#0F1117]/90 backdrop-blur-sm ${className}`}
     >
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
         {/* 左侧 Logo */}
         <Link
           href="/"
-          className="text-lg font-bold text-primary-600 dark:text-primary-400"
+          className="text-lg font-bold text-indigo-400"
         >
           算法引擎
         </Link>
@@ -134,14 +134,13 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 href={item.href}
                 className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? 'text-primary-700 dark:text-primary-300'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                    ? 'text-indigo-300'
+                    : 'text-gray-400 hover:text-gray-100'
                 }`}
               >
                 {item.label}
-                {/* 活跃指示条 */}
                 {isActive && (
-                  <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary-500 dark:bg-primary-400" />
+                  <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-indigo-400" />
                 )}
               </Link>
             );
@@ -156,11 +155,11 @@ export default function Navbar({ className = '' }: NavbarProps) {
               // 通过 custom event 通知 GlobalSearch 打开
               window.dispatchEvent(new CustomEvent('open-global-search'));
             }}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-gray-400 hover:bg-gray-800 transition-colors"
             aria-label="搜索 (⌘K)"
           >
             <SearchIcon />
-            <kbd className="hidden rounded border border-gray-200 px-1.5 py-0.5 text-xs text-gray-400 dark:border-gray-600 sm:inline-block">
+            <kbd className="hidden rounded border border-gray-700 px-1.5 py-0.5 text-xs text-gray-500 sm:inline-block">
               ⌘K
             </kbd>
           </button>
@@ -170,19 +169,19 @@ export default function Navbar({ className = '' }: NavbarProps) {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
               >
                 {user?.nickname || '用户'}
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900 animate-fade-in-down">
+                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-700 bg-gray-900 py-1 shadow-lg animate-fade-in-down">
                   <Link href="/achievements" onClick={() => setUserMenuOpen(false)}
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    className="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800">
                     🏆 我的成就
                   </Link>
                   <button
                     onClick={() => { logout(); setUserMenuOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
                   >
                     退出登录
                   </button>
@@ -192,14 +191,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
           ) : (
             <Link
               href="/auth/login"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-indigo-400 hover:bg-indigo-900/20"
             >
               登录
             </Link>
           )}
           {/* 移动端汉堡菜单按钮 */}
           <button
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 md:hidden"
+            className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="菜单"
           >
@@ -210,7 +209,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
       {/* 移动端展开菜单 */}
       {mobileMenuOpen && (
-        <div className="border-b border-gray-200 bg-white px-4 pb-3 pt-2 dark:border-gray-800 dark:bg-gray-950 md:hidden animate-fade-in-down">
+        <div className="border-b border-gray-800 bg-[#0F1117] px-4 pb-3 pt-2 md:hidden animate-fade-in-down">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -220,8 +219,8 @@ export default function Navbar({ className = '' }: NavbarProps) {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                    ? 'bg-indigo-900/30 text-indigo-300'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
                 }`}
               >
                 {item.label}

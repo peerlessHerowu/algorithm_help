@@ -27,9 +27,9 @@ interface Report {
 // ===== 公司配置 =====
 const COMPANIES = [
   { key: 'GENERAL',  label: '通用',   emoji: '🎤', desc: '标准面试风格' },
-  { key: 'GOOGLE',   label: 'Google', emoji: '🔍', desc: '追问细节，算法最优解' },
-  { key: 'META',     label: 'Meta',   emoji: '📘', desc: '系统设计，代码整洁' },
-  { key: 'AMAZON',   label: 'Amazon', emoji: '📦', desc: 'Leadership Principles' },
+  { key: 'GOOGLE',   label: '谷歌',   emoji: '🔍', desc: '追问细节，算法最优解' },
+  { key: 'META',     label: 'Meta',   emoji: '📘', desc: '系统设计，代码整洁' },  // Meta 保留英文（品牌名）
+  { key: 'AMAZON',   label: '亚马逊', emoji: '📦', desc: '领导力原则' },
   { key: 'BYTEDANCE',label: '字节',   emoji: '🎯', desc: '高强度追问，边界测试' },
   { key: 'MICROSOFT',label: '微软',   emoji: '🪟', desc: '解题过程，思路清晰' },
 ];
@@ -298,8 +298,8 @@ function InterviewContent() {
       }
       setSessionId(sid);
     }
-    addMsg('system', `面试已开始 · ${COMPANIES.find(x => x.key === c.company)?.label ?? c.company} 风格 · ${c.difficulty} · ${c.duration}min`);
-    addMsg('interviewer', `你好！欢迎参加${COMPANIES.find(x => x.key === c.company)?.label ?? c.company}风格的算法面试。时间限制 ${c.duration} 分钟，难度 ${c.difficulty}。请先介绍一下你的解题思路。`);
+    addMsg('system', `面试已开始 · ${COMPANIES.find(x => x.key === c.company)?.label ?? c.company} 风格 · ${c.difficulty === 'EASY' ? '简单' : c.difficulty === 'MEDIUM' ? '中等' : '困难'} · ${c.duration}分钟`);
+    addMsg('interviewer', `你好！欢迎参加${COMPANIES.find(x => x.key === c.company)?.label ?? c.company}风格的算法面试。时间限制 ${c.duration} 分钟，难度 ${c.difficulty === 'EASY' ? '简单' : c.difficulty === 'MEDIUM' ? '中等' : '困难'}。请先介绍一下你的解题思路。`);
     send({ type: 'INTERVIEW_CHAT', sessionId: sid, payload: JSON.stringify({ action: 'START', problemId, ...c }) } as unknown as Parameters<typeof send>[0]);
   }, [sessionId, problemId, send]);
 
@@ -343,7 +343,7 @@ function InterviewContent() {
           </span>
           {cfg && (
             <span className="text-xs text-gray-500">
-              {COMPANIES.find(x => x.key === cfg.company)?.label} · {cfg.difficulty} · {cfg.duration}min
+              {COMPANIES.find(x => x.key === cfg.company)?.label} · {cfg.difficulty === 'EASY' ? '简单' : cfg.difficulty === 'MEDIUM' ? '中等' : '困难'} · {cfg.duration}分钟
             </span>
           )}
         </div>
