@@ -140,7 +140,7 @@ export default function MobileNav({ className = '' }: MobileNavProps) {
     <nav
       className={`fixed bottom-0 left-0 right-0 z-50 border-t border-gray-800
                   bg-[#0F1117]/95 backdrop-blur-sm
-                   md:hidden ${className}`}
+                   pb-[env(safe-area-inset-bottom)] md:hidden ${className}`}
       aria-label="移动端底部导航"
     >
       <div className="flex items-center justify-around px-2 py-2">
@@ -150,6 +150,7 @@ export default function MobileNav({ className = '' }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? 'page' : undefined}
               className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5
                          transition-colors ${
                            active
