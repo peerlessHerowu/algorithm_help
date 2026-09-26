@@ -74,7 +74,9 @@ export default function LoginPage() {
           headers: { 'Authorization': `Bearer ${accessToken}` },
         });
         if (meRes.ok) {
-          user = await meRes.json();
+          // /me 使用统一 ApiResponse 包装，登录状态需要其中的 data。
+          const meJson = await meRes.json();
+          user = meJson.data ?? meJson;
         } else {
           // 降级：从 token 中解析基础信息
           user = { email, nickname: email.split('@')[0], role: 'USER' };

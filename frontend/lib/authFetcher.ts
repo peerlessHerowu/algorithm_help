@@ -38,8 +38,9 @@ async function refreshToken(): Promise<string | null> {
     if (!res.ok) return null;
 
     const json = await res.json();
-    if (json.code === 200 && json.data?.token) {
-      return json.data.token as string;
+    // 后端 AuthResponse 字段名为 accessToken（不是 token）。
+    if (json.code === 200 && json.data?.accessToken) {
+      return json.data.accessToken as string;
     }
     return null;
   } catch {

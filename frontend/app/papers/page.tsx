@@ -153,14 +153,17 @@ export default function PapersPage() {
 
   const domains = ['ALL', ...Object.keys(DOMAIN_CONFIG)];
 
-  const { data: nlp }  = useSWR<PaperBridge[]>('/api/paper-bridge/domain/NLP', fetcher);
-  const { data: cv }   = useSWR<PaperBridge[]>('/api/paper-bridge/domain/CV', fetcher);
-  const { data: rec }  = useSWR<PaperBridge[]>('/api/paper-bridge/domain/RECOMMENDATION', fetcher);
-  const { data: bio }  = useSWR<PaperBridge[]>('/api/paper-bridge/domain/BIOINFORMATICS', fetcher);
-  const { data: qc }   = useSWR<PaperBridge[]>('/api/paper-bridge/domain/QUANTUM', fetcher);
-  const { data: rob }  = useSWR<PaperBridge[]>('/api/paper-bridge/domain/ROBOTICS', fetcher);
+  const nlpState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/NLP', fetcher);
+  const cvState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/CV', fetcher);
+  const recState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/RECOMMENDATION', fetcher);
+  const bioState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/BIOINFORMATICS', fetcher);
+  const qcState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/QUANTUM', fetcher);
+  const robState = useSWR<PaperBridge[]>('/api/paper-bridge/domain/ROBOTICS', fetcher);
+  const states = [nlpState, cvState, recState, bioState, qcState, robState];
 
-  const allBridges = [...(nlp||[]), ...(cv||[]), ...(rec||[]), ...(bio||[]), ...(qc||[]), ...(rob||[])];
+  const allBridges = states.flatMap(s => s.data ?? []);
+  const loading = states.some(s => s.isLoading);
+  const error = states.find(s => s.error)?.error;
 
   const filtered = activeDomain === 'ALL'
     ? allBridges
@@ -208,14 +211,22 @@ export default function PapersPage() {
         </div>
 
         {/* 卡片网格 */}
-        {filtered.length > 0 ? (
+        {error ? (
+          <div className="text-center py-16">
+            <div className="text-4xl mb-3">⚠️</div>
+            <p className="text-gray-400 mb-4">论文数据加载失败，请重试</p>
+            <button onClick={() => states.forEach(s => s.mutate())} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500">重试</button>
+          </div>
+        ) : loading ? (
+          <div className="text-center py-16"><div className="text-4xl mb-3">⏳</div><p className="text-gray-500">正在加载论文桥梁...</p></div>
+        ) : filtered.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             {filtered.map(b => <PaperCard key={b.id} bridge={b} />)}
           </div>
         ) : (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔭</div>
-            <p className="text-gray-500">加载中...</p>
+            <p className="text-gray-500">暂无论文桥梁</p>
           </div>
         )}
       </div>

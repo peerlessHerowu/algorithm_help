@@ -178,7 +178,7 @@ export default function SettingsPage() {
 
       {/* 默认解析级别 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">默认解析级别</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认解析级别</h2>
         <p className="mb-4 text-sm text-gray-400">
           选择查看题目解析时的默认深度级别
         </p>
@@ -201,7 +201,7 @@ export default function SettingsPage() {
 
       {/* 默认代码语言 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">默认代码语言</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认代码语言</h2>
         <p className="mb-4 text-sm text-gray-400">
           查看解法代码时优先展示的编程语言
         </p>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
 
       {/* 主题偏好 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">主题偏好</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">主题偏好</h2>
         <p className="mb-4 text-sm text-gray-400">
           选择界面的显示主题
         </p>
@@ -269,7 +269,7 @@ export default function SettingsPage() {
 
       {/* 🔔 通知设置 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">🔔 通知设置</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">🔔 通知设置</h2>
         <p className="mb-4 text-sm text-gray-400">
           按类型控制接收哪些通知
         </p>
@@ -308,7 +308,7 @@ export default function SettingsPage() {
 
       {/* 📥 数据管理 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">📥 数据管理</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">📥 数据管理</h2>
         <p className="mb-4 text-sm text-gray-400">
           导出你的学习数据（收藏、进度、复习记录）
         </p>
@@ -330,13 +330,13 @@ export default function SettingsPage() {
       </section>
 
       {/* 🎯 学习水平自测 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-        <h2 className="mb-1 text-lg font-semibold text-gray-100">🎯 学习水平自测</h2>
-        <p className="mb-4 text-sm text-gray-400">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+        <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">🎯 学习水平自测</h2>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           通过 5 道快速判断题评估你的算法水平，自动推荐默认解析级别
         </p>
         <a
-          href="/training/level-test"
+          href="/training"
           className="inline-flex items-center gap-2 rounded-lg border border-primary-300 px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-50 dark:border-primary-700 dark:text-primary-400 dark:hover:bg-primary-900/20"
         >
           开始自测

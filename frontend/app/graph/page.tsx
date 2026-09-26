@@ -41,20 +41,24 @@ export default function GraphPage() {
   const [layout, setLayout]             = useState<LayoutType>('force');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading]           = useState(true);
+  const [loadError, setLoadError]       = useState<string | null>(null);
   const [myLocationActive, setMyLocationActive] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress | undefined>(undefined);
   const [progressLoading, setProgressLoading]   = useState(false);
+  const [progressError, setProgressError]       = useState<string | null>(null);
   const { w: winW, h: winH } = useWindowSize();
 
   // 加载全量图谱
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setLoadError(null);
       try {
         const data = await fetcher<GraphData>('/api/graph/export');
         setGraphData(data);
       } catch (err) {
         console.error('加载图谱数据失败:', err);
+        setLoadError('知识图谱加载失败，请重试');
       } finally {
         setLoading(false);
       }
@@ -90,6 +94,7 @@ export default function GraphPage() {
       return;
     }
     setProgressLoading(true);
+    setProgressError(null);
     try {
       const data = await fetcher<{
         completedProblemIds: string[];
@@ -103,12 +108,8 @@ export default function GraphPage() {
       });
       setMyLocationActive(true);
     } catch {
-      // 如果接口不存在，用本地 mock 数据演示
-      setUserProgress({
-        completedProblemIds: new Set<string>(),
-        weakPatternIds: new Set<string>(),
-      });
-      setMyLocationActive(true);
+      setProgressError('无法加载你的学习进度，请稍后重试');
+      setMyLocationActive(false);
     } finally {
       setProgressLoading(false);
     }
@@ -161,6 +162,7 @@ export default function GraphPage() {
         myLocationActive={myLocationActive}
         progressLoading={progressLoading}
         onMyLocation={handleMyLocation}
+        progressError={progressError}
       />
 
       {/* 主体 */}
@@ -173,6 +175,14 @@ export default function GraphPage() {
                 <div className="h-12 w-12 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
                 <p className="text-sm text-gray-400">加载知识图谱...</p>
                 <p className="text-xs text-gray-600">141 节点 · 224 关系边</p>
+              </div>
+            </div>
+          ) : loadError ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <p className="text-4xl">⚠️</p>
+                <p className="mt-3 text-sm text-gray-400">{loadError}</p>
+                <button onClick={() => window.location.reload()} className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500">重试</button>
               </div>
             </div>
           ) : filteredData.nodes.length === 0 ? (
@@ -260,6 +270,7 @@ interface ToolbarProps {
   edgeCount: number;
   myLocationActive: boolean;
   progressLoading: boolean;
+  progressError?: string | null;
   onMyLocation: () => void;
 }
 
@@ -267,7 +278,7 @@ function Toolbar({
   searchTerm, onSearchChange, typeFilter, onToggleType,
   layout, onLayoutChange, isFullscreen, onToggleFullscreen,
   nodeCount, edgeCount,
-  myLocationActive, progressLoading, onMyLocation,
+  myLocationActive, progressLoading, onMyLocation, progressError,
 }: ToolbarProps) {
   return (
     <header className="h-14 flex items-center gap-3 px-4 shrink-0
@@ -369,6 +380,7 @@ function Toolbar({
         )}
         我的位置
       </button>
+      {progressError && <span role="alert" className="text-xs text-red-400">{progressError}</span>}
 
       {/* 统计 */}
       <div className="ml-1 flex items-center gap-2 text-xs text-gray-600">

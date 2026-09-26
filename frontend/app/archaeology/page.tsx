@@ -37,7 +37,7 @@ function getEraLabel(year: number): string {
 }
 
 export default function ArchaeologyPage() {
-  const { data, isLoading } = useSWR<PageResponse>(
+  const { data, error, isLoading, mutate } = useSWR<PageResponse>(
     '/api/archaeology/list?page=0&size=20',
     fetcher
   );
@@ -72,9 +72,17 @@ export default function ArchaeologyPage() {
               <div key={i} className="h-44 rounded-2xl bg-gray-800/40 animate-pulse" />
             ))}
           </div>
+        ) : error ? (
+          <div className="py-16 text-center">
+            <div className="text-4xl mb-3">⚠️</div>
+            <p className="text-gray-400 mb-4">故事加载失败，请重试</p>
+            <button onClick={() => mutate()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500">重试</button>
+          </div>
+        ) : stories.length === 0 ? (
+          <div className="py-16 text-center"><div className="text-4xl mb-3">🏛️</div><p className="text-gray-500">暂无考古故事</p></div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
-            {stories
+            {[...stories]
               .sort((a, b) => (a.inventionYear ?? 0) - (b.inventionYear ?? 0))
               .map(story => {
                 const color = getEraColor(story.inventionYear ?? 0);
