@@ -40,7 +40,7 @@ export default function ProblemsListClient() {
   if (keyword) params.set('keyword', keyword);
   if (difficulty) params.set('difficulty', difficulty);
 
-  const { data, isLoading } = useSWR<ProblemPage>(
+  const { data, error, isLoading, mutate } = useSWR<ProblemPage>(
     `/api/v1/problems?${params.toString()}`,
     fetcher
   );
@@ -111,8 +111,27 @@ export default function ProblemsListClient() {
         </div>
       )}
 
+      {/* 请求失败状态：不要把网络故障误报成空结果 */}
+      {!isLoading && error && (
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <div className="text-center">
+            <p className="text-4xl">⚠️</p>
+            <p className="mt-4 text-gray-500 dark:text-gray-400">
+              加载失败，请检查网络连接后重试
+            </p>
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+            >
+              重试
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 题目网格 */}
-      {!isLoading && problems.length > 0 && (
+      {!isLoading && !error && problems.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {problems.map((problem) => (
             <ProblemCard key={problem.id} problem={problem} />
@@ -121,7 +140,7 @@ export default function ProblemsListClient() {
       )}
 
       {/* 空状态 */}
-      {!isLoading && problems.length === 0 && (
+      {!isLoading && !error && problems.length === 0 && (
         <div className="flex min-h-[40vh] items-center justify-center">
           <div className="text-center">
             <p className="text-4xl">🔍</p>
