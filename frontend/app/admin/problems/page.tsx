@@ -515,16 +515,6 @@ function ImportModal({ open, onClose, onSuccess }: ImportModalProps) {
   );
 }
 
-// ============ Mock 数据 ============
-
-const MOCK_PROBLEMS: ProblemItem[] = [
-  { id: 'p-1', title: '两数之和', difficulty: 'EASY', tags: ['数组', '哈希表'], status: 'generated', platforms: ['LEETCODE_GLOBAL'] },
-  { id: 'p-2', title: '两数相加', difficulty: 'MEDIUM', tags: ['链表', '数学'], status: 'generated', platforms: ['LEETCODE_GLOBAL', 'LEETCODE_CN'] },
-  { id: 'p-3', title: '无重复字符的最长子串', difficulty: 'MEDIUM', tags: ['哈希表', '字符串', '滑动窗口'], status: 'not_generated', platforms: ['LEETCODE_GLOBAL'] },
-  { id: 'p-4', title: '寻找两个正序数组的中位数', difficulty: 'HARD', tags: ['数组', '二分查找'], status: 'generated', platforms: ['LEETCODE_GLOBAL'] },
-  { id: 'p-5', title: '最长回文子串', difficulty: 'MEDIUM', tags: ['字符串', '动态规划'], status: 'not_generated', platforms: ['LEETCODE_CN'] },
-];
-
 // ============ 主页面组件 ============
 
 export default function AdminProblemsPage() {
@@ -567,14 +557,7 @@ export default function AdminProblemsPage() {
   const { data, isLoading } = useSWR<ProblemPage>(
     isAdmin ? apiPath : null,
     fetcher,
-    {
-      onError: () => {},
-      fallbackData: {
-        content: MOCK_PROBLEMS,
-        totalElements: MOCK_PROBLEMS.length,
-        totalPages: 1,
-      },
-    }
+    { onError: () => {} }
   );
 
   /** 打开新建弹窗 */

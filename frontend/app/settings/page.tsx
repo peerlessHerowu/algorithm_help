@@ -3,7 +3,7 @@
 import { useAppStore } from '@/store';
 import { useTheme, type Theme } from '@/hooks/useTheme';
 import { userApi } from '@/lib/api';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { NotificationPreferences } from '@/lib/types';
 
 const LEVELS = [1, 2, 3, 4, 5] as const;
@@ -71,6 +71,24 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // 登录后读取服务端保存的偏好，避免每次进入页面都显示本地默认值。
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    Promise.all([userApi.getPreferences(), userApi.getNotificationPreferences()])
+      .then(([preferences, notifications]) => {
+        if (cancelled) return;
+        if (typeof preferences.defaultLevel === 'number') setLevel(preferences.defaultLevel);
+        if (preferences.defaultLanguage) setPreferredLanguage(preferences.defaultLanguage);
+        if (preferences.theme) setTheme(preferences.theme as Theme);
+        setNotificationPrefs(notifications);
+      })
+      .catch(() => {
+        // 保留本地偏好；保存操作会显示可见错误。
+      });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, setLevel, setPreferredLanguage, setTheme]);
 
   /** 切换单个通知开关 */
   const toggleNotification = useCallback(
