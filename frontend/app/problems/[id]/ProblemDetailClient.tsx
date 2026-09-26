@@ -548,7 +548,7 @@ function EnrichedAITab({
       {!enrichedLoading && !isGenerating && isLegacyFallback && (
         <div className="mt-6">
           {explanationLoading && !explanation && <AIAnalysisSkeleton />}
-          {explanationError && (
+          {Boolean(explanationError) && (
             <GenerationStatus
               problemId={problemId}
               level={level}
