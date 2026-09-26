@@ -34,13 +34,19 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0F1117] text-gray-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only z-[100] rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          跳转到主要内容
+        </a>
         <Navbar />
         <AuthInitializer />
         <div className="flex min-h-[calc(100vh-4rem)]">
           <Sidebar />
-          <main className="flex-1 min-w-0 overflow-hidden"
+          <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-hidden outline-none"
             style={{ animationDuration: '300ms', animationFillMode: 'both' }}
           >
             {children}

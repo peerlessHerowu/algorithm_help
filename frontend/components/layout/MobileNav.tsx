@@ -151,7 +151,7 @@ export default function MobileNav({ className = '' }: MobileNavProps) {
               key={item.href}
               href={item.href}
               aria-current={active ? 'page' : undefined}
-              className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5
+              className={`flex min-h-11 min-w-[3.5rem] flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1.5
                          transition-colors ${
                            active
                              ? 'text-indigo-400'

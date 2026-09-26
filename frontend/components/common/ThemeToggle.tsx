@@ -64,7 +64,7 @@ export default function ThemeToggle({ className = '' }: ThemeToggleProps) {
   return (
     <button
       onClick={toggle}
-      className={`rounded-lg p-2 hover:bg-gray-800 text-gray-400 transition-colors ${className}`}
+      className={`rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-800 ${className}`}
       aria-label={isDark ? '切换到亮色模式' : '切换到暗色模式'}
     >
       {isDark ? <SunIcon /> : <MoonIcon />}

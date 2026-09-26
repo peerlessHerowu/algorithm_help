@@ -8,11 +8,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
 }
 
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --surface: #0f1117;
 }
 
 /* 暗色模式下使用 github-dark 代码高亮主题 */
@@ -86,6 +88,14 @@ body {
      made the UI look different from the intended product typography. */
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Keep the document canvas readable in either theme. Individual surfaces may
+   opt into their own darker treatment, but the root must follow the selected
+   theme so light mode never inherits the dark shell's text color. */
+body {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 /* Keep keyboard navigation visible on dark surfaces. */
