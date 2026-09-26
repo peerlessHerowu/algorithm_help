@@ -192,7 +192,7 @@ function FeynmanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const problemId = searchParams.get('problemId') || searchParams.get('problem') || '';
-  const { user } = useAppStore();
+  const { user, token } = useAppStore();
 
   const [msgs, setMsgs]         = useState<Msg[]>([]);
   const [input, setInput]       = useState('');
@@ -305,9 +305,13 @@ function FeynmanContent() {
     // 优先从后端获取格式化 MD
     if (sessionId && !sessionId.startsWith('feynman-local')) {
       try {
-        const res = await fetch(`/api/v1/feynman/${sessionId}/export`);
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+        const res = await fetch(`${apiBase}/api/v1/feynman/${sessionId}/export`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error(`导出失败 (${res.status})`);
         const json = await res.json();
-        const mdText = json?.data ?? '';
+        const mdText = json?.data ?? json ?? '';
         if (mdText) {
           const blob = new Blob([mdText], { type: 'text/markdown' });
           const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -333,7 +337,7 @@ function FeynmanContent() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `费曼-${problemTitle}-${new Date().toLocaleDateString('zh-CN')}.md`;
     a.click();
-  }, [sessionId, summary, problemTitle, round]);
+  }, [sessionId, summary, problemTitle, round, token]);
 
   // 轮次颜色
   const roundPct = Math.min(round / 20 * 100, 100);
