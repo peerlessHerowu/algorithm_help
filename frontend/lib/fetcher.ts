@@ -64,7 +64,7 @@ export async function fetcher<T>(path: string): Promise<T> {
   if (res.status === 401) {
     useAppStore.getState().logout()
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      window.location.href = '/auth/login'
     }
     throw new FetchError('登录已过期，请重新登录', 401)
   }
