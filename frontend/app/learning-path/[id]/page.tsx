@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useAppStore } from '@/store';
 
 // ===== 数据类型定义 =====
 
@@ -55,16 +56,13 @@ const NODE_TYPE_LABELS: Record<NodeType, { label: string; emoji: string }> = {
   APPLICATION: { label: '应用', emoji: '🔧' },
 };
 
-// ===== 硬编码用户 ID（MVP 阶段） =====
-
-const USER_ID = 'user1';
-
 // ===== 主页面组件 =====
 
 export default function LearningPathDetailPage() {
   const params = useParams();
   const router = useRouter();
   const pathId = params.id as string;
+  const userId = useAppStore((state) => state.user?.id ?? 'guest');
 
   const [pathData, setPathData] = useState<LearningPath | null>(null);
   const [progress, setProgress] = useState<PathProgress | null>(null);
@@ -79,7 +77,7 @@ export default function LearningPathDetailPage() {
         setLoading(true);
         const [pathRes, progressRes] = await Promise.all([
           fetch(`/api/learning-path/${pathId}`),
-          fetch(`/api/learning-path/${pathId}/progress/${USER_ID}`),
+          fetch(`/api/learning-path/${pathId}/progress/${encodeURIComponent(userId)}`),
         ]);
 
         if (!pathRes.ok) throw new Error(`路径请求失败: ${pathRes.status}`);
@@ -98,7 +96,7 @@ export default function LearningPathDetailPage() {
       }
     }
     fetchData();
-  }, [pathId]);
+  }, [pathId, userId]);
 
   // ===== 计算每个节点的状态 =====
 

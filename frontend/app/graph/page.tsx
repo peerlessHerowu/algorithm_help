@@ -190,7 +190,7 @@ export default function GraphPage() {
               <div className="text-center">
                 <p className="text-gray-500 mb-2">没有符合条件的节点</p>
                 <button
-                  onClick={() => setTypeFilter(new Set(['PATTERN','PROBLEM','MATH','PAPER','APPLICATION']))}
+                  onClick={() => setTypeFilter(new Set<NodeType>(['PATTERN','PROBLEM','MATH','PAPER','APPLICATION']))}
                   className="text-indigo-400 text-sm hover:text-indigo-300 underline"
                 >
                   重置筛选
