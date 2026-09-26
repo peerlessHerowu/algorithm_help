@@ -141,7 +141,7 @@ export default function SettingsPage() {
       // 创建隐藏链接触发下载
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = 'my-learning-data.json';
+      a.download = 'my-learning-data.md';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

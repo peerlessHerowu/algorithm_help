@@ -115,6 +115,21 @@ async function request<T>(
   return json.data;
 }
 
+/** Endpoints backed by Spring ResponseEntity return the DTO directly rather
+ * than the application's ApiResponse envelope. */
+async function preferenceRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = useAppStore.getState().token;
+  const headers: HeadersInit = { 'Content-Type': 'application/json', ...options.headers };
+  if (token) (headers as Record<string, string>).Authorization = `Bearer ${token}`;
+  let res: Response;
+  try { res = await fetch(`${BASE_URL}${path}`, { ...options, headers }); }
+  catch { throw new ApiError(0, '网络连接失败，请检查网络后重试'); }
+  if (res.status === 401) useAppStore.getState().logout();
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, getErrorMessage(res.status, body?.message), body);
+  return body as T;
+}
+
 // ============ 辅助函数 ============
 
 /** 将查询参数对象转为 URL 查询字符串（过滤 undefined/null） */
@@ -216,35 +231,52 @@ export const companiesApi = {
 export const userApi = {
   /** 获取当前用户偏好设置 */
   getPreferences(): Promise<UserPreferences> {
-    return request('/api/v1/users/me/preferences');
+    return preferenceRequest('/api/v1/users/me/preferences').then((prefs: any) => ({
+      ...prefs,
+      theme: String(prefs.theme || 'SYSTEM').toLowerCase(),
+    }));
   },
 
   /** 更新用户偏好设置 */
   updatePreferences(prefs: Partial<UserPreferences>): Promise<UserPreferences> {
-    return request('/api/v1/users/me/preferences', {
+    return preferenceRequest('/api/v1/users/me/preferences', {
       method: 'PUT',
-      body: JSON.stringify(prefs),
-    });
+      body: JSON.stringify({ ...prefs, theme: prefs.theme?.toUpperCase() }),
+    }).then((saved: any) => ({ ...saved, theme: String(saved.theme || 'SYSTEM').toLowerCase() }));
   },
 
   /** 获取通知偏好设置 */
   getNotificationPreferences(): Promise<import('./types').NotificationPreferences> {
-    return request('/api/v1/users/me/notification-preferences');
+    return userApi.getPreferences().then((prefs: any) => {
+      try { return JSON.parse(prefs.notificationSettings || '{}'); } catch { return {}; }
+    });
   },
 
   /** 更新通知偏好设置 */
   updateNotificationPreferences(
     prefs: Partial<import('./types').NotificationPreferences>
   ): Promise<import('./types').NotificationPreferences> {
-    return request('/api/v1/users/me/notification-preferences', {
+    return userApi.getPreferences().then((current: any) => {
+      let existing: Record<string, unknown> = {};
+      try { existing = JSON.parse(current.notificationSettings || '{}'); } catch { /* use incoming values */ }
+      const merged = { ...existing, ...prefs };
+      return preferenceRequest('/api/v1/users/me/preferences', {
       method: 'PUT',
-      body: JSON.stringify(prefs),
-    });
+      body: JSON.stringify({ ...current, theme: String(current.theme || 'system').toUpperCase(), notificationSettings: JSON.stringify(merged) }),
+      });
+    }).then((saved: any) => { try { return JSON.parse(saved.notificationSettings || '{}'); } catch { return prefs as import('./types').NotificationPreferences; } });
   },
 
   /** 导出用户学习数据（返回 JSON 下载 URL） */
   exportData(): Promise<import('./types').DataExportResponse> {
-    return request('/api/v1/users/me/export');
+    // The export controller is mounted at /api/export and exposes a task based
+    // download flow. There is no /api/v1/users/me/export endpoint.
+    return request<{ taskId: string }>('/api/export', {
+      method: 'POST',
+      body: JSON.stringify({ format: 'MARKDOWN', scope: 'ALL' }),
+    }).then(({ taskId }) => ({
+      downloadUrl: `${BASE_URL}/api/export/${encodeURIComponent(taskId)}/download`,
+    }));
   },
 
   /** 删除账户（30天内可恢复） */
