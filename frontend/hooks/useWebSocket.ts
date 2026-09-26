@@ -11,7 +11,7 @@
  */
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAppStore } from '@/store';
 
 // ============ 类型定义 ============
@@ -139,15 +139,13 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
 
   // 使用 ref 维护内部状态，避免闭包陈旧问题
   const wsRef = useRef<WebSocket | null>(null);
-  const stateRef = useRef<WsConnectionState>('disconnected');
+  const [state, setState] = useState<WsConnectionState>('disconnected');
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const heartbeatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pongTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const subscribersRef = useRef<Map<string, Set<WsMessageHandler>>>(new Map());
   const intentionalCloseRef = useRef(false);
-  // 用于触发组件重渲染的简易 state
-  const forceUpdateRef = useRef(0);
 
   // 获取 token 的方式：直接从 zustand store 读取
   const getToken = useCallback(() => useAppStore.getState().token, []);
@@ -212,8 +210,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     if (intentionalCloseRef.current) return;
 
     const delay = getReconnectDelay(reconnectAttemptRef.current, maxReconnectInterval);
-    stateRef.current = 'reconnecting';
-    forceUpdateRef.current += 1;
+    setState('reconnecting');
 
     console.info(`[WebSocket] 将在 ${delay}ms 后重连（第 ${reconnectAttemptRef.current + 1} 次）`);
 
@@ -234,7 +231,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     // token 必须存在才能连接（后端握手需要 token 参数）
     const token = getToken();
     const wsUrl = url ? url : deriveWsUrl(token);
-    stateRef.current = 'connecting';
+    setState('connecting');
 
     try {
       const ws = new WebSocket(wsUrl);
@@ -242,9 +239,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
 
       ws.onopen = () => {
         console.info('[WebSocket] 连接成功');
-        stateRef.current = 'connected';
+        setState('connected');
         reconnectAttemptRef.current = 0;
-        forceUpdateRef.current += 1;
 
         // 连接建立后发送认证消息
         const token = getToken();
@@ -282,7 +278,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       ws.onclose = (event) => {
         console.info(`[WebSocket] 连接关闭 (code=${event.code}, reason=${event.reason})`);
         clearTimers();
-        stateRef.current = 'disconnected';
+        setState('disconnected');
         wsRef.current = null;
 
         // 非主动关闭时触发重连
@@ -297,7 +293,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       };
     } catch (err) {
       console.error('[WebSocket] 创建连接失败:', err);
-      stateRef.current = 'disconnected';
+      setState('disconnected');
       scheduleReconnect();
     }
   }, [url, getToken, startHeartbeat, clearTimers, dispatch, scheduleReconnect]);
@@ -320,7 +316,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
       wsRef.current.close(1000, 'Client disconnect');
       wsRef.current = null;
     }
-    stateRef.current = 'disconnected';
+    setState('disconnected');
   }, [clearTimers]);
 
   /** 发送消息 */
@@ -364,7 +360,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
   }, []);
 
   return {
-    state: stateRef.current,
+    state,
     send,
     subscribe,
     connect,
