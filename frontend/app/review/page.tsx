@@ -65,6 +65,7 @@ function FlipCard({ card, onRecord }: {
   const [flipped, setFlipped] = useState(false);
   const [recording, setRecording] = useState(false);
   const [selectedQ, setSelectedQ] = useState<number | null>(null);
+  const [recordError, setRecordError] = useState(false);
 
   const typeLabel = CARD_TYPE_LABEL[card.cardType] ?? card.cardType;
   const daysUntilDue = card.interval > 0 ? card.interval : 0;
@@ -73,10 +74,16 @@ function FlipCard({ card, onRecord }: {
   const handleRecord = async (q: number) => {
     setSelectedQ(q);
     setRecording(true);
-    await onRecord(q);
-    setFlipped(false);
-    setSelectedQ(null);
-    setRecording(false);
+    setRecordError(false);
+    try {
+      await onRecord(q);
+      setFlipped(false);
+      setSelectedQ(null);
+    } catch {
+      setRecordError(true);
+    } finally {
+      setRecording(false);
+    }
   };
 
   return (
@@ -159,6 +166,7 @@ function FlipCard({ card, onRecord }: {
                   <span className="text-xs text-gray-500">更新间隔中...</span>
                 </div>
               )}
+              {recordError && <p role="alert" className="mt-3 text-center text-xs text-red-400">保存失败，请重试评分。</p>}
             </div>
           </div>
         )}
@@ -191,24 +199,32 @@ export default function ReviewPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [stats, setStats]         = useState<Stats | null>(null);
   const [loading, setLoading]     = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [completed, setCompleted] = useState(0);
   const [activeTab, setActiveTab] = useState<'flip' | 'all'>('flip');
 
-  useEffect(() => {
+  const loadReview = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     Promise.all([
       reviewApi.today(uid),
       reviewApi.stats(uid),
     ]).then(([todayCards, reviewStats]) => {
       setCards(Array.isArray(todayCards) ? todayCards as Card[] : []);
       setStats(reviewStats as Stats);
-    }).catch(() => { setCards([]); })
+    }).catch((err) => {
+      console.error('加载复习数据失败:', err);
+      setLoadError(true);
+    })
     .finally(() => setLoading(false));
   }, [uid]);
+
+  useEffect(() => { loadReview(); }, [loadReview]);
 
   const handleRecord = useCallback(async (quality: number) => {
     const card = cards[currentIdx];
     if (!card) return;
-    await reviewApi.record(card.id, quality).catch(() => {});
+    await reviewApi.record(card.id, quality);
     setCompleted(c => c + 1);
     setCurrentIdx(i => i + 1);
   }, [cards, currentIdx]);
@@ -275,6 +291,12 @@ export default function ReviewPage() {
         </div>
 
         {/* 加载中 */}
+        {!loading && loadError && (
+          <div role="alert" className="mb-5 rounded-xl border border-red-800/60 bg-red-950/30 p-4 text-sm text-red-300">
+            <p>复习数据加载失败，请检查网络后重试。</p>
+            <button type="button" onClick={loadReview} className="mt-3 rounded-lg bg-red-900/60 px-3 py-1.5 text-xs text-red-100 hover:bg-red-900">重试</button>
+          </div>
+        )}
         {loading && (
           <div className="flex h-48 items-center justify-center">
             <div className="w-8 h-8 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
@@ -282,7 +304,7 @@ export default function ReviewPage() {
         )}
 
         {/* 翻卡复习 Tab */}
-        {!loading && activeTab === 'flip' && (
+        {!loading && !loadError && activeTab === 'flip' && (
           <>
             {noCards && (
               <div className="flex flex-col items-center gap-4 py-16 text-center">
@@ -350,7 +372,7 @@ export default function ReviewPage() {
         )}
 
         {/* 所有卡片 Tab */}
-        {!loading && activeTab === 'all' && (
+        {!loading && !loadError && activeTab === 'all' && (
           <AllCardsPanel uid={uid} />
         )}
       </div>
@@ -362,16 +384,31 @@ export default function ReviewPage() {
 function AllCardsPanel({ uid }: { uid: string }) {
   const [cards, setCards]     = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
+  const loadCards = useCallback(() => {
+    setLoading(true);
+    setError(false);
     reviewApi.cards(uid).then((data: unknown) => {
       setCards(Array.isArray(data) ? data as Card[] : []);
-    }).catch(() => setCards([])).finally(() => setLoading(false));
+    }).catch((err) => {
+      console.error('加载全部复习卡片失败:', err);
+      setError(true);
+    }).finally(() => setLoading(false));
   }, [uid]);
+
+  useEffect(() => { loadCards(); }, [loadCards]);
 
   if (loading) return (
     <div className="flex h-32 items-center justify-center">
       <div className="w-6 h-6 rounded-full border-2 border-indigo-700 border-t-indigo-400 animate-spin" />
+    </div>
+  );
+
+  if (error) return (
+    <div role="alert" className="text-center py-12 space-y-3">
+      <p className="text-sm text-red-400">卡片加载失败，请重试。</p>
+      <button type="button" onClick={loadCards} className="rounded-lg bg-indigo-900/60 px-3 py-1.5 text-xs text-indigo-100 hover:bg-indigo-900">重试</button>
     </div>
   );
 
