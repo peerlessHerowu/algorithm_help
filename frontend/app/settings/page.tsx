@@ -179,7 +179,7 @@ export default function SettingsPage() {
       {/* 默认解析级别 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认解析级别</h2>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           选择查看题目解析时的默认深度级别
         </p>
         <div className="flex gap-3">
@@ -203,7 +203,7 @@ export default function SettingsPage() {
       {/* 默认代码语言 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认代码语言</h2>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           查看解法代码时优先展示的编程语言
         </p>
         <div className="flex flex-wrap gap-3">
@@ -227,7 +227,7 @@ export default function SettingsPage() {
       {/* 主题偏好 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">主题偏好</h2>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           选择界面的显示主题
         </p>
         <div className="flex gap-3">
