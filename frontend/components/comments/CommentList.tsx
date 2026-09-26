@@ -45,11 +45,7 @@ export default function CommentList({
     fetcher
   );
 
-  // 后端返回 upvotes，展示组件沿用 likes 字段，统一转换避免点赞数丢失。
-  const comments = (data?.content || []).map((comment) => ({
-    ...comment,
-    likes: comment.likes ?? (comment as CommentData & { upvotes?: number }).upvotes ?? 0,
-  }));
+  const comments = data?.content || [];
   const totalPages = data?.totalPages || 0;
 
   /** 分离顶层评论和回复，构建嵌套结构 */
