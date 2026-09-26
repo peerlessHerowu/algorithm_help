@@ -174,10 +174,10 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 pb-16 px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-100">设置</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">设置</h1>
 
       {/* 默认解析级别 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-100">默认解析级别</h2>
         <p className="mb-4 text-sm text-gray-400">
           选择查看题目解析时的默认深度级别
@@ -200,7 +200,7 @@ export default function SettingsPage() {
       </section>
 
       {/* 默认代码语言 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-100">默认代码语言</h2>
         <p className="mb-4 text-sm text-gray-400">
           查看解法代码时优先展示的编程语言
@@ -223,7 +223,7 @@ export default function SettingsPage() {
       </section>
 
       {/* 主题偏好 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-100">主题偏好</h2>
         <p className="mb-4 text-sm text-gray-400">
           选择界面的显示主题
@@ -268,7 +268,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 🔔 通知设置 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-100">🔔 通知设置</h2>
         <p className="mb-4 text-sm text-gray-400">
           按类型控制接收哪些通知
@@ -307,7 +307,7 @@ export default function SettingsPage() {
       </section>
 
       {/* 📥 数据管理 */}
-      <section className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-100">📥 数据管理</h2>
         <p className="mb-4 text-sm text-gray-400">
           导出你的学习数据（收藏、进度、复习记录）
