@@ -8,8 +8,8 @@
  * - 搜索输入框自动聚焦，ESC 或点击遮罩关闭
  * - 快速跳转列表（题目列表/模式/费曼/复习中心/设置）
  * - 最近搜索历史（localStorage 存储，最多 5 条）
- * - 实时模糊搜索题目标题/模式名/标签名
- * - 结果列表带键盘 ↑↓ 选择，回车跳转第一条结果
+ * - 将搜索词带到题目列表，由题库 API 返回真实结果
+ * - 结果列表带键盘 ↑↓ 选择，回车跳转
  *
  * Requirements: 36.1-36.6
  */
@@ -32,7 +32,7 @@ interface SearchResultItem {
   /** 图标（emoji 或类型标记） */
   icon: string;
   /** 结果类型 */
-  type: 'quick' | 'history' | 'problem' | 'pattern' | 'tag';
+  type: 'quick' | 'history' | 'search';
 }
 
 /** 组件 Props */
@@ -77,35 +77,10 @@ function saveSearchHistory(history: string[]): void {
   localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
 }
 
-/** 模糊匹配判断：query 的每个字符按顺序出现在 text 中即匹配 */
-function fuzzyMatch(text: string, query: string): boolean {
-  const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase();
-  let j = 0;
-  for (let i = 0; i < lowerText.length && j < lowerQuery.length; i++) {
-    if (lowerText[i] === lowerQuery[j]) j++;
-  }
-  return j === lowerQuery.length;
+/** 快速跳转仍在本地匹配，题目结果交由服务端搜索。 */
+function matchesQuickLink(item: SearchResultItem, query: string): boolean {
+  return item.title.toLowerCase().includes(query.toLowerCase());
 }
-
-// ============ Mock 数据源（后续接入真实 API） ============
-
-/** 可搜索的题目/模式数据，用于本地模糊搜索 */
-const SEARCHABLE_ITEMS: SearchResultItem[] = [
-  { id: 'p-1', title: '两数之和', subtitle: 'EASY · 哈希表', href: '/problems/1', icon: '📝', type: 'problem' },
-  { id: 'p-2', title: '三数之和', subtitle: 'MEDIUM · 双指针', href: '/problems/15', icon: '📝', type: 'problem' },
-  { id: 'p-3', title: '最长回文子串', subtitle: 'MEDIUM · 动态规划', href: '/problems/5', icon: '📝', type: 'problem' },
-  { id: 'p-4', title: '合并区间', subtitle: 'MEDIUM · 排序', href: '/problems/56', icon: '📝', type: 'problem' },
-  { id: 'p-5', title: '爬楼梯', subtitle: 'EASY · 动态规划', href: '/problems/70', icon: '📝', type: 'problem' },
-  { id: 'p-6', title: '二叉树的层序遍历', subtitle: 'MEDIUM · BFS', href: '/problems/102', icon: '📝', type: 'problem' },
-  { id: 'pat-1', title: '动态规划', subtitle: '算法模式 · 12 道关联题', href: '/patterns/dp', icon: '🧩', type: 'pattern' },
-  { id: 'pat-2', title: '双指针', subtitle: '算法模式 · 8 道关联题', href: '/patterns/two-pointers', icon: '🧩', type: 'pattern' },
-  { id: 'pat-3', title: '滑动窗口', subtitle: '算法模式 · 6 道关联题', href: '/patterns/sliding-window', icon: '🧩', type: 'pattern' },
-  { id: 'pat-4', title: '回溯', subtitle: '算法模式 · 10 道关联题', href: '/patterns/backtracking', icon: '🧩', type: 'pattern' },
-  { id: 'tag-1', title: '哈希表', subtitle: '标签', href: '/problems?tag=hash-table', icon: '🏷️', type: 'tag' },
-  { id: 'tag-2', title: '图论', subtitle: '标签', href: '/problems?tag=graph', icon: '🏷️', type: 'tag' },
-  { id: 'tag-3', title: '贪心算法', subtitle: '标签', href: '/problems?tag=greedy', icon: '🏷️', type: 'tag' },
-];
 
 // ============ 组件实现 ============
 
@@ -173,15 +148,16 @@ export default function GlobalSearch({ className = '' }: GlobalSearchProps) {
       }));
       return [...historyItems, ...QUICK_LINKS];
     }
-    // 有搜索词时：模糊匹配可搜索项
-    const matched = SEARCHABLE_ITEMS.filter(
-      (item) => fuzzyMatch(item.title, query) || (item.subtitle && fuzzyMatch(item.subtitle, query))
-    );
-    // 同时在快速跳转中搜索
-    const matchedQuick = QUICK_LINKS.filter(
-      (item) => fuzzyMatch(item.title, query)
-    );
-    return [...matched, ...matchedQuick];
+    const keyword = query.trim();
+    const searchResult: SearchResultItem = {
+      id: 'search-problems',
+      title: `搜索“${keyword}”`,
+      subtitle: '在题目列表中查看结果',
+      href: `/problems?keyword=${encodeURIComponent(keyword)}`,
+      icon: '🔎',
+      type: 'search',
+    };
+    return [searchResult, ...QUICK_LINKS.filter((item) => matchesQuickLink(item, keyword))];
   }, [query, history]);
 
   // 选中索引越界修正
@@ -285,7 +261,7 @@ export default function GlobalSearch({ className = '' }: GlobalSearchProps) {
                 setSelectedIndex(0);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="搜索题目、模式、标签..."
+              placeholder="搜索题目或快速跳转..."
               className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500"
             />
             {/* 快捷键提示 */}
@@ -296,12 +272,6 @@ export default function GlobalSearch({ className = '' }: GlobalSearchProps) {
 
           {/* 结果列表区 */}
           <div ref={listRef} className="max-h-[50vh] overflow-y-auto py-2">
-            {results.length === 0 && query.trim() && (
-              <div className="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
-                没有找到匹配的结果
-              </div>
-            )}
-
             {/* 搜索历史分组标题 */}
             {!query.trim() && history.length > 0 && (
               <div className="px-4 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-500">

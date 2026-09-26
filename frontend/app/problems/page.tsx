@@ -3,9 +3,10 @@
  */
 
 import ProblemsListClient from './ProblemsListClient';
+import { Suspense } from 'react';
 
 export const dynamic = 'force-static';
 
 export default function ProblemsPage() {
-  return <ProblemsListClient />;
+  return <Suspense fallback={null}><ProblemsListClient /></Suspense>;
 }

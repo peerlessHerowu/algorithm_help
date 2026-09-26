@@ -5,7 +5,8 @@
  * 支持搜索、难度筛选、分页
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { fetcher } from '@/lib/fetcher';
 import { safeArray } from '@/lib/safeArray';
@@ -28,10 +29,17 @@ const DIFFICULTIES: { value: '' | Difficulty; label: string }[] = [
 ];
 
 export default function ProblemsListClient() {
-  const [keyword, setKeyword] = useState('');
+  const searchParams = useSearchParams();
+  const urlKeyword = searchParams.get('keyword') || '';
+  const [keyword, setKeyword] = useState(urlKeyword);
   const [difficulty, setDifficulty] = useState<'' | Difficulty>('');
   const [page, setPage] = useState(0);
   const pageSize = 20;
+
+  useEffect(() => {
+    setKeyword(urlKeyword);
+    setPage(0);
+  }, [urlKeyword]);
 
   // 构建查询 URL
   const params = new URLSearchParams();
