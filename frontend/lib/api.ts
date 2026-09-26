@@ -320,8 +320,7 @@ export const api = {
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 async function interactiveRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const { default: store } = await import('@/store');
-  const token = store.getState().token;
+  const token = useAppStore.getState().token;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
