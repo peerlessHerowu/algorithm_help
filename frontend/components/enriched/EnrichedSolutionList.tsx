@@ -20,16 +20,9 @@ import CollapsibleCard, { type EnrichedCardData } from './CollapsibleCard';
 import { CardSkeletonList } from './SkeletonLoader';
 import LevelTabs, { getSmartDefaultLevel } from './LevelTabs';
 import TagFilter, { type TagCount } from './TagFilter';
+import type { EnrichedListResponse, TagsResponse } from '@/lib/enriched-types';
 
-/** 列表 API 响应类型 */
-export interface EnrichedListResponse {
-  items: EnrichedCardData[];
-  source: 'enriched' | 'legacy';
-  total: number;
-}
-
-/** 标签 API 响应类型 */
-export type TagsResponse = TagCount[];
+export type { EnrichedListResponse, TagsResponse } from '@/lib/enriched-types';
 
 interface EnrichedSolutionListProps {
   /** 题目 ID */
@@ -74,7 +67,7 @@ interface EnrichedSolutionListProps {
 /** 级别缓存结构 */
 interface LevelCache {
   items: EnrichedCardData[];
-  source: 'enriched' | 'legacy';
+  source: 'enriched' | 'legacy' | '';
   tags: TagCount[];
   timestamp: number;
 }
@@ -115,7 +108,7 @@ export default function EnrichedSolutionList({
   const [allExpanded, setAllExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentData, setCurrentData] = useState<EnrichedCardData[]>([]);
-  const [currentSource, setCurrentSource] = useState<'enriched' | 'legacy'>('enriched');
+  const [currentSource, setCurrentSource] = useState<'enriched' | 'legacy' | ''>('');
   const [currentTags, setCurrentTags] = useState<TagCount[]>([]);
 
   // 前端级别缓存
@@ -152,22 +145,20 @@ export default function EnrichedSolutionList({
           fetchTags(problemId, level),
         ]);
 
-        // 后端返回: { source, enrichedList, legacy } 或 { items, source, total }
-        const rawRes = listRes as any;
-        const items = rawRes.items ?? rawRes.enrichedList ?? [];
-        const source = rawRes.source ?? 'enriched';
+        const items = listRes.enrichedList ?? [];
+        const source = listRes.source === 'empty' ? '' : listRes.source;
 
         // 写入缓存
         cacheRef.current.set(level, {
-          items: Array.isArray(items) ? items : [],
+          items,
           source,
-          tags: Array.isArray(tagsRes) ? tagsRes : (tagsRes as any)?.tags ?? [],
+          tags: tagsRes,
           timestamp: Date.now(),
         });
 
-        setCurrentData(Array.isArray(items) ? items : []);
+        setCurrentData(items);
         setCurrentSource(source);
-        setCurrentTags(Array.isArray(tagsRes) ? tagsRes : (tagsRes as any)?.tags ?? []);
+        setCurrentTags(tagsRes);
         onSourceChange?.(source, false);
       } catch (err) {
         console.error('加载解析列表失败:', err);

@@ -213,15 +213,12 @@ export interface FeedbackRecord {
 
 /** Enriched 列表接口响应 */
 export interface EnrichedListResponse {
-  items: EnrichedSolutionSummary[];
-  source: 'enriched' | 'legacy';
-  total: number;
+  enrichedList: EnrichedSolutionSummary[] | null;
+  source: 'enriched' | 'legacy' | 'empty';
 }
 
 /** 标签聚合接口响应 */
-export interface TagsResponse {
-  tags: TagCount[];
-}
+export type TagsResponse = TagCount[];
 
 // ============ 频率超限倒计时 ============
 

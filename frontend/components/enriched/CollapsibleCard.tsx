@@ -57,7 +57,7 @@ export interface EnrichedCardData {
   id: string;
   problemId?: string;   // 题目 ID（用于走流程、图解 API）
   title: string;
-  summary?: string;
+  summary?: string | null;
   content?: string;
   codeImplementations?: string | null;
   tags?: string[];
