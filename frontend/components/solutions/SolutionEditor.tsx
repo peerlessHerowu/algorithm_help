@@ -21,7 +21,7 @@ export interface SolutionEditorProps {
   /** 初始内容（编辑模式） */
   initialContent?: string;
   /** 提交回调 */
-  onSubmit?: (data: { title: string; content: string }) => void;
+  onSubmit?: (data: { title: string; content: string }) => Promise<void>;
   /** 取消回调 */
   onCancel?: () => void;
   /** 自定义样式类名 */
@@ -45,13 +45,17 @@ export default function SolutionEditor({
   const [content, setContent] = useState(initialContent);
   const [activeTab, setActiveTab] = useState<EditorTab>('edit');
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   /** 提交题解 */
   const handleSubmit = useCallback(async () => {
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
-      onSubmit?.({ title: title.trim(), content: content.trim() });
+      await onSubmit?.({ title: title.trim(), content: content.trim() });
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : '发布失败，请重试');
     } finally {
       setSubmitting(false);
     }
@@ -133,6 +137,7 @@ export default function SolutionEditor({
       </div>
 
       {/* 底部操作栏 */}
+      {submitError && <p role="alert" className="px-4 pt-3 text-sm text-red-600 dark:text-red-400">{submitError}</p>}
       <div className="flex items-center justify-between border-t border-gray-200 p-4 dark:border-gray-700">
         <p className="text-xs text-gray-400 dark:text-gray-500">
           支持 Markdown 语法，包括代码块和数学公式

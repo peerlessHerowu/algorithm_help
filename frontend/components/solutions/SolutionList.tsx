@@ -15,13 +15,25 @@ import { useAppStore } from '@/store';
 import SolutionCard from './SolutionCard';
 import SolutionEditor from './SolutionEditor';
 import type { Solution } from './SolutionCard';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 /** 排序选项 */
-type SortOption = 'featured' | 'newest' | 'hot';
+type SortOption = 'featured' | 'latest' | 'hot';
+
+interface SolutionDTO {
+  id: string;
+  title: string;
+  content: string | null;
+  authorName: string | null;
+  sourceType: string | null;
+  status: string | null;
+  upvotes: number | null;
+  createdAt: number;
+}
 
 /** 分页响应 */
 interface SolutionPage {
-  content: Solution[];
+  content: SolutionDTO[];
   totalElements: number;
 }
 
@@ -36,14 +48,15 @@ export interface SolutionListProps {
 /** 排序选项配置 */
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'featured', label: '精选' },
-  { value: 'newest', label: '最新' },
+  { value: 'latest', label: '最新' },
   { value: 'hot', label: '最热' },
 ];
 
 export default function SolutionList({ problemId, className }: SolutionListProps) {
-  const { isAuthenticated } = useAppStore();
+  const { isAuthenticated, user, token } = useAppStore();
   const [sort, setSort] = useState<SortOption>('featured');
   const [showEditor, setShowEditor] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // 根据排序选项构建请求 URL
   const apiUrl = `/api/v1/problems/${problemId}/solutions?page=0&size=10&sort=${sort}`;
@@ -51,12 +64,27 @@ export default function SolutionList({ problemId, className }: SolutionListProps
 
   /** 处理题解提交 */
   const handleSubmit = useCallback(
-    async () => {
-      // TODO: 调用 POST /api/v1/problems/{problemId}/solutions 接口
+    async (input: { title: string; content: string }) => {
+      if (!user?.id || !token) throw new Error('请先登录后再发布题解');
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+      const response = await fetch(`${baseUrl}/api/v1/problems/${encodeURIComponent(problemId)}/solutions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-User-Id': user.id,
+        },
+        body: JSON.stringify({ ...input, sourceType: 'USER_INPUT' }),
+      });
+      const body = await response.json().catch(() => null);
+      if (!response.ok || body?.code !== 200) {
+        throw new Error(body?.message || `发布失败 (${response.status})`);
+      }
       setShowEditor(false);
-      mutate(); // 刷新列表
+      setSort('latest');
+      await mutate();
     },
-    [mutate]
+    [mutate, problemId, token, user?.id]
   );
 
   /** 处理"写题解"按钮点击 */
@@ -69,7 +97,17 @@ export default function SolutionList({ problemId, className }: SolutionListProps
     setShowEditor(true);
   }, [isAuthenticated]);
 
-  const solutions = data?.content || [];
+  const solutions: Solution[] = (data?.content || []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    authorName: item.authorName || '匿名用户',
+    source: item.sourceType === 'URL_IMPORT' ? 'url_import' : item.sourceType === 'FEYNMAN_OUTPUT' ? 'feynman' : 'original',
+    featured: item.status === 'FEATURED',
+    likeCount: item.upvotes ?? 0,
+    commentCount: 0,
+    summary: item.content?.slice(0, 100) || '',
+    createdAt: item.createdAt,
+  }));
 
   return (
     <div className={`space-y-4 ${className || ''}`}>
@@ -138,16 +176,17 @@ export default function SolutionList({ problemId, className }: SolutionListProps
       )}
 
       {/* 题解列表 */}
-      {!isLoading && solutions.length > 0 && (
+      {!isLoading && !error && solutions.length > 0 && (
         <div className="space-y-3">
           {solutions.map((sol) => (
-            <SolutionCard
-              key={sol.id}
-              solution={sol}
-              onClick={() => {
-                // TODO: 跳转到题解详情页或展开内容
-              }}
-            />
+            <div key={sol.id}>
+              <SolutionCard solution={sol} onClick={() => setExpandedId(expandedId === sol.id ? null : sol.id)} />
+              {expandedId === sol.id && (
+                <div className="rounded-b-lg border border-t-0 border-gray-200 p-4 dark:border-gray-700">
+                  <MarkdownRenderer content={data?.content.find((item) => item.id === sol.id)?.content || ''} />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
