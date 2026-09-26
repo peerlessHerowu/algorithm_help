@@ -62,50 +62,6 @@ const PLATFORM_OPTIONS = [
   { value: 'HACKERRANK', label: 'HackerRank' },
 ] as const;
 
-/** Mock 统计数据 */
-const MOCK_STATS: MappingStats = {
-  confirmedCount: 856,
-  pendingCount: 23,
-  platformCount: 5,
-};
-
-/** Mock 映射列表 */
-const MOCK_MAPPINGS: MappingItem[] = [
-  {
-    id: 'map-001',
-    internalProblemId: 'p-1',
-    internalTitle: '两数之和',
-    externalPlatform: 'LEETCODE_CN',
-    externalId: '1',
-    externalTitle: '两数之和',
-    status: 'PENDING',
-    similarity: 0.98,
-    createdAt: Date.now() - 3600_000,
-  },
-  {
-    id: 'map-002',
-    internalProblemId: 'p-5',
-    internalTitle: '最长回文子串',
-    externalPlatform: 'LEETCODE_GLOBAL',
-    externalId: '5',
-    externalTitle: 'Longest Palindromic Substring',
-    status: 'PENDING',
-    similarity: 0.92,
-    createdAt: Date.now() - 7200_000,
-  },
-  {
-    id: 'map-003',
-    internalProblemId: 'p-12',
-    internalTitle: '接雨水',
-    externalPlatform: 'CODEFORCES',
-    externalId: 'CF-1234A',
-    externalTitle: 'Trapping Rain Water',
-    status: 'PENDING',
-    similarity: 0.85,
-    createdAt: Date.now() - 10800_000,
-  },
-];
-
 /** 格式化相对时间 */
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
@@ -273,7 +229,7 @@ export default function MappingAdminPage() {
   const { data: stats } = useSWR<MappingStats>(
     isAdmin ? '/api/v1/admin/mappings/stats' : null,
     fetcher,
-    { fallbackData: MOCK_STATS }
+    {}
   );
 
   // 获取映射列表
@@ -284,13 +240,7 @@ export default function MappingAdminPage() {
   const { data: mappingData, isLoading } = useSWR<MappingPage>(
     listKey,
     fetcher,
-    {
-      fallbackData: {
-        content: MOCK_MAPPINGS,
-        totalElements: MOCK_MAPPINGS.length,
-        totalPages: 1,
-      },
-    }
+    {}
   );
 
   /** 显示提示消息 */
