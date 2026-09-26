@@ -198,14 +198,20 @@ function SocraticContent() {
   // 初始化会话（游客可用）
   useEffect(() => {
     if (sessionId) return;
+    let cancelled = false;
     const uid = user?.id ?? guestId();
-    socraticApi.start(uid, problemId || 'unknown').then((s: { sessionId?: string; id?: string }) => {
-      setSessionId(s.sessionId ?? s.id ?? `socratic-${Date.now()}`);
+    socraticApi.start(uid, problemId || 'unknown').then((response) => {
+      if (cancelled) return;
+      const s = response as { sessionId?: string; id?: string };
+      const id = s?.sessionId ?? s?.id;
+      if (!id) throw new Error('Missing session ID');
+      setSessionId(id);
       addMsg('system', '🦉 苏格拉底追问模式已开启。AI 不会直接给你答案，而是通过问题引导你自己推导。');
     }).catch(() => {
-      setSessionId(`socratic-local-${Date.now()}`);
-      addMsg('system', '苏格拉底模式已就绪，开始思考这道题吧！');
+      if (cancelled) return;
+      addMsg('system', '无法建立苏格拉底会话，请检查服务后刷新页面重试。');
     });
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, problemId]);
 
@@ -231,19 +237,19 @@ function SocraticContent() {
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || !active) return;
+    if (!sessionId || wsState !== 'connected') {
+      addMsg('system', 'AI 连接未就绪，请稍后重试。');
+      return;
+    }
     addMsg('student', text);
     setInput('');
-    if (wsState === 'connected') {
-      setAiTyping(true);
-      send({ type: 'SOCRATIC_CHAT', sessionId, payload: text } as Parameters<typeof send>[0]);
-    } else {
-      addMsg('system', '⚠️ AI 连接未就绪，请确保已登录或稍后重试。');
-    }
+    setAiTyping(true);
+    send({ type: 'SOCRATIC_CHAT', sessionId, payload: text } as Parameters<typeof send>[0]);
     if (textRef.current) textRef.current.style.height = 'auto';
   }, [input, active, wsState, sessionId, send]);
 
   const handleNextHint = useCallback(async () => {
-    if (hintLevel >= 4) return;
+    if (!sessionId || hintLevel >= 4) return;
     const newLevel = hintLevel + 1;
     try {
       await socraticApi.nextHint(sessionId);
@@ -254,13 +260,14 @@ function SocraticContent() {
   }, [hintLevel, sessionId]);
 
   const handleSolvedSummarize = useCallback(async () => {
+    if (!sessionId) return;
     addMsg('system', '正在生成解题总结...');
     try {
       const res = await socraticApi.summarize(sessionId, problemTitle) as string | { data?: string };
       const raw = typeof res === 'string' ? res : res?.data ?? JSON.stringify(res);
       const parsed = parseJson<SummaryData>(raw);
       if (parsed) setSummaryData(parsed);
-    } catch { addMsg('system', '总结生成失败，请重试'); }
+    } catch { addMsg('system', '总结生成失败，请重试'); return; }
     setActive(false); setSolved(true);
   }, [sessionId, problemTitle]);
 
@@ -287,7 +294,7 @@ function SocraticContent() {
           <div className="flex items-center gap-2">
             <span className={`h-1.5 w-1.5 rounded-full ${wsState === 'connected' ? 'bg-emerald-500' : 'bg-yellow-500 animate-pulse'}`} />
             {active && (
-              <button onClick={handleSolvedSummarize}
+              <button onClick={handleSolvedSummarize} disabled={!sessionId}
                 className="px-3 py-1.5 text-xs rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium transition-colors">
                 ✅ 我解出了！生成总结
               </button>
@@ -337,6 +344,7 @@ function SocraticContent() {
                     }}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="分享你的思路... (Enter 回答，Shift+Enter 换行)"
+                    aria-label="分享你的解题思路"
                     rows={2}
                     className="flex-1 resize-none rounded-xl border border-gray-700 bg-gray-800/60
                       px-3 py-2.5 text-sm text-gray-200 placeholder:text-gray-600
@@ -376,7 +384,7 @@ function SocraticContent() {
 
             {/* 请求提示按钮 */}
             {active && hintLevel < 4 && (
-              <button onClick={handleNextHint}
+              <button onClick={handleNextHint} disabled={!sessionId}
                 className={`w-full py-2.5 text-xs rounded-xl border font-medium transition-all
                   ${HINT_CONFIG[hintLevel].bg} ${HINT_CONFIG[hintLevel].border} ${HINT_CONFIG[hintLevel].text}
                   hover:opacity-90`}>

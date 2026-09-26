@@ -222,14 +222,19 @@ function FeynmanContent() {
   // 初始化会话（游客也可以用）
   useEffect(() => {
     if (sessionId) return;
+    let cancelled = false;
     const uid = user?.id ?? guestId();
     feynmanApi.start(uid, problemId || 'unknown').then((s: any) => {
-      setSessionId(s.sessionId || s.id || `feynman-${Date.now()}`);
+      if (cancelled) return;
+      const id = s?.sessionId || s?.id;
+      if (!id) throw new Error('Missing session ID');
+      setSessionId(id);
       addMsg('system', '费曼模式已就绪，请用自己的话解释解题思路，AI 会追问帮你深化理解。');
     }).catch(() => {
-      setSessionId(`feynman-local-${Date.now()}`);
-      addMsg('system', '费曼模式已就绪（离线模式）。');
+      if (cancelled) return;
+      addMsg('system', '无法建立费曼会话，请检查服务后刷新页面重试。');
     });
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, problemId]);
 
@@ -259,16 +264,15 @@ function FeynmanContent() {
   const handleSend = useCallback(() => {
     const text = input.trim();
     if (!text || !active) return;
+    if (!sessionId || wsState !== 'connected') {
+      addMsg('system', 'AI 连接未就绪，请稍后重试。');
+      return;
+    }
     addMsg('user', text);
     setInput('');
     setRound(r => r + 1);
-    if (wsState === 'connected') {
-      setAiTyping(true);
-      send({ type: 'FEYNMAN_CHAT', sessionId, payload: text } as unknown as Parameters<typeof send>[0]);
-    } else {
-      // WS 未连接时提示
-      addMsg('system', '⚠️ AI 连接未就绪，请确保已登录或稍后重试。');
-    }
+    setAiTyping(true);
+    send({ type: 'FEYNMAN_CHAT', sessionId, payload: text } as unknown as Parameters<typeof send>[0]);
     if (textRef.current) textRef.current.style.height = 'auto';
   }, [input, active, wsState, sessionId, send]);
 
@@ -280,13 +284,14 @@ function FeynmanContent() {
       const res = await feynmanApi.end(sessionId, problemTitle) as Record<string, unknown>;
       const parsed = parseJson<Summary>(String(res?.summary ?? JSON.stringify(res)));
       if (parsed) { setSummary(parsed); if (parsed.analogies?.length) setAnalogies(parsed.analogies); }
-    } catch { addMsg('system', '总结生成失败，请重试。'); }
+    } catch { addMsg('system', '总结生成失败，请重试。'); setAiTyping(false); return; }
     setAiTyping(false); setActive(false);
   }, [sessionId, problemTitle]);
 
   const handleReset = useCallback(async () => {
     if (!sessionId) return;
-    await feynmanApi.reset(sessionId).catch(() => {});
+    try { await feynmanApi.reset(sessionId); }
+    catch { addMsg('system', '重置失败，请重试。'); return; }
     setMsgs([]); setSummary(null); setAnalogies([]); setRound(0); setActive(true);
     addMsg('system', '会话已重置，重新开始吧！');
   }, [sessionId]);
@@ -303,7 +308,7 @@ function FeynmanContent() {
 
   const handleExportMd = useCallback(async () => {
     // 优先从后端获取格式化 MD
-    if (sessionId && !sessionId.startsWith('feynman-local')) {
+    if (sessionId) {
       try {
         const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
         const res = await fetch(`${apiBase}/api/v1/feynman/${sessionId}/export`, {
@@ -378,11 +383,11 @@ function FeynmanContent() {
             </div>
             {active && (
               <>
-                <button onClick={handleReset}
+                <button onClick={handleReset} disabled={!sessionId}
                   className="px-2.5 py-1 text-xs rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-colors">
                   🔄 重置
                 </button>
-                <button onClick={handleEnd}
+                <button onClick={handleEnd} disabled={!sessionId}
                   className="px-3 py-1 text-xs rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium transition-colors">
                   ✅ 结束并总结
                 </button>
@@ -436,6 +441,7 @@ function FeynmanContent() {
                     }}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="用你的话解释... (Enter 发送，Shift+Enter 换行)"
+                    aria-label="用你的话解释解题思路"
                     rows={1}
                     className="flex-1 resize-none rounded-xl border border-gray-700 bg-gray-800/60
                       px-3 py-2.5 text-sm text-gray-200 placeholder:text-gray-600
