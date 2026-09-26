@@ -25,13 +25,6 @@ const HINT_CONFIG = [
   { level: 4, label: '完整引导',   emoji: '📖', score: 25,  color: '#EF4444', bg: 'bg-red-900/30',     border: 'border-red-700/50',     text: 'text-red-300' },
 ];
 
-function guestId() {
-  if (typeof window === 'undefined') return 'guest';
-  let id = localStorage.getItem('socratic-guest-id');
-  if (!id) { id = `guest-${Date.now()}`; localStorage.setItem('socratic-guest-id', id); }
-  return id;
-}
-
 function parseJson<T>(text: string): T | null {
   try {
     const s = text.indexOf('{'), e = text.lastIndexOf('}');
@@ -169,7 +162,7 @@ function SocraticContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const problemId = searchParams.get('problem') || searchParams.get('problemId') || '';
-  const { user } = useAppStore();
+  const { user, token } = useAppStore();
 
   const [msgs, setMsgs]       = useState<Msg[]>([]);
   const [input, setInput]     = useState('');
@@ -184,7 +177,7 @@ function SocraticContent() {
 
   const endRef  = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
-  const { state: wsState, send, subscribe } = useWebSocket();
+  const { state: wsState, send, subscribe } = useWebSocket({ autoConnect: Boolean(token && user?.id) });
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
@@ -197,10 +190,9 @@ function SocraticContent() {
 
   // 初始化会话（游客可用）
   useEffect(() => {
-    if (sessionId) return;
+    if (sessionId || !token || !user?.id) return;
     let cancelled = false;
-    const uid = user?.id ?? guestId();
-    socraticApi.start(uid, problemId || 'unknown').then((response) => {
+    socraticApi.start(user.id, problemId || 'unknown').then((response) => {
       if (cancelled) return;
       const s = response as { sessionId?: string; id?: string };
       const id = s?.sessionId ?? s?.id;
@@ -213,7 +205,7 @@ function SocraticContent() {
     });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, problemId]);
+  }, [user, token, problemId]);
 
   // WS 订阅
   useEffect(() => {
@@ -272,6 +264,14 @@ function SocraticContent() {
   }, [sessionId, problemTitle]);
 
   const currentConf = HINT_CONFIG.find(c => c.level === hintLevel) ?? HINT_CONFIG[0];
+
+  if (!token || !user?.id) return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#0F1117] text-gray-200">
+      <h1 className="text-lg font-semibold">苏格拉底追问</h1>
+      <p className="text-sm text-gray-400">登录后开始 AI 对话</p>
+      <button onClick={() => router.push('/auth/login')} className="rounded-lg bg-emerald-700 px-4 py-2 text-sm text-white">去登录</button>
+    </div>
+  );
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col bg-[#0F1117]">

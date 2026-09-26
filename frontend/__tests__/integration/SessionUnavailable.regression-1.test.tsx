@@ -12,7 +12,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/store', () => ({
-  useAppStore: () => ({ user: null, token: null }),
+  useAppStore: () => ({ user: { id: 'user-1' }, token: 'test-token' }),
 }));
 
 jest.mock('@/hooks/useWebSocket', () => ({

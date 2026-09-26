@@ -3,7 +3,7 @@ package com.algorithm.help.interactive.controller;
 import com.algorithm.help.common.ApiResponse;
 import com.algorithm.help.interactive.interview.InterviewReport;
 import com.algorithm.help.interactive.interview.InterviewReportRepository;
-import com.algorithm.help.interactive.interview.InterviewScoreService;
+import com.algorithm.help.interactive.handler.InterviewSimulatorHandler;
 import com.algorithm.help.interactive.session.InteractiveSession;
 import com.algorithm.help.interactive.session.SessionManager;
 import com.algorithm.help.interactive.session.SessionType;
@@ -33,7 +33,7 @@ public class InterviewController {
 
     private final SessionManager sessionManager;
     private final InterviewReportRepository reportRepo;
-    private final InterviewScoreService scoreService;
+    private final InterviewSimulatorHandler interviewHandler;
 
     /**
      * 开始面试（创建会话，返回 sessionId）
@@ -63,7 +63,7 @@ public class InterviewController {
     public ApiResponse<InterviewReport> end(@PathVariable String sessionId,
                                             @RequestBody @Valid EndRequest request) {
         log.info("面试手动结束: sessionId={}", sessionId);
-        InterviewReport report = scoreService.generateReport(
+        InterviewReport report = interviewHandler.endInterview(
                 sessionId, request.getUserId(), request.getProblemId());
         sessionManager.endSession(sessionId);
         return ApiResponse.success(report);

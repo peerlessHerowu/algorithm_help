@@ -4,7 +4,7 @@
  * 功能：
  * - 自动重连（指数退避：1s → 2s → 4s → 8s → 16s → 30s，最大 30s）
  * - 心跳检测（每 30s 发送 ping，5s 内未收到 pong 则触发重连）
- * - 连接建立后首条消息为认证消息 {type:"AUTH", payload: token}
+ * - 握手通过 URL token 认证
  * - 支持按消息类型订阅和分发
  *
  * Requirements: 9.5
@@ -19,6 +19,7 @@ import { useAppStore } from '@/store';
 /** WebSocket 消息基础结构 */
 export interface WsMessage<T = unknown> {
   type: string;
+  sessionId?: string;
   payload: T;
 }
 
@@ -30,11 +31,6 @@ export interface WsPingMessage extends WsMessage<null> {
 /** 心跳响应 */
 export interface WsPongMessage extends WsMessage<null> {
   type: 'PONG';
-}
-
-/** 认证消息 */
-export interface WsAuthMessage extends WsMessage<string> {
-  type: 'AUTH';
 }
 
 /** 连接状态 */
@@ -242,13 +238,6 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
         setState('connected');
         reconnectAttemptRef.current = 0;
 
-        // 连接建立后发送认证消息
-        const token = getToken();
-        if (token) {
-          const authMsg: WsAuthMessage = { type: 'AUTH', payload: token };
-          ws.send(JSON.stringify(authMsg));
-        }
-
         // 启动心跳
         startHeartbeat();
       };
@@ -356,8 +345,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
     return () => {
       disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoConnect, connect, disconnect]);
 
   return {
     state,

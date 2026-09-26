@@ -1,6 +1,7 @@
 package com.algorithm.help.interactive.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.algorithm.help.interactive.handler.InterviewSimulatorHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -40,6 +41,9 @@ public class InteractiveWebSocketHandler extends TextWebSocketHandler {
         this.rateLimiter = rateLimiter;
         this.handlerMap = handlers.stream()
                 .collect(Collectors.toMap(MessageHandler::supportedType, Function.identity()));
+        this.handlerMap.put(WsMessageType.START_INTERVIEW, handlers.stream()
+                .filter(handler -> handler instanceof InterviewSimulatorHandler)
+                .findFirst().orElseThrow());
         log.info("已注册 WebSocket 消息处理器: {}", handlerMap.keySet());
     }
 

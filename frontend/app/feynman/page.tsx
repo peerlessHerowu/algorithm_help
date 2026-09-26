@@ -28,13 +28,6 @@ function parseJson<T>(text: string): T | null {
   } catch { return null; }
 }
 
-function guestId() {
-  if (typeof window === 'undefined') return 'guest';
-  let id = localStorage.getItem('feynman-guest-id');
-  if (!id) { id = `guest-${Date.now()}`; localStorage.setItem('feynman-guest-id', id); }
-  return id;
-}
-
 // ============ 消息气泡 ============
 function Bubble({ m, isLatestAI = false }: { m: Msg; isLatestAI?: boolean }) {
   if (m.role === 'system') return (
@@ -209,7 +202,7 @@ function FeynmanContent() {
 
   const endRef  = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
-  const { state: wsState, send, subscribe } = useWebSocket();
+  const { state: wsState, send, subscribe } = useWebSocket({ autoConnect: Boolean(token && user?.id) });
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
@@ -221,10 +214,9 @@ function FeynmanContent() {
 
   // 初始化会话（游客也可以用）
   useEffect(() => {
-    if (sessionId) return;
+    if (sessionId || !token || !user?.id) return;
     let cancelled = false;
-    const uid = user?.id ?? guestId();
-    feynmanApi.start(uid, problemId || 'unknown').then((s: any) => {
+    feynmanApi.start(user.id, problemId || 'unknown').then((s: any) => {
       if (cancelled) return;
       const id = s?.sessionId || s?.id;
       if (!id) throw new Error('Missing session ID');
@@ -236,7 +228,7 @@ function FeynmanContent() {
     });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, problemId]);
+  }, [user, token, problemId]);
 
   // WebSocket 订阅
   useEffect(() => {
@@ -347,6 +339,14 @@ function FeynmanContent() {
   // 轮次颜色
   const roundPct = Math.min(round / 20 * 100, 100);
   const roundColor = round < 14 ? '#6366F1' : round < 18 ? '#F59E0B' : '#EF4444';
+
+  if (!token || !user?.id) return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#0F1117] text-gray-200">
+      <h1 className="text-lg font-semibold">费曼学习</h1>
+      <p className="text-sm text-gray-400">登录后开始 AI 对话</p>
+      <button onClick={() => router.push('/auth/login')} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white">去登录</button>
+    </div>
+  );
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col bg-[#0F1117]">

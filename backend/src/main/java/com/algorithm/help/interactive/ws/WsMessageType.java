@@ -13,6 +13,9 @@ public enum WsMessageType {
     /** 模拟面试对话 */
     INTERVIEW_CHAT,
 
+    /** 开始已创建的模拟面试会话 */
+    START_INTERVIEW,
+
     /** 苏格拉底式提问对话 */
     SOCRATIC_CHAT,
 

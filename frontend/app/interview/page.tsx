@@ -3,6 +3,9 @@
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useAppStore } from '@/store';
+import { interviewApi } from '@/lib/api';
+import Link from 'next/link';
 
 // ===== 类型 =====
 type Phase = 'config' | 'thinking' | 'coding' | 'followup' | 'ended';
@@ -34,13 +37,6 @@ const COMPANIES = [
   { key: 'MICROSOFT',label: '微软',   emoji: '🪟', desc: '解题过程，思路清晰' },
 ];
 
-function guestId() {
-  if (typeof window === 'undefined') return 'guest';
-  let id = localStorage.getItem('interview-guest-id');
-  if (!id) { id = `guest-${Date.now()}`; localStorage.setItem('interview-guest-id', id); }
-  return id;
-}
-
 // ===== 倒计时 =====
 function useCountdown(totalSec: number, running: boolean) {
   const [rem, setRem] = useState(totalSec);
@@ -56,7 +52,7 @@ function useCountdown(totalSec: number, running: boolean) {
 }
 
 // ===== 配置面板 =====
-function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
+function ConfigPanel({ onStart, pending, error }: { onStart: (c: Config) => void; pending: boolean; error: string }) {
   const [cfg, setCfg] = useState<Config>({ difficulty: 'MEDIUM', duration: 45, company: 'GENERAL' });
 
   return (
@@ -74,7 +70,7 @@ function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
           <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">难度</p>
           <div className="grid grid-cols-3 gap-2">
             {(['EASY','MEDIUM','HARD'] as const).map(d => (
-              <button key={d} onClick={() => setCfg(c => ({ ...c, difficulty: d }))}
+              <button key={d} aria-pressed={cfg.difficulty === d} onClick={() => setCfg(c => ({ ...c, difficulty: d }))}
                 className={`py-2 rounded-xl border text-sm font-medium transition-all
                   ${cfg.difficulty === d
                     ? d === 'EASY' ? 'border-emerald-600/60 bg-emerald-900/30 text-emerald-300'
@@ -93,7 +89,7 @@ function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
           <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">时长</p>
           <div className="grid grid-cols-3 gap-2">
             {([25,45,60] as const).map(d => (
-              <button key={d} onClick={() => setCfg(c => ({ ...c, duration: d }))}
+              <button key={d} aria-pressed={cfg.duration === d} onClick={() => setCfg(c => ({ ...c, duration: d }))}
                 className={`py-2 rounded-xl border text-sm font-medium transition-all
                   ${cfg.duration === d
                     ? 'border-indigo-600/60 bg-indigo-900/30 text-indigo-300'
@@ -110,7 +106,7 @@ function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
           <p className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">公司风格</p>
           <div className="grid grid-cols-2 gap-2">
             {COMPANIES.map(c => (
-              <button key={c.key} onClick={() => setCfg(p => ({ ...p, company: c.key }))}
+              <button key={c.key} aria-pressed={cfg.company === c.key} onClick={() => setCfg(p => ({ ...p, company: c.key }))}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all
                   ${cfg.company === c.key
                     ? 'border-indigo-600/60 bg-indigo-900/20'
@@ -127,10 +123,11 @@ function ConfigPanel({ onStart }: { onStart: (c: Config) => void }) {
         </div>
 
         {/* 开始 */}
-        <button onClick={() => onStart(cfg)}
+        {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+        <button onClick={() => onStart(cfg)} disabled={pending}
           className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500
-            text-white font-bold text-base transition-all shadow-lg shadow-indigo-900/30">
-          开始面试 🚀
+            text-white font-bold text-base transition-all shadow-lg shadow-indigo-900/30 disabled:opacity-50">
+          {pending ? '正在开始...' : '开始面试'}
         </button>
       </div>
     </div>
@@ -220,6 +217,7 @@ function ReportPanel({ report, onRestart }: { report: Report; onRestart: () => v
 function InterviewContent() {
   const searchParams = useSearchParams();
   const problemId = searchParams.get('problemId') || '';
+  const { user, token } = useAppStore();
 
   const [phase, setPhase]       = useState<Phase>('config');
   const [cfg, setCfg]           = useState<Config | null>(null);
@@ -228,9 +226,11 @@ function InterviewContent() {
   const [code, setCode]         = useState('# 在这里编写代码\n');
   const [report, setReport]     = useState<Report | null>(null);
   const [sessionId, setSessionId] = useState('');
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
 
   const endRef  = useRef<HTMLDivElement>(null);
-  const { state: wsState, send, subscribe } = useWebSocket({ autoConnect: false });
+  const { state: wsState, send, subscribe } = useWebSocket({ autoConnect: Boolean(token && user?.id) });
 
   const { display: timeDisplay, pct: timePct, rem: timeRem } = useCountdown(
     (cfg?.duration ?? 45) * 60,
@@ -244,18 +244,25 @@ function InterviewContent() {
     const u1 = subscribe('AI_RESPONSE', (p: unknown) => {
       const content = typeof p === 'string' ? p : (p as { content?: string })?.content ?? '';
       addMsg('interviewer', content);
+      setPending(false);
+      setPhase(current => current === 'config' ? 'thinking' : current);
     });
     const u2 = subscribe('INTERVIEW_REPORT', (p: unknown) => {
       try {
         const raw = typeof p === 'string' ? JSON.parse(p) : p as Record<string, unknown>;
         setReport(buildReport(raw));
+        setPending(false);
         setPhase('ended');
       } catch { /* 忽略 */ }
     });
     const u3 = subscribe('INTERVIEW_TIME_WARNING', (p: unknown) => {
       addMsg('system', typeof p === 'string' ? p : '⏰ 时间提醒');
     });
-    return () => { u1(); u2(); u3(); };
+    const u4 = subscribe('ERROR', (p: unknown) => {
+      setPending(false);
+      setError(typeof p === 'string' ? p : '面试服务发生错误');
+    });
+    return () => { u1(); u2(); u3(); u4(); };
   }, [subscribe]);
 
   // 时间到自动结束
@@ -269,63 +276,85 @@ function InterviewContent() {
   }
 
   function buildReport(raw: Record<string, unknown>): Report {
+    const parseList = (value: unknown): string[] => {
+      if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+      if (typeof value !== 'string') return [];
+      try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; }
+      catch { return []; }
+    };
     return {
-      overallScore: (raw.totalScore ?? raw.overallScore ?? 72) as number,
-      summary:      (raw.summary ?? '整体表现良好，思路清晰。') as string,
-      strengths:    (raw.strengths ?? []) as string[],
-      improvements: (raw.improvements ?? []) as string[],
+      overallScore: Number(raw.totalScore ?? raw.overallScore),
+      summary:      String(raw.summary ?? ''),
+      strengths:    parseList(raw.strengths),
+      improvements: parseList(raw.improvements),
       dimensions: [
-        { name: '🧠 思路清晰度', score: ((raw.correctnessScore  as number ?? 7) * 10), suggestion: '' },
-        { name: '💻 代码质量',   score: ((raw.codeQualityScore  as number ?? 7) * 10), suggestion: '注意边界条件处理' },
-        { name: '🗣️ 沟通能力',  score: ((raw.communicationScore as number ?? 7) * 10), suggestion: '' },
-        { name: '⚡ 时间管理',   score: ((raw.efficiencyScore   as number ?? 7) * 10), suggestion: '' },
+        { name: '🧠 思路清晰度', score: Number(raw.correctnessScore ?? 0) * 10, suggestion: '' },
+        { name: '💻 代码质量',   score: Number(raw.codeQualityScore ?? 0) * 10, suggestion: '注意边界条件处理' },
+        { name: '🗣️ 沟通能力',  score: Number(raw.communicationScore ?? 0) * 10, suggestion: '' },
+        { name: '⚡ 时间管理',   score: Number(raw.efficiencyScore ?? 0) * 10, suggestion: '' },
       ],
     };
   }
 
   const handleStart = useCallback(async (c: Config) => {
-    setCfg(c);
-    setPhase('thinking');
-    const uid = guestId();
-    let sid = sessionId;
-    if (!sid) {
-      try {
-        const { interviewApi } = await import('@/lib/api');
-        const s = await interviewApi.start(uid, problemId || 'unknown', c.duration, c.difficulty, c.company) as { sessionId?: string; id?: string };
-        sid = (s as Record<string, string>).sessionId ?? (s as Record<string, string>).id ?? `iv-${Date.now()}`;
-      } catch {
-        sid = `iv-${Date.now()}`;
-      }
-      setSessionId(sid);
+    if (!user?.id || !token) {
+      setError('请先登录，再开始面试');
+      return;
     }
-    addMsg('system', `面试已开始 · ${COMPANIES.find(x => x.key === c.company)?.label ?? c.company} 风格 · ${c.difficulty === 'EASY' ? '简单' : c.difficulty === 'MEDIUM' ? '中等' : '困难'} · ${c.duration}分钟`);
-    addMsg('interviewer', `你好！欢迎参加${COMPANIES.find(x => x.key === c.company)?.label ?? c.company}风格的算法面试。时间限制 ${c.duration} 分钟，难度 ${c.difficulty === 'EASY' ? '简单' : c.difficulty === 'MEDIUM' ? '中等' : '困难'}。请先介绍一下你的解题思路。`);
-    send({ type: 'INTERVIEW_CHAT', sessionId: sid, payload: JSON.stringify({ action: 'START', problemId, ...c }) } as unknown as Parameters<typeof send>[0]);
-  }, [sessionId, problemId, send]);
+    if (wsState !== 'connected') {
+      setError('面试连接尚未就绪，请稍后重试');
+      return;
+    }
+    setPending(true);
+    setError('');
+    try {
+      const created = await interviewApi.start(user.id, problemId || 'unknown', c.duration, c.difficulty, c.company) as { sessionId?: string };
+      if (!created.sessionId) throw new Error('服务端未返回会话 ID');
+      setCfg(c);
+      setSessionId(created.sessionId);
+      send({ type: 'START_INTERVIEW', sessionId: created.sessionId,
+        payload: JSON.stringify({ difficulty: c.difficulty, timeLimit: String(c.duration), companyStyle: c.company }) });
+    } catch (cause) {
+      setPending(false);
+      setError(cause instanceof Error ? cause.message : '面试启动失败，请重试');
+    }
+  }, [user, token, wsState, problemId, send]);
 
   const handleSend = useCallback(() => {
-    if (!input.trim()) return;
+    if (!input.trim() || wsState !== 'connected') return;
     addMsg('candidate', input.trim());
-    send({ type: 'INTERVIEW_CHAT', sessionId, payload: input.trim() } as unknown as Parameters<typeof send>[0]);
+    send({ type: 'INTERVIEW_CHAT', sessionId, payload: input.trim() });
     setInput('');
-  }, [input, sessionId, send]);
+  }, [input, sessionId, send, wsState]);
 
   const handleSubmitCode = useCallback(() => {
+    if (wsState !== 'connected') return;
     addMsg('candidate', `[代码提交]\n\`\`\`\n${code}\n\`\`\``);
-    send({ type: 'INTERVIEW_CHAT', sessionId, payload: `[代码提交]\n${code}` } as unknown as Parameters<typeof send>[0]);
+    send({ type: 'INTERVIEW_CHAT', sessionId, payload: `[代码提交]\n${code}` });
     setPhase('followup');
-  }, [code, sessionId, send]);
+  }, [code, sessionId, send, wsState]);
 
-  const handleEnd = useCallback(() => {
-    send({ type: 'INTERVIEW_CHAT', sessionId, payload: '[INTERVIEW_END]' } as unknown as Parameters<typeof send>[0]);
-    if (!report) {
-      setReport(buildReport({ totalScore: 72 }));
+  const handleEnd = useCallback(async () => {
+    if (!user?.id || !sessionId || pending) return;
+    setPending(true);
+    setError('');
+    try {
+      const result = await interviewApi.end(sessionId, user.id, problemId) as Record<string, unknown>;
+      if (!Number.isFinite(Number(result.totalScore))) throw new Error('服务端未返回有效评分');
+      setReport(buildReport(result));
+      setPhase('ended');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '评分生成失败，请重试');
+    } finally {
+      setPending(false);
     }
-    setPhase('ended');
-  }, [sessionId, send, report]);
+  }, [sessionId, user, problemId, pending]);
 
   // ===== 渲染 =====
-  if (phase === 'config') return <ConfigPanel onStart={handleStart} />;
+  if (phase === 'config') return <>
+    {!token && <div role="alert" className="bg-[#0F1117] pt-6 text-center text-sm text-gray-300">登录后开始 AI 面试。 <Link href="/auth/login" className="text-indigo-300 underline">去登录</Link></div>}
+    <ConfigPanel onStart={handleStart} pending={pending} error={error} />
+  </>;
   if (phase === 'ended' && report) return <ReportPanel report={report} onRestart={() => { setPhase('config'); setCfg(null); setMsgs([]); setReport(null); setSessionId(''); setCode('# 在这里编写代码\n'); }} />;
 
   const timeColor = timePct <= 20 ? '#EF4444' : timePct <= 40 ? '#F59E0B' : '#10B981';
@@ -363,12 +392,14 @@ function InterviewContent() {
             className="px-2.5 py-1 text-xs rounded-xl border border-emerald-700/50 bg-emerald-900/20 text-emerald-300 hover:bg-emerald-900/40 transition-colors">
             → 开始编码
           </button>
-          <button onClick={handleEnd}
+          <button onClick={handleEnd} disabled={pending}
             className="px-2.5 py-1 text-xs rounded-xl border border-red-700/50 bg-red-900/20 text-red-300 hover:bg-red-900/40 transition-colors">
             结束
           </button>
         </div>
       </div>
+
+      {error && <p role="alert" className="px-4 py-2 text-sm text-red-300">{error}</p>}
 
       {/* 双栏主体 */}
       <div className="flex flex-1 overflow-hidden gap-0">

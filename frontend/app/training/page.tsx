@@ -167,7 +167,7 @@ export default function TrainingPage() {
       setAnswers([]);
       setStats([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败，请重试');
+      setError(err instanceof TypeError ? '训练服务暂不可用，请稍后重试' : err instanceof Error ? err.message : '加载失败，请重试');
     } finally {
       setLoading(false);
     }

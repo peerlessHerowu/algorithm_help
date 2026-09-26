@@ -7,6 +7,8 @@ import com.algorithm.help.interactive.interview.InterviewReport;
 import com.algorithm.help.interactive.interview.InterviewScoreService;
 import com.algorithm.help.interactive.interview.InterviewState;
 import com.algorithm.help.interactive.session.SessionManager;
+import com.algorithm.help.interactive.session.SessionType;
+import com.algorithm.help.interactive.session.SessionStatus;
 import com.algorithm.help.interactive.ws.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +63,32 @@ public class InterviewSimulatorHandler implements MessageHandler {
     @Override
     public void handle(WebSocketSession session, WsMessage message) {
         String sessionId = message.getSessionId();
+        if (sessionId == null || sessionId.isBlank()) {
+            sendError(session, sessionId, "缺少面试会话 ID");
+            return;
+        }
+        String userId = String.valueOf(session.getAttributes().get("userId"));
+        var ownedSession = sessionManager.getSession(sessionId);
+        if (ownedSession.isEmpty() || !userId.equals(ownedSession.get().getUserId())
+                || ownedSession.get().getType() != SessionType.INTERVIEW
+                || ownedSession.get().getStatus() != SessionStatus.ACTIVE) {
+            sendError(session, sessionId, "面试会话无效或无权访问");
+            return;
+        }
+        if (message.getType() == WsMessageType.START_INTERVIEW) {
+            if (getState(sessionId) != InterviewState.IDLE) {
+                sendError(session, sessionId, "面试已经开始");
+                return;
+            }
+            try {
+                Map<String, String> config = objectMapper.readValue(message.getPayload(),
+                        new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+                startInterview(session, sessionId, config, userId, ownedSession.get().getProblemId());
+            } catch (Exception e) {
+                sendError(session, sessionId, "面试启动失败");
+            }
+            return;
+        }
         String userInput = message.getPayload();
         InterviewState state = getState(sessionId);
         log.info("面试消息: sessionId={}, state={}, inputLen={}", sessionId, state, userInput.length());
