@@ -185,6 +185,7 @@ export default function AchievementsPage() {
 
   const [unlockModal, setUnlockModal] = useState<AchievementDef | null>(null);
   const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
 
   // 成就定义
@@ -205,11 +206,13 @@ export default function AchievementsPage() {
   // 触发成就检查
   const handleCheck = useCallback(async () => {
     setChecking(true);
+    setCheckError(null);
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
       const res = await fetch(`${API_BASE}/api/v1/achievements/check?userId=${encodeURIComponent(uid)}`, {
         method: 'POST',
       });
+      if (!res.ok) throw new Error(`检查失败 (${res.status})`);
       const json = await res.json();
       const newCount = json?.data?.newlyUnlocked ?? 0;
       if (newCount > 0) {
@@ -223,7 +226,9 @@ export default function AchievementsPage() {
           if (def) setUnlockModal(def);
         }
       }
-    } catch { /* 忽略 */ }
+    } catch (err) {
+      setCheckError(err instanceof Error ? err.message : '检查失败，请稍后重试');
+    }
     finally { setChecking(false); }
   }, [uid, mutateUnlocked, defs]);
 
@@ -264,6 +269,9 @@ export default function AchievementsPage() {
             ) : '🔍 检查新成就'}
           </button>
         </div>
+        {checkError && (
+          <p role="alert" className="mt-2 text-right text-xs text-red-400">{checkError}</p>
+        )}
 
         {/* 总进度 */}
         <div className="rounded-2xl border border-gray-800 bg-[#141820] p-5 mb-6">
