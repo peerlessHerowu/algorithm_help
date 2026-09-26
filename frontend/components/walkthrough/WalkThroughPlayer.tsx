@@ -53,7 +53,9 @@ export default function WalkThroughPlayer({ problemId, level }: WalkThroughPlaye
 
   // ── 数据加载 ───────────────────────────────────────────────────────────
   const loadSequence = useCallback(async (sc: ScenarioType) => {
+    clearTimer();
     setPlayerState('loading');
+    setSequence(null);
     setErrorMsg(null);
     setCurrentStep(0);
 
@@ -80,7 +82,8 @@ export default function WalkThroughPlayer({ problemId, level }: WalkThroughPlaye
 
       if (!payload.sequenceJson) throw new Error('序列数据为空');
       const seq: TeachingSequence = JSON.parse(payload.sequenceJson);
-      setSequence(seq);
+      if (!Array.isArray(seq.steps) || seq.steps.length === 0) throw new Error('序列没有可播放的步骤');
+      setSequence({ ...seq, totalSteps: seq.steps.length });
       setPlayerState('paused');
     } catch (e) {
       setPlayerState('idle');
@@ -125,9 +128,11 @@ export default function WalkThroughPlayer({ problemId, level }: WalkThroughPlaye
 
   const play = useCallback(() => {
     if (!sequence) return;
+    const startStep = playerState === 'complete' ? 0 : currentStep;
+    setCurrentStep(startStep);
     setPlayerState('playing');
-    scheduleNext(currentStep, sequence);
-  }, [sequence, currentStep, scheduleNext]);
+    scheduleNext(startStep, sequence);
+  }, [sequence, currentStep, scheduleNext, playerState]);
 
   const pause = useCallback(() => {
     clearTimer();
@@ -250,7 +255,7 @@ export default function WalkThroughPlayer({ problemId, level }: WalkThroughPlaye
         onFirst={() => goTo(0)}
         onLast={() => goTo(sequence.totalSteps - 1)}
         onSeek={goTo}
-        onSpeedChange={s => { clearTimer(); setSpeed(s); }}
+        onSpeedChange={setSpeed}
       />
 
       {/* 完成状态提示 */}

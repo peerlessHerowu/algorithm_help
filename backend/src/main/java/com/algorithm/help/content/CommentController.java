@@ -37,8 +37,9 @@ public class CommentController {
             @RequestParam String targetType,
             @RequestParam String targetId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Page<CommentDTO> result = commentService.list(targetType, targetId, page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sort) {
+        Page<CommentDTO> result = commentService.list(targetType, targetId, page, size, sort);
         return ApiResponse.success(result);
     }
 

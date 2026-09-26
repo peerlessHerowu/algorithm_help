@@ -77,6 +77,7 @@ export default function SolutionEditor({
       {/* 标题输入 */}
       <div className="border-b border-gray-200 p-4 dark:border-gray-700">
         <input
+          aria-label="题解标题"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -92,6 +93,7 @@ export default function SolutionEditor({
       <div className="flex border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('edit')}
+          aria-pressed={activeTab === 'edit'}
           className={`px-4 py-2 text-sm font-medium transition-colors
             ${activeTab === 'edit'
               ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
@@ -102,6 +104,7 @@ export default function SolutionEditor({
         </button>
         <button
           onClick={() => setActiveTab('preview')}
+          aria-pressed={activeTab === 'preview'}
           className={`px-4 py-2 text-sm font-medium transition-colors
             ${activeTab === 'preview'
               ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
@@ -116,6 +119,7 @@ export default function SolutionEditor({
       <div className="min-h-[300px] p-4">
         {activeTab === 'edit' ? (
           <textarea
+            aria-label="题解内容"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="请使用 Markdown 格式编写题解..."
@@ -146,6 +150,7 @@ export default function SolutionEditor({
           {onCancel && (
             <button
               onClick={onCancel}
+              disabled={submitting}
               className="rounded-md px-4 py-2 text-sm text-gray-600
                          hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
             >

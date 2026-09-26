@@ -49,7 +49,7 @@ export default function PlayerControls({
   const isComplete = state === 'complete';
   const canPrev = currentStep > 0;
   const canNext = currentStep < totalSteps - 1;
-  const progress = totalSteps > 0 ? (currentStep / (totalSteps - 1)) * 100 : 0;
+  const progress = totalSteps > 1 ? (currentStep / (totalSteps - 1)) * 100 : totalSteps === 1 ? 100 : 0;
 
   const btnBase = `
     inline-flex items-center justify-center rounded-md
@@ -72,9 +72,16 @@ export default function PlayerControls({
             onSeek(Math.max(0, Math.min(totalSteps - 1, step)));
           }}
           role="slider"
+          tabIndex={0}
+          onKeyDown={e => {
+            const next = e.key === 'ArrowRight' ? currentStep + 1 : e.key === 'ArrowLeft' ? currentStep - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? totalSteps - 1 : null;
+            if (next === null || !totalSteps) return;
+            e.preventDefault();
+            onSeek(Math.max(0, Math.min(totalSteps - 1, next)));
+          }}
           aria-label="播放进度"
           aria-valuemin={0}
-          aria-valuemax={totalSteps - 1}
+          aria-valuemax={Math.max(0, totalSteps - 1)}
           aria-valuenow={currentStep}
         >
           <div
@@ -133,8 +140,8 @@ export default function PlayerControls({
               bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white
               disabled:bg-blue-300`}
             onClick={isPlaying ? onPause : onPlay}
-            disabled={isLoading || isComplete}
-            aria-label={isPlaying ? '暂停' : isComplete ? '已结束' : '播放'}
+            disabled={isLoading || isIdle || !totalSteps}
+            aria-label={isPlaying ? '暂停' : isComplete ? '重新播放' : '播放'}
           >
             {isLoading ? (
               <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

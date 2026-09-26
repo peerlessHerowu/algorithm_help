@@ -49,6 +49,7 @@ export default function SearchFilter({
           type="text"
           value={keyword}
           onChange={(e) => onKeywordChange(e.target.value)}
+          aria-label="搜索题目"
           placeholder="搜索题目..."
           className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4
                      text-sm text-gray-900 placeholder:text-gray-400
@@ -62,6 +63,7 @@ export default function SearchFilter({
       <select
         value={difficulty}
         onChange={(e) => onDifficultyChange(e.target.value as Difficulty | '')}
+        aria-label="按难度筛选题目"
         className="rounded-lg border border-gray-200 bg-white px-4 py-2.5
                    text-sm text-gray-900
                    focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500

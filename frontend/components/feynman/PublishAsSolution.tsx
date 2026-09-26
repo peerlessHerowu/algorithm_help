@@ -14,6 +14,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/store';
+import { authFetch } from '@/lib/authFetcher';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 // ============ 类型定义 ============
@@ -106,6 +108,7 @@ export default function PublishAsSolution({
   const [activeTab, setActiveTab] = useState<EditorTab>('edit');
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   // 从总结自动生成草稿（弹窗打开时初始化）
   const defaultTitle = useMemo(
@@ -124,36 +127,35 @@ export default function PublishAsSolution({
       setContent(defaultContent);
       setActiveTab('edit');
       setSubmitting(false);
+      setSubmitError('');
     }
   }, [open, defaultTitle, defaultContent]);
 
   /** 提交发布题解 */
   const handlePublish = useCallback(async () => {
-    if (!title.trim() || !content.trim()) return;
+    if (submitting || !title.trim() || !content.trim()) return;
     setSubmitting(true);
-
+    setSubmitError('');
     try {
-      // TODO: 调用后端 API 发布题解
-      // POST /api/v1/solutions
-      // body: { problemId, title, content, source: 'feynman' }
-      // 模拟发布成功
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // 显示成功提示
-      setToastMessage('题解发布成功 🎉');
-      setTimeout(() => {
-        setToastMessage('');
-        onClose();
-        // 跳转到题目详情页的题解 Tab
-        router.push(`/problems/${problemId}?tab=solutions`);
-      }, 1500);
-    } catch {
-      setToastMessage('发布失败，请稍后重试');
-      setTimeout(() => setToastMessage(''), 3000);
+      const { user, token } = useAppStore.getState();
+      if (!user || !token) throw new Error('请先登录后再发布题解');
+      const response = await authFetch(`/api/v1/problems/${encodeURIComponent(problemId)}/solutions`, {
+        method: 'POST',
+        headers: { 'X-User-Id': user.id },
+        body: JSON.stringify({ title: title.trim(), content: content.trim(), sourceType: 'FEYNMAN_OUTPUT' }),
+      });
+      const body = await response.json().catch(() => null);
+      if (!response.ok || body?.code !== 200) {
+        throw new Error(body?.message || `发布失败 (${response.status})`);
+      }
+      onClose();
+      router.push(`/problems/${encodeURIComponent(problemId)}?tab=solutions`);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : '发布失败，请稍后重试');
     } finally {
       setSubmitting(false);
     }
-  }, [title, content, problemId, onClose, router]);
+  }, [title, content, problemId, onClose, router, submitting]);
 
   // 不显示时直接返回 null
   if (!open) return null;
@@ -163,7 +165,7 @@ export default function PublishAsSolution({
       {/* 遮罩层 */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={() => { if (!submitting) onClose(); }}
         aria-hidden="true"
       />
 
@@ -181,7 +183,7 @@ export default function PublishAsSolution({
             </span>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => { if (!submitting) onClose(); }}
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             aria-label="关闭"
           >
@@ -195,6 +197,8 @@ export default function PublishAsSolution({
         <div className="border-b border-gray-200 px-6 py-3 dark:border-gray-700">
           <input
             type="text"
+            aria-label="题解标题"
+            disabled={submitting}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="请输入题解标题..."
@@ -233,6 +237,8 @@ export default function PublishAsSolution({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {activeTab === 'edit' ? (
             <textarea
+              aria-label="题解内容"
+              disabled={submitting}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="请使用 Markdown 格式编写题解..."
@@ -253,6 +259,8 @@ export default function PublishAsSolution({
           )}
         </div>
 
+        {submitError && <p role="alert" className="px-6 py-2 text-sm text-red-600 dark:text-red-400">{submitError}</p>}
+
         {/* 底部操作栏 */}
         <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700">
           <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -260,7 +268,7 @@ export default function PublishAsSolution({
           </p>
           <div className="flex items-center gap-3">
             <button
-              onClick={onClose}
+              onClick={() => { if (!submitting) onClose(); }}
               className="rounded-lg px-4 py-2 text-sm text-gray-600
                          hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
             >

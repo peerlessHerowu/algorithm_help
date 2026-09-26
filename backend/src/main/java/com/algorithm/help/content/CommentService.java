@@ -44,8 +44,11 @@ public class CommentService {
     /**
      * 按目标查询评论（分页）
      */
-    public Page<CommentDTO> list(String targetType, String targetId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public Page<CommentDTO> list(String targetType, String targetId, int page, int size, String sort) {
+        Sort ordering = "likes".equals(sort)
+                ? Sort.by(Sort.Direction.DESC, "upvotes").and(Sort.by(Sort.Direction.DESC, "createdAt"))
+                : Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, Math.min(100, size)), ordering);
         Page<Comment> comments = commentRepo.findByTargetTypeAndTargetIdAndDeletedFalse(
                 targetType, targetId, pageable);
         return comments.map(this::toDTO);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { authFetch } from '@/lib/authFetcher';
 
 // ===== 类型定义 =====
 
@@ -115,6 +116,7 @@ export default function ExportPanel({
 
   /** 触发导出 */
   const handleExport = useCallback(async () => {
+    if (exporting) return;
     setExporting(true);
     setError(null);
     setTaskId(null);
@@ -130,7 +132,7 @@ export default function ExportPanel({
         options: { languages, includeCode, includeDiagrams },
       };
 
-      const res = await fetch(API_BASE, {
+      const res = await authFetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -141,8 +143,11 @@ export default function ExportPanel({
         throw new Error(errData?.message ?? `导出失败 (${res.status})`);
       }
 
-      const data: ExportResponse = await res.json();
-      setTaskId(data.taskId);
+      const bodyResult: { code: number; message?: string; data?: ExportResponse } = await res.json();
+      if (bodyResult.code !== 200 || !bodyResult.data?.taskId) {
+        throw new Error(bodyResult.message || '导出未生成文件，请重试');
+      }
+      setTaskId(bodyResult.data.taskId);
       // 导出完成后标记可下载
       setDownloadReady(true);
     } catch (err) {
@@ -150,13 +155,33 @@ export default function ExportPanel({
     } finally {
       setExporting(false);
     }
-  }, [format, scope, problemId, patternId, pathId, languages, includeCode, includeDiagrams]);
+  }, [format, scope, problemId, patternId, pathId, languages, includeCode, includeDiagrams, exporting]);
 
   /** 下载文件 */
-  const handleDownload = useCallback(() => {
-    if (!taskId) return;
-    window.open(`${API_BASE}/${taskId}/download`, '_blank');
-  }, [taskId]);
+  const handleDownload = useCallback(async () => {
+    if (!taskId || exporting) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const response = await authFetch(`${API_BASE}/${encodeURIComponent(taskId)}/download`);
+      if (!response.ok) throw new Error(`下载失败 (${response.status})，请重新导出`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      const disposition = response.headers.get('Content-Disposition') || '';
+      const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+      anchor.download = filename || 'algorithm-export';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '下载失败，请重试');
+    } finally {
+      setExporting(false);
+    }
+  }, [taskId, exporting]);
 
   /** 重置表单 */
   const handleReset = useCallback(() => {
@@ -185,6 +210,8 @@ export default function ExportPanel({
                 key={opt.value}
                 type="button"
                 onClick={() => setFormat(opt.value)}
+                aria-pressed={format === opt.value}
+                disabled={exporting}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
                   format === opt.value
                     ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
@@ -299,6 +326,7 @@ export default function ExportPanel({
               <button
                 type="button"
                 onClick={handleDownload}
+                  disabled={exporting}
                 className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
               >
                 ⬇️ 下载文件
@@ -306,6 +334,7 @@ export default function ExportPanel({
               <button
                 type="button"
                 onClick={handleReset}
+                  disabled={exporting}
                 className="w-full rounded-lg border border-gray-200 px-4 py-2 text-xs text-gray-500 transition-colors hover:bg-gray-50"
               >
                 重新导出

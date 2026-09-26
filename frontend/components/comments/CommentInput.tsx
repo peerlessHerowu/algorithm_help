@@ -60,7 +60,7 @@ export default function CommentInput({
 
   /** 提交评论 */
   async function handleSubmit() {
-    if (!content.trim()) return;
+    if (submitting || !content.trim()) return;
     if (!isAuthenticated) {
       setError('请先登录后再发表评论');
       return;
@@ -71,8 +71,9 @@ export default function CommentInput({
 
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-      const token = useAppStore.getState().token;
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      const { token, user } = useAppStore.getState();
+      if (!user) throw new Error('请先登录后再发表评论');
+      const headers: HeadersInit = { 'Content-Type': 'application/json', 'X-User-Id': user.id };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const res = await fetch(`${BASE_URL}/api/v1/comments`, {
@@ -124,6 +125,8 @@ export default function CommentInput({
             type="button"
             onClick={() => setCommentType(opt.value)}
             title={opt.description}
+            aria-pressed={commentType === opt.value}
+            disabled={submitting}
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors
               ${commentType === opt.value
                 ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:ring-blue-700'
@@ -138,6 +141,8 @@ export default function CommentInput({
 
       {/* 输入框 */}
       <textarea
+        aria-label="评论内容"
+        disabled={submitting}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
@@ -150,7 +155,7 @@ export default function CommentInput({
 
       {/* 错误提示 */}
       {error && (
-        <p className="text-xs text-red-500">{error}</p>
+        <p role="alert" className="text-xs text-red-500">{error}</p>
       )}
 
       {/* 操作按钮 */}
@@ -159,6 +164,7 @@ export default function CommentInput({
           <button
             type="button"
             onClick={onCancel}
+            disabled={submitting}
             className="rounded-lg px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           >
             取消

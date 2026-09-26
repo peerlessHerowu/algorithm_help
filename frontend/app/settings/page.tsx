@@ -179,7 +179,7 @@ export default function SettingsPage() {
       {/* 默认解析级别 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认解析级别</h2>
-        <p className="mb-4 text-sm text-gray-400">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           选择查看题目解析时的默认深度级别
         </p>
         <div className="flex gap-3">
@@ -187,6 +187,7 @@ export default function SettingsPage() {
             <button
               key={level}
               onClick={() => setLevel(level)}
+              aria-pressed={currentLevel === level}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 currentLevel === level
                   ? 'bg-primary-600 text-white'
@@ -202,7 +203,7 @@ export default function SettingsPage() {
       {/* 默认代码语言 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">默认代码语言</h2>
-        <p className="mb-4 text-sm text-gray-400">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           查看解法代码时优先展示的编程语言
         </p>
         <div className="flex flex-wrap gap-3">
@@ -210,6 +211,7 @@ export default function SettingsPage() {
             <button
               key={lang}
               onClick={() => setPreferredLanguage(lang)}
+              aria-pressed={preferredLanguage === lang}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 preferredLanguage === lang
                   ? 'bg-primary-600 text-white'
@@ -225,7 +227,7 @@ export default function SettingsPage() {
       {/* 主题偏好 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">主题偏好</h2>
-        <p className="mb-4 text-sm text-gray-400">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           选择界面的显示主题
         </p>
         <div className="flex gap-3">
@@ -233,6 +235,7 @@ export default function SettingsPage() {
             <button
               key={opt.value}
               onClick={() => setTheme(opt.value)}
+              aria-pressed={theme === opt.value}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 theme === opt.value
                   ? 'bg-primary-600 text-white'
@@ -255,13 +258,13 @@ export default function SettingsPage() {
           {saving ? '保存中...' : '保存设置'}
         </button>
         {saveSuccess && (
-          <span className="text-sm text-green-600 dark:text-green-400">✓ 保存成功</span>
+          <span role="status" aria-live="polite" className="text-sm text-green-600 dark:text-green-400">✓ 保存成功</span>
         )}
         {saveError && (
           <span className="text-sm text-red-600 dark:text-red-400">{saveError}</span>
         )}
         {!isAuthenticated && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">
+          <span className="text-xs text-gray-600 dark:text-gray-500">
             未登录，设置仅保存在本地
           </span>
         )}
@@ -270,7 +273,7 @@ export default function SettingsPage() {
       {/* 🔔 通知设置 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">🔔 通知设置</h2>
-        <p className="mb-4 text-sm text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           按类型控制接收哪些通知
         </p>
         <div className="space-y-4">
@@ -280,7 +283,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {item.label}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   {item.description}
                 </p>
               </div>
@@ -309,7 +312,7 @@ export default function SettingsPage() {
       {/* 📥 数据管理 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
         <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">📥 数据管理</h2>
-        <p className="mb-4 text-sm text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           学习数据导出服务正在建设中，当前暂不可用。
         </p>
         <button
@@ -343,7 +346,7 @@ export default function SettingsPage() {
         <h2 className="mb-1 text-lg font-semibold text-red-700 dark:text-red-400">
           ⚠️ 危险区域
         </h2>
-        <p className="mb-4 text-sm text-gray-400">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           账户删除服务尚未开放。当前无法从平台删除账户。
         </p>
         <button
@@ -363,8 +366,13 @@ export default function SettingsPage() {
             onClick={() => setShowDeleteConfirm(false)}
           />
           {/* 弹窗内容 */}
-          <div className="relative z-10 mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-            <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
+            className="relative z-10 mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800"
+          >
+            <h3 id="delete-account-title" className="text-lg font-semibold text-red-700 dark:text-red-400">
               确认删除账户？
             </h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">

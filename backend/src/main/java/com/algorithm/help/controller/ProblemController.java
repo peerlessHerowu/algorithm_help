@@ -24,6 +24,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * 题目相关 API 控制器
@@ -160,6 +164,43 @@ public class ProblemController {
             .setTotal(progress.getTotal())
             .setCompleted(progress.getCompleted())
             .setFailed(progress.getFailed()));
+    }
+
+    /**
+     * Stream task progress for browser EventSource clients. The generation
+     * service exposes an in-memory progress snapshot, so poll it briefly and
+     * emit the same TaskStatusDTO shape as the status endpoint.
+     */
+    @GetMapping(value = "/tasks/{taskId}/stream", produces = "text/event-stream")
+    public SseEmitter streamTask(@PathVariable String taskId) {
+        SseEmitter emitter = new SseEmitter(0L);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        final int[] idleTicks = {0};
+        Runnable poll = new Runnable() {
+            @Override public void run() {
+                try {
+                    BatchProgress progress = generationService.getProgress(taskId);
+                    TaskStatusDTO status = progress == null
+                            ? buildTaskStatus(taskId, "NOT_FOUND")
+                            : getTaskStatus(taskId).getData();
+                    emitter.send(SseEmitter.event().name("progress").data(status));
+                    String state = status.getStatus();
+                    if ("COMPLETED".equals(state) || "NOT_FOUND".equals(state) || idleTicks[0]++ > 300) {
+                        emitter.complete();
+                        executor.shutdown();
+                    } else {
+                        executor.schedule(this, 1, TimeUnit.SECONDS);
+                    }
+                } catch (Exception ex) {
+                    emitter.completeWithError(ex);
+                    executor.shutdown();
+                }
+            }
+        };
+        emitter.onCompletion(executor::shutdownNow);
+        emitter.onTimeout(() -> { executor.shutdownNow(); emitter.complete(); });
+        executor.execute(poll);
+        return emitter;
     }
 
     private ProblemDTO toDTO(Problem p) {

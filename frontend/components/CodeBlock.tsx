@@ -6,7 +6,7 @@
  * 用于展示同一题目的不同语言实现
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAppStore } from '@/store';
 import hljs from 'highlight.js/lib/core';
 // 按需注册语言（减少打包体积）
@@ -62,6 +62,11 @@ export default function CodeBlock({ code, defaultLang, className }: CodeBlockPro
   const [copied, setCopied] = useState(false);
   const [showFullscreen, setShowFullscreen] = useState(false);
 
+  // Props may change when switching problems; keep the selected language valid.
+  useEffect(() => {
+    if (!languages.includes(activeTab)) setActiveTab(resolveInitialLang());
+  }, [code, defaultLang, preferredLanguage]);
+
   /** 复制代码到剪贴板 */
   const handleCopy = useCallback(async () => {
     const text = code[activeTab];
@@ -76,8 +81,9 @@ export default function CodeBlock({ code, defaultLang, className }: CodeBlockPro
       textarea.value = text;
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand('copy');
+      const copiedByFallback = document.execCommand('copy');
       document.body.removeChild(textarea);
+      if (!copiedByFallback) throw new Error('copy failed');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -121,6 +127,7 @@ export default function CodeBlock({ code, defaultLang, className }: CodeBlockPro
         <div className="flex gap-0.5 overflow-x-auto">
           {languages.map((lang) => (
             <button
+              type="button"
               key={lang}
               onClick={() => setActiveTab(lang)}
               className={`px-3 py-2 text-xs font-medium rounded-t transition-colors whitespace-nowrap
@@ -137,6 +144,7 @@ export default function CodeBlock({ code, defaultLang, className }: CodeBlockPro
         {/* 复制按钮 */}
         <button
           onClick={handleCopy}
+          aria-label={copied ? '已复制代码' : '复制代码'}
           className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-500 dark:text-gray-400
                      hover:text-gray-700 dark:hover:text-gray-200 transition-colors rounded"
           title="复制代码"
@@ -162,7 +170,7 @@ export default function CodeBlock({ code, defaultLang, className }: CodeBlockPro
 
       {/* 代码内容区 */}
       <div className="overflow-x-auto bg-white dark:bg-gray-900 relative">
-        <pre className="p-4 text-sm leading-relaxed">
+        <pre className="p-4 text-sm leading-relaxed"><code className="sr-only">当前语言：{languageLabels[activeTab] || activeTab}</code>
           <code
             className={`hljs language-${activeTab}`}
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}

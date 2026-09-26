@@ -18,7 +18,7 @@ export interface CommentData {
   content: string;
   type: CommentType;
   parentId?: string | null;
-  likes: number;
+  upvotes: number;
   createdAt: number;
   /** 嵌套回复列表 */
   replies?: CommentData[];
@@ -73,8 +73,10 @@ export default function CommentItem({
 }: CommentItemProps) {
   const { isAuthenticated } = useAppStore();
   const [showReply, setShowReply] = useState(false);
+  const [liking, setLiking] = useState(false);
+  const [likeError, setLikeError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(comment.likes || 0);
+  const [likeCount, setLikeCount] = useState(comment.upvotes || 0);
 
   const typeLabel = TYPE_LABEL_MAP[comment.type] || TYPE_LABEL_MAP.NORMAL;
   const borderClass = TYPE_BORDER_MAP[comment.type] || TYPE_BORDER_MAP.NORMAL;
@@ -97,25 +99,35 @@ export default function CommentItem({
 
   /** 点赞操作 */
   async function handleLike() {
-    if (!isAuthenticated) return;
-    // 乐观更新
-    setLiked(!liked);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
-
+    if (liking) return;
+    if (!isAuthenticated) {
+      setLikeError('请先登录后再点赞');
+      return;
+    }
+    setLiking(true);
+    setLikeError(null);
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-      const token = useAppStore.getState().token;
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      await fetch(`${BASE_URL}/api/v1/comments/${comment.id}/like`, {
-        method: 'POST',
-        headers,
+      const { token, user } = useAppStore.getState();
+      if (!user) throw new Error('请先登录后再点赞');
+      const res = await fetch(`${BASE_URL}/api/v1/comments/${comment.id}/upvote`, {
+        method: liked ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
-    } catch {
-      // 失败时回滚
-      setLiked(liked);
-      setLikeCount(comment.likes || 0);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || `点赞失败 (${res.status})`);
+      }
+      setLiked(!liked);
+      setLikeCount((prev) => Math.max(0, prev + (liked ? -1 : 1)));
+    } catch (err) {
+      setLikeError(err instanceof Error ? err.message : '点赞失败，请重试');
+    } finally {
+      setLiking(false);
     }
   }
 
@@ -168,6 +180,9 @@ export default function CommentItem({
         <button
           type="button"
           onClick={handleLike}
+          disabled={liking}
+          aria-pressed={liked}
+          aria-label={liked ? '取消点赞' : '点赞评论'}
           className={`inline-flex items-center gap-1 text-xs transition-colors
             ${liked
               ? 'text-blue-600 dark:text-blue-400'
@@ -183,6 +198,7 @@ export default function CommentItem({
           <button
             type="button"
             onClick={() => setShowReply(!showReply)}
+            aria-expanded={showReply}
             className="text-xs text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400"
           >
             💭 回复
@@ -200,6 +216,8 @@ export default function CommentItem({
           </button>
         )}
       </div>
+
+      {likeError && <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{likeError}</p>}
 
       {/* 回复输入框 */}
       {showReply && (
