@@ -111,9 +111,26 @@ export default function Navbar({ className = '' }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setUserMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
   return (
     <nav
       className={`sticky top-0 z-50 h-16 border-b border-gray-800 bg-[#0F1117]/90 backdrop-blur-sm ${className}`}
+      aria-label="顶部导航"
     >
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
         {/* 左侧 Logo */}
@@ -170,11 +187,14 @@ export default function Navbar({ className = '' }: NavbarProps) {
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
+                aria-expanded={userMenuOpen}
+                aria-controls="user-navigation-menu"
+                aria-label="用户菜单"
               >
                 {user?.nickname || '用户'}
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-700 bg-gray-900 py-1 shadow-lg animate-fade-in-down">
+                <div id="user-navigation-menu" className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-gray-700 bg-gray-900 py-1 shadow-lg animate-fade-in-down">
                   <Link href="/achievements" onClick={() => setUserMenuOpen(false)}
                     className="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800">
                     🏆 我的成就
@@ -201,6 +221,8 @@ export default function Navbar({ className = '' }: NavbarProps) {
             className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="菜单"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
           >
             {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -209,7 +231,7 @@ export default function Navbar({ className = '' }: NavbarProps) {
 
       {/* 移动端展开菜单 */}
       {mobileMenuOpen && (
-        <div className="border-b border-gray-800 bg-[#0F1117] px-4 pb-3 pt-2 md:hidden animate-fade-in-down">
+        <div id="mobile-navigation-menu" className="border-b border-gray-800 bg-[#0F1117] px-4 pb-3 pt-2 md:hidden animate-fade-in-down">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (

@@ -62,6 +62,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                 <Link
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
+                  aria-label={item.label}
                   className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium
                              transition-colors
                              ${isActive
@@ -104,6 +105,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                 <Link
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
+                  aria-label={item.label}
                   className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium
                              transition-colors
                              ${isActive

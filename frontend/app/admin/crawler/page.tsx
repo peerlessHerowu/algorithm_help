@@ -6,11 +6,13 @@
  * Requirements: 33.1-33.3
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { authFetch } from '@/lib/authFetcher';
 import { fetcher } from '@/lib/fetcher';
 import ProgressBar from '@/components/common/ProgressBar';
+import { useAppStore } from '@/store';
 
 // ==================== 类型定义 ====================
 
@@ -148,10 +150,11 @@ function TriggerForm({ onSubmit, isSubmitting, className = '' }: TriggerFormProp
     <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
       {/* 平台选择 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor="crawler-platform" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           平台
         </label>
         <select
+          id="crawler-platform"
           value={platform}
           onChange={(e) => setPlatform(e.target.value as Platform)}
           className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm
@@ -166,10 +169,11 @@ function TriggerForm({ onSubmit, isSubmitting, className = '' }: TriggerFormProp
 
       {/* 任务类型选择 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor="crawler-task-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           采集类型
         </label>
         <select
+          id="crawler-task-type"
           value={taskType}
           onChange={(e) => setTaskType(e.target.value as TaskType)}
           className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm
@@ -185,14 +189,16 @@ function TriggerForm({ onSubmit, isSubmitting, className = '' }: TriggerFormProp
       {/* 单题采集时的题号输入 */}
       {taskType === 'SINGLE_PROBLEM' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="crawler-problem-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             题号 / Slug
           </label>
           <input
+            id="crawler-problem-id"
             type="text"
             value={problemId}
             onChange={(e) => setProblemId(e.target.value)}
             placeholder="例如：two-sum 或 1"
+            required
             className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm
               dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200
               focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -357,19 +363,30 @@ const API_CRAWLER_TASKS = '/api/v1/admin/crawler/tasks';
 const API_CRAWLER_TRIGGER = '/api/v1/admin/crawler/trigger';
 
 export default function CrawlerManagementPage() {
+  const router = useRouter();
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
+  const user = useAppStore((s) => s.user);
+  const [hydrated, setHydrated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  useEffect(() => { setHydrated(true); }, []);
+  const isAdmin = isAuthenticated && user?.role === 'ADMIN';
+
+  useEffect(() => {
+    if (hydrated && !isAuthenticated) router.replace('/auth/login');
+  }, [hydrated, isAuthenticated, router]);
+
   // 获取平台状态
   const { data: platformStatuses } = useSWR<PlatformStatus[]>(
-    API_CRAWLER_STATUS,
+    isAdmin ? API_CRAWLER_STATUS : null,
     fetcher,
     { refreshInterval: 30000, fallbackData: [] }
   );
 
   // 获取采集任务列表（运行中的任务自动刷新）
   const { data: tasks } = useSWR<CrawlerTask[]>(
-    API_CRAWLER_TASKS,
+    isAdmin ? API_CRAWLER_TASKS : null,
     fetcher,
     { refreshInterval: 5000, fallbackData: [] }
   );
@@ -442,6 +459,22 @@ export default function CrawlerManagementPage() {
   const completedTasks = (tasks || []).filter((t) => t.status === 'COMPLETED');
   const failedTasks = (tasks || []).filter((t) => t.status === 'FAILED');
   const cancelledTasks = (tasks || []).filter((t) => t.status === 'CANCELLED');
+
+  if (!hydrated || !isAuthenticated) {
+    return <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="正在检查登录状态">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+    </div>;
+  }
+  if (!isAdmin) {
+    return <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <div className="text-center">
+        <p className="text-4xl" aria-hidden="true">🚫</p>
+        <h1 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">无权限访问</h1>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">此页面仅管理员可访问</p>
+        <button type="button" onClick={() => router.push('/')} className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">返回首页</button>
+      </div>
+    </div>;
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

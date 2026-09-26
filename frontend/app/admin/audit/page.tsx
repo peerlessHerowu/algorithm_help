@@ -143,28 +143,28 @@ export default function AdminAuditPage() {
       {/* 筛选栏 */}
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div>
-          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">操作人</label>
-          <input type="text" value={operatorId}
+          <label htmlFor="audit-operator-id" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">操作人</label>
+          <input id="audit-operator-id" type="text" value={operatorId}
             onChange={(e) => { setOperatorId(e.target.value); setPage(0); }}
             placeholder="操作人 ID"
             className="rounded-md border border-gray-300 px-3 py-1.5 text-sm
                        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">开始日期</label>
-          <input type="date" value={startDate}
+          <label htmlFor="audit-start-date" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">开始日期</label>
+          <input id="audit-start-date" type="date" value={startDate}
             onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
             className="rounded-md border border-gray-300 px-3 py-1.5 text-sm
                        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">结束日期</label>
-          <input type="date" value={endDate}
+          <label htmlFor="audit-end-date" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">结束日期</label>
+          <input id="audit-end-date" type="date" value={endDate}
             onChange={(e) => { setEndDate(e.target.value); setPage(0); }}
             className="rounded-md border border-gray-300 px-3 py-1.5 text-sm
                        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
         </div>
-        <button onClick={fetchLogs}
+        <button type="button" onClick={fetchLogs}
           className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
           查询
         </button>
