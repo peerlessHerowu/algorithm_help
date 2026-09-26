@@ -254,7 +254,7 @@ export default function MappingAdminPage() {
     setActionLoading(id);
     try {
       const res = await authFetch(`/api/v1/admin/mappings/${id}/confirm`, {
-        method: 'POST',
+        method: 'PUT',
       });
       if (res.ok) {
         showMessage('success', '映射已确认');
@@ -276,7 +276,7 @@ export default function MappingAdminPage() {
     setActionLoading(id);
     try {
       const res = await authFetch(`/api/v1/admin/mappings/${id}/reject`, {
-        method: 'POST',
+        method: 'PUT',
       });
       if (res.ok) {
         showMessage('success', '映射已驳回');
