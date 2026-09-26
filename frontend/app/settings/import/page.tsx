@@ -35,7 +35,16 @@ export default function ImportPage() {
   const [showRefined, setShowRefined] = useState(false);
 
   const handleImport = useCallback(async () => {
-    if (!url.trim()) return;
+    const normalizedUrl = url.trim();
+    if (!normalizedUrl) return;
+    try {
+      const parsed = new URL(normalizedUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error();
+    } catch {
+      setResult({ success: false, error: '请输入有效的 http(s) 链接' });
+      setCurrentStep(null);
+      return;
+    }
     setImporting(true);
     setResult(null);
     setShowRefined(false);
@@ -48,7 +57,7 @@ export default function ImportPage() {
     }
 
     try {
-      const res: any = await importApi.fromUrl(url.trim());
+      const res: any = await importApi.fromUrl(normalizedUrl);
       setResult({ ...res, success: true });
       setCurrentStep('done');
     } catch (e: any) {
